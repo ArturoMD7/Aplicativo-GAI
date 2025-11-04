@@ -1,6 +1,8 @@
 # Archivos de Entorno
 backend/.env
 frontend/.env
+backend/.env.example
+frontend/.env.example
 frontend/.env.local
 
 # Dependencias de Python 
