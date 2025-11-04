@@ -3,13 +3,11 @@ import React, { useState, type FormEvent } from 'react';
 import apiClient from '../api/apliClient.ts';
 import '../styles/AuthForms.css'; 
 
-// Una 'prop' para que podamos cambiar a la vista de registro
 type LoginPageProps = {
   onSwitchToRegister: () => void;
-  onLoginSuccess: () => void; // La nueva prop
+  onLoginSuccess: () => void; 
 };
 
-// 2. Aplica las props a la función
 function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

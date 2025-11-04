@@ -51,7 +51,6 @@ function Sidebar({ onLogout }: SidebarProps) {
       </ul>
       
       <div className="sidebar-footer">
-        {/* --- ¡NUEVO! 4. Creamos el botón de Logout --- */}
         <button className="nav-link" onClick={onLogout}>
           <span className="icon"><FiLogOut /></span>
           <span className="text">Logout</span>
