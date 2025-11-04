@@ -1,0 +1,107 @@
+.sidebar {
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  left: 0;
+  background-color: #282c34; /* Mismo color del form */
+  color: #ffffff;
+  transition: width 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  /* Evita que el sidebar se encoja */
+  flex-shrink: 0; 
+}
+
+/* Estilo cuando está ABIERTO */
+.sidebar.open {
+  width: 260px;
+}
+
+/* Estilo cuando está COLAPSADO */
+.sidebar.collapsed {
+  width: 80px;
+}
+
+/* Encabezado del Sidebar (con el botón de toggle) */
+.sidebar-header {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Mueve el botón a la derecha */
+}
+
+/* Botón para abrir/cerrar */
+.toggle-btn {
+  background: none;
+  border: none;
+  color: #61dafb;
+  cursor: pointer;
+  font-size: 1.5rem; /* 24px */
+}
+
+/* Contenedor de los links de navegación */
+.sidebar-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1; /* Ocupa el espacio disponible */
+}
+
+/* Cada link */
+.nav-link {
+  display: flex;
+  align-items: center;
+  color: #fff;
+  text-decoration: none;
+  padding: 15px 20px;
+  margin: 5px 10px;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.nav-link:hover {
+  background-color: #3a3f47;
+}
+
+.nav-link .icon {
+  font-size: 1.25rem; /* 20px */
+}
+
+/* El texto del link */
+.nav-link .text {
+  margin-left: 20px;
+  white-space: nowrap; /* Evita que el texto se rompa */
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+/* Oculta el texto cuando está colapsado */
+.sidebar.collapsed .nav-link .text {
+  opacity: 0;
+  display: none;
+}
+
+/* Centra el ícono cuando está colapsado */
+.sidebar.collapsed .nav-link {
+  justify-content: center;
+}
+
+.sidebar.collapsed .sidebar-header {
+  justify-content: center;
+}
+
+.sidebar-footer {
+  /* Estilos para el footer si los necesitas */
+}
+
+button.nav-link {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%; 
+  text-align: left; 
+  padding: 0; 
+  margin: 0; 
+  color: inherit;
+  font: inherit;
+}

@@ -6,16 +6,18 @@ import '../styles/AuthForms.css';
 // Una 'prop' para que podamos cambiar a la vista de registro
 type LoginPageProps = {
   onSwitchToRegister: () => void;
+  onLoginSuccess: () => void; // La nueva prop
 };
 
-function LoginPage({ onSwitchToRegister }: LoginPageProps) {
+// 2. Aplica las props a la función
+function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(''); // Limpia errores previos
+    setError(''); 
 
     try {
       const response = await apiClient.post('/api/token/', {
@@ -26,8 +28,12 @@ function LoginPage({ onSwitchToRegister }: LoginPageProps) {
       console.log('Login exitoso:', response.data);
       localStorage.setItem('access_token', response.data.access);
       localStorage.setItem('refresh_token', response.data.refresh);
-      alert('¡Login exitoso!');
-      // Aquí rediriges al dashboard
+      
+      // 3. Llama a la función del padre (App.tsx)
+      onLoginSuccess();
+      
+      // Ya no necesitas el 'alert'
+      // alert('¡Login exitoso!');
       
     } catch (err) {
       console.error('Error en el login:', err);
@@ -35,6 +41,7 @@ function LoginPage({ onSwitchToRegister }: LoginPageProps) {
     }
   };
 
+  // ... el resto de tu JSX (return) no cambia ...
   return (
     <div className="auth-container">
       <form className="auth-form" onSubmit={handleSubmit}>
