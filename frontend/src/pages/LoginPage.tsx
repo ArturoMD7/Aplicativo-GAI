@@ -1,7 +1,10 @@
 
 import React, { useState, type FormEvent } from 'react';
 import apiClient from '../api/apliClient.ts';
-import '../styles/AuthForms.css'; 
+import '../styles/AuthForms.css';
+import '../assets/pemexlogo.png';
+import pemexLogo from '../assets/pemexlogo.png'; 
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 type LoginPageProps = {
   onSwitchToRegister: () => void;
@@ -27,11 +30,7 @@ function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
       localStorage.setItem('access_token', response.data.access);
       localStorage.setItem('refresh_token', response.data.refresh);
       
-      // 3. Llama a la función del padre (App.tsx)
       onLoginSuccess();
-      
-      // Ya no necesitas el 'alert'
-      // alert('¡Login exitoso!');
       
     } catch (err) {
       console.error('Error en el login:', err);
@@ -39,40 +38,65 @@ function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
     }
   };
 
-  // ... el resto de tu JSX (return) no cambia ...
   return (
-    <div className="auth-container">
-      <form className="auth-form" onSubmit={handleSubmit}>
-        <h2>Iniciar Sesión</h2>
-        
-        {error && <p className="error-message">{error}</p>}
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-card-body">
+          <div className="auth-brand">
+            <img src={pemexLogo} alt="Pemex" />
+            <h3 className="titulo-pemex">Iniciar Sesión</h3>
+            <p className="auth-subtitle">Ingrese sus credenciales para continuar</p>
+          </div>
 
-        <div className="form-group">
-          <label>Email:</label>
-          <input 
-            type="email" 
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
-            required 
-          />
-        </div>
-        <div className="form-group">
-          <label>Contraseña:</label>
-          <input 
-            type="password" 
-            value={password} 
-            onChange={(e) => setPassword(e.target.value)} 
-            required 
-          />
-        </div>
-        <button type="submit" className="auth-button">Entrar</button>
+          {error && <div className="alert alert-danger">{error}</div>}
 
-        <p className="auth-switch">
-          ¿No tienes cuenta? <span onClick={onSwitchToRegister}>Regístrate aquí</span>
-        </p>
-      </form>
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <div className="form-group input-icon">
+              <i className="fas fa-envelope" aria-hidden="true"></i>
+              <input
+                type="email"
+                value={email}
+                placeholder="Correo electrónico"
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                aria-label="Correo electrónico"
+              />
+            </div>
+
+            <div className="form-group input-icon">
+              <i className="fas fa-lock" aria-hidden="true"></i>
+              <input
+                type="password"
+                value={password}
+                placeholder="Contraseña"
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                aria-label="Contraseña"
+              />
+            </div>
+
+            <button type="submit" className="btn-pemex">
+              <i className="fas fa-sign-in-alt" aria-hidden="true"></i>
+              Acceder
+            </button>
+
+            <div style={{ textAlign: 'center', marginTop: 14 }}>
+              <a href="#" className="auth-link">
+                <i className="fas fa-key" aria-hidden="true" style={{ marginRight: 6 }}></i>
+                ¿Olvidaste tu contraseña?
+              </a>
+            </div>
+
+            <div className="divider">Opciones adicionales</div>
+            <p className="auth-switch">
+              ¿No tienes cuenta? <span onClick={onSwitchToRegister}>Regístrate aquí</span>
+            </p>
+          </form>
+        </div>
+      </div>
     </div>
   );
+
 }
 
 export default LoginPage;

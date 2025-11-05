@@ -1,6 +1,8 @@
 import React, { useState, type FormEvent } from 'react';
 import apiClient from '../api/apliClient.ts';
-import '../styles/AuthForms.css'; 
+import '../styles/AuthForms.css';
+import pemexLogo from '../assets/pemexlogo.png';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 type RegisterPageProps = {
   onSwitchToLogin: () => void;
@@ -20,7 +22,6 @@ function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
     setError('');
     setSuccess('');
 
-    // Validación simple en frontend
     if (password !== password2) {
       setError('Las contraseñas no coinciden');
       return;
@@ -28,21 +29,17 @@ function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
 
     try {
       await apiClient.post('/api/register/', {
-        email: email,
-        password: password,
-        password2: password2,
+        email,
+        password,
+        password2,
         first_name: firstName,
         last_name: lastName
       });
-      
       setSuccess('¡Registro exitoso! Ahora puedes iniciar sesión.');
-      onSwitchToLogin();
-
+      setTimeout(() => onSwitchToLogin(), 1500);
     } catch (err: any) {
-      console.error('Error en el registro:', err.response.data);
-      // Capturamos errores del backend (ej. email duplicado)
-      if (err.response && err.response.data) {
-        // Obtenemos el primer error
+      console.error('Error en el registro:', err.response?.data);
+      if (err.response?.data) {
         const errors = err.response.data;
         const firstErrorKey = Object.keys(errors)[0];
         setError(errors[firstErrorKey][0]);
@@ -53,39 +50,90 @@ function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
   };
 
   return (
-    <div className="auth-container">
-      <form className="auth-form" onSubmit={handleSubmit}>
-        <h2>Crear Cuenta</h2>
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-card-body">
+          <div className="auth-brand">
+            <img src={pemexLogo} alt="Pemex" />
+            <h3 className="titulo-pemex">Crear Cuenta</h3>
+            <p className="auth-subtitle">Registra tus datos para continuar</p>
+          </div>
 
-        {error && <p className="error-message">{error}</p>}
-        {success && <p className="error-message" style={{ color: '#4CAF50' }}>{success}</p>}
+          {error && <div className="alert alert-danger">{error}</div>}
+          {success && <div className="alert alert-success">{success}</div>}
 
-        <div className="form-group">
-          <label>Email:</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </div>
-        <div className="form-group">
-          <label>Nombre (Opcional):</label>
-          <input type="text" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
-        </div>
-        <div className="form-group">
-          <label>Apellidos (Opcional):</label>
-          <input type="text" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-        </div>
-        <div className="form-group">
-          <label>Contraseña (mín. 8 caracteres):</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        </div>
-        <div className="form-group">
-          <label>Confirmar Contraseña:</label>
-          <input type="password" value={password2} onChange={(e) => setPassword2(e.target.value)} required />
-        </div>
-        <button type="submit" className="auth-button">Registrarse</button>
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <div className="form-group input-icon">
+              <i className="fas fa-envelope" aria-hidden="true"></i>
+              <input
+                type="email"
+                value={email}
+                placeholder="Correo electrónico"
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                aria-label="Correo electrónico"
+              />
+            </div>
 
-        <p className="auth-switch">
-          ¿Ya tienes cuenta? <span onClick={onSwitchToLogin}>Inicia sesión</span>
-        </p>
-      </form>
+            <div className="form-group input-icon">
+              <i className="fas fa-user" aria-hidden="true"></i>
+              <input
+                type="text"
+                value={firstName}
+                placeholder="Nombre (opcional)"
+                onChange={(e) => setFirstName(e.target.value)}
+                aria-label="Nombre"
+              />
+            </div>
+
+            <div className="form-group input-icon">
+              <i className="fas fa-user-tag" aria-hidden="true"></i>
+              <input
+                type="text"
+                value={lastName}
+                placeholder="Apellidos (opcional)"
+                onChange={(e) => setLastName(e.target.value)}
+                aria-label="Apellidos"
+              />
+            </div>
+
+            <div className="form-group input-icon">
+              <i className="fas fa-lock" aria-hidden="true"></i>
+              <input
+                type="password"
+                value={password}
+                placeholder="Contraseña (mín. 8 caracteres)"
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                aria-label="Contraseña"
+              />
+            </div>
+
+            <div className="form-group input-icon">
+              <i className="fas fa-lock-open" aria-hidden="true"></i>
+              <input
+                type="password"
+                value={password2}
+                placeholder="Confirmar contraseña"
+                onChange={(e) => setPassword2(e.target.value)}
+                required
+                aria-label="Confirmar contraseña"
+              />
+            </div>
+
+            <button type="submit" className="btn-pemex">
+              <i className="fas fa-user-plus" aria-hidden="true"></i>
+              Registrarse
+            </button>
+
+            <div className="divider">Opciones adicionales</div>
+
+            <p className="auth-switch">
+              ¿Ya tienes cuenta? <span onClick={onSwitchToLogin}>Inicia sesión</span>
+            </p>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }
