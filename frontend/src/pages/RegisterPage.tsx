@@ -1,8 +1,14 @@
-import React, { useState, type FormEvent } from 'react';
+import React, { useEffect, useState, type FormEvent } from 'react';
 import apiClient from '../api/apliClient.ts';
 import '../styles/AuthForms.css';
 import pemexLogo from '../assets/pemexlogo.png';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { useNavigate } from 'react-router-dom';
+
+type Group = {
+  id: number;
+  name: string;
+};
 
 type RegisterPageProps = {
   onSwitchToLogin: () => void;
@@ -14,9 +20,37 @@ function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
   const [password2, setPassword2] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [availableGroups, setAvailableGroups] = useState<Group[]>([]);
+  const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchGroups = async () => {
+      try {
+        const response = await apiClient.get('/api/groups/');
+        setAvailableGroups(response.data);
+      } catch (err) {
+        console.error('No se pudieron cargar los roles', err);
+        setError('Error al cargar la lista de roles. Verifica que eres admin.');
+      }
+    };
+    fetchGroups();
+  }, []);
+
+  const handleGroupsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const options = e.target.options;
+    const selected: string[] = [];
+    for (let i = 0; i < options.length; i++) {
+      if (options[i].selected) {
+        selected.push(options[i].value);
+      }
+    }
+    setSelectedGroups(selected);
+  };
+  
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
@@ -33,10 +67,12 @@ function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
         password,
         password2,
         first_name: firstName,
-        last_name: lastName
+        last_name: lastName,
+        groups: selectedGroups
       });
-      setSuccess('¡Registro exitoso! Ahora puedes iniciar sesión.');
-      setTimeout(() => onSwitchToLogin(), 1500);
+      setSuccess('¡Usuario creado exitosamente! Redirigiendo...');
+      setTimeout(() => navigate('/users'), 1500);
+
     } catch (err: any) {
       console.error('Error en el registro:', err.response?.data);
       if (err.response?.data) {
@@ -119,6 +155,26 @@ function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
                 required
                 aria-label="Confirmar contraseña"
               />
+            </div>
+
+            <div className="form-group input-icon">
+              <i className="fas fa-shield-alt" aria-hidden="true"></i>
+              <select
+                multiple={true}
+                value={selectedGroups}
+                onChange={handleGroupsChange}
+                className="role-select" 
+              >
+                {availableGroups.length === 0 ? (
+                  <option disabled>Cargando roles...</option>
+                ) : (
+                  availableGroups.map(group => (
+                    <option key={group.id} value={group.name}>
+                      {group.name}
+                    </option>
+                  ))
+                )}
+              </select>
             </div>
 
             <button type="submit" className="btn-pemex">

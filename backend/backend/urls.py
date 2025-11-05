@@ -20,7 +20,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from login_register.views import RegisterView
+from login_register.views import RegisterView, UserListView, GroupListView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,4 +29,6 @@ urlpatterns = [
 
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/users/', UserListView.as_view(), name='user_list'),
+    path('api/groups/', GroupListView.as_view(), name='group-list'),
 ]

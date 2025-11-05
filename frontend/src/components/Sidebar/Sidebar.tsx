@@ -1,5 +1,8 @@
+// src/components/Sidebar/Sidebar.tsx
 import React, { useState } from 'react';
-import './Layout.css'; 
+import './Layout.css';
+// 1. Importa 'Link'
+import { Link } from 'react-router-dom';
 import {
   FiHome,
   FiBarChart2,
@@ -13,11 +16,12 @@ import {
 } from 'react-icons/fi';
 
 const navItems = [
+  // 2. Asegúrate que 'href' coincida con tus rutas
   { label: "Home", icon: <FiHome />, href: "/" },
   { label: "Dashboard", icon: <FiBarChart2 />, href: "/dashboard" },
   { label: "Projects", icon: <FiFolder />, href: "/projects" },
   { label: "Tasks", icon: <FiCheckSquare />, href: "/tasks" },
-  { label: "Users", icon: <FiUsers />, href: "/users" },
+  { label: "Users", icon: <FiUsers />, href: "/users" }, // Esta es la ruta clave
 ];
 
 type SidebarProps = {
@@ -25,27 +29,24 @@ type SidebarProps = {
 };
 
 function Sidebar({ onLogout }: SidebarProps) {
+  // ... (tu lógica de 'isOpen' y 'toggleSidebar' no cambia) ...
   const [isOpen, setIsOpen] = useState(true);
-
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
+  const toggleSidebar = () => setIsOpen(!isOpen);
 
   return (
     <div className={`sidebar ${isOpen ? 'open' : 'collapsed'}`}>
       <div className="sidebar-header">
-        <button className="toggle-btn" onClick={toggleSidebar}>
-          {isOpen ? <FiChevronsLeft /> : <FiChevronsRight />}
-        </button>
+        {/* ... (botón de toggle no cambia) ... */}
       </div>
 
       <ul className="sidebar-links">
         {navItems.map((item) => (
           <li key={item.label}>
-            <a href={item.href} className="nav-link">
+            {/* 3. Cambia <a> por <Link to=...> */}
+            <Link to={item.href} className="nav-link">
               <span className="icon">{item.icon}</span>
               <span className="text">{item.label}</span>
-            </a>
+            </Link>
           </li>
         ))}
       </ul>
@@ -56,10 +57,11 @@ function Sidebar({ onLogout }: SidebarProps) {
           <span className="text">Logout</span>
         </button>
 
-        <a href="/settings" className="nav-link">
+        {/* 4. Cambia el 'Settings' también a un <Link> */}
+        <Link to="/settings" className="nav-link">
           <span className="icon"><FiSettings /></span>
           <span className="text">Settings</span>
-        </a>
+        </Link>
       </div>
     </div>
   );

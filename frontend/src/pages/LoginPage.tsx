@@ -87,10 +87,6 @@ function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
               </a>
             </div>
 
-            <div className="divider">Opciones adicionales</div>
-            <p className="auth-switch">
-              ¿No tienes cuenta? <span onClick={onSwitchToRegister}>Regístrate aquí</span>
-            </p>
           </form>
         </div>
       </div>

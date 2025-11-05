@@ -233,3 +233,28 @@
 .auth-switch span:hover {
   text-decoration: underline;
 }
+
+.form-group select.role-select {
+  -webkit-appearance: none; 
+  -moz-appearance: none;
+  appearance: none;
+  background-color: #f7f7f7;
+  border: 1px solid #dadedf;
+  border-radius: 8px;
+  padding: 12px 12px 12px 40px; 
+  width: 100%;
+  font-family: inherit;
+  font-size: 16px;
+  color: #333;
+  height: 100px; 
+}
+
+.form-group select.role-select:focus {
+  outline: none;
+  border-color: #007bff; 
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.form-group select.role-select option {
+  padding: 8px;
+}

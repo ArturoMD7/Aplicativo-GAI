@@ -1,13 +1,14 @@
+// src/App.tsx
 import { useState, useEffect } from 'react';
 import LoginPage from './pages/LoginPage.tsx';
-import RegisterPage from './pages/RegisterPage.tsx';
+// 1. Ya no necesitamos RegisterPage aquí
 import HomePage from './pages/HomePage.tsx';
 import './App.css'; 
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [showLogin, setShowLogin] = useState(true);
-
+  // 2. 'showLogin' ya no es necesario, siempre es Login
+  
   useEffect(() => {
     const token = localStorage.getItem('access_token');
     if (token) {
@@ -22,32 +23,23 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-    
     setIsAuthenticated(false);
   };
-
-  // ------------------------------------------
-  // Lógica de Renderizado
-  // ------------------------------------------
 
   if (isAuthenticated) {
     return <HomePage onLogout={handleLogout} />;
   }
 
-  const layoutClass = isAuthenticated ? 'app-layout' : 'auth-layout';
-
+  // 3. Si no está autenticado, solo muestra el Login
   return (
-    <div className={layoutClass}>
-      {showLogin ? (
-        <LoginPage 
-          onSwitchToRegister={() => setShowLogin(false)}
-          onLoginSuccess={handleLoginSuccess} // 4. Pasa la nueva prop
-        />
-      ) : (
-        <RegisterPage 
-          onSwitchToLogin={() => setShowLogin(true)} 
-        />
-      )}
+    <div className="auth-layout">
+      <LoginPage 
+        onSwitchToRegister={() => {
+          // Esta prop ya no hace nada,
+          // podrías quitarla de LoginPage
+        }}
+        onLoginSuccess={handleLoginSuccess}
+      />
     </div>
   );
 }
