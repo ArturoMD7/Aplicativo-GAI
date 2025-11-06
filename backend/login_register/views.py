@@ -4,14 +4,22 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.shortcuts import render
 from rest_framework.permissions import IsAdminUser
-from rest_framework import generics
+from rest_framework import generics, permissions
 from rest_framework.permissions import AllowAny
 from .serializers import RegisterSerializer, UserSerializer, GroupSerializer, UserUpdateSerializer, ChangePasswordSerializer
 from django.contrib.auth.models import User, Group
 
+class IsAdminGroup(permissions.BasePermission):
+    """
+    Permiso personalizado que verifica si el usuario pertenece al grupo 'Admin'
+    """
+    def has_permission(self, request, view):
+        # Verificar si el usuario está autenticado y pertenece al grupo Admin
+        return request.user and request.user.is_authenticated and request.user.groups.filter(name='Admin').exists()
+
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
-    permission_classes = (IsAdminUser,) 
+    permission_classes = (IsAdminGroup,) 
     serializer_class = RegisterSerializer
 
 class UserListView(generics.ListAPIView):
@@ -21,12 +29,12 @@ class UserListView(generics.ListAPIView):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminGroup]
 
 class GroupListView(generics.ListAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminGroup]
 
 @api_view(['GET', 'PUT'])
 @permission_classes([IsAuthenticated])
@@ -65,7 +73,7 @@ def change_password(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([IsAdminUser])
+@permission_classes([IsAdminGroup])
 def user_detail(request, user_id):
     """
     Obtener, actualizar o eliminar un usuario específico
