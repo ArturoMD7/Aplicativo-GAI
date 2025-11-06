@@ -1,8 +1,7 @@
 // src/components/Sidebar/Sidebar.tsx
 import React, { useState } from 'react';
 import './Layout.css';
-// 1. Importa 'Link'
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   FiHome,
   FiBarChart2,
@@ -10,20 +9,14 @@ import {
   FiCheckSquare,
   FiUsers,
   FiSettings,
-  FiChevronsLeft,
-  FiChevronsRight,
   FiLogOut,
   FiFileText
 } from 'react-icons/fi';
 
 const navItems = [
-  // 2. Asegúrate que 'href' coincida con tus rutas
   { label: "Home", icon: <FiHome />, href: "/" },
-  { label: "Dashboard", icon: <FiBarChart2 />, href: "/dashboard" },
-  { label: "Projects", icon: <FiFolder />, href: "/projects" },
   { label: "Investigaciones", icon: <FiFileText />, href: "/investigaciones" },
-  { label: "Tasks", icon: <FiCheckSquare />, href: "/tasks" },
-  { label: "Users", icon: <FiUsers />, href: "/users" }, // Esta es la ruta clave
+  { label: "Users", icon: <FiUsers />, href: "/users" },
 ];
 
 type SidebarProps = {
@@ -31,39 +24,74 @@ type SidebarProps = {
 };
 
 function Sidebar({ onLogout }: SidebarProps) {
-  // ... (tu lógica de 'isOpen' y 'toggleSidebar' no cambia) ...
-  const [isOpen, setIsOpen] = useState(true);
-  const toggleSidebar = () => setIsOpen(!isOpen);
+  const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
+
+  const handleMouseEnter = () => {
+    setIsOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsOpen(false);
+  };
+
+  const isActiveLink = (href: string) => {
+    return location.pathname === href;
+  };
 
   return (
-    <div className={`sidebar ${isOpen ? 'open' : 'collapsed'}`}>
+    <div 
+      className={`sidebar ${isOpen ? 'open' : 'collapsed'}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Header simplificado - solo logo */}
       <div className="sidebar-header">
-        {/* ... (botón de toggle no cambia) ... */}
+        <div className="brand-logo">GAI</div>
       </div>
 
-      <ul className="sidebar-links">
-        {navItems.map((item) => (
-          <li key={item.label}>
-            {/* 3. Cambia <a> por <Link to=...> */}
-            <Link to={item.href} className="nav-link">
-              <span className="icon">{item.icon}</span>
-              <span className="text">{item.label}</span>
+      {/* Navegación principal */}
+      <nav className="sidebar-nav">
+        <ul className="sidebar-links">
+          {navItems.map((item) => (
+            <li key={item.label} className="nav-item">
+              <Link 
+                to={item.href} 
+                className={`nav-link ${isActiveLink(item.href) ? 'active' : ''}`}
+                data-tooltip={item.label}
+              >
+                <span className="icon">{item.icon}</span>
+                <span className="text">{item.label}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      
+      {/* Footer */}
+      <div className="sidebar-footer">
+        <ul className="footer-links">
+          <li className="nav-item">
+            <button 
+              className="nav-link" 
+              onClick={onLogout}
+              data-tooltip="Logout"
+            >
+              <span className="icon"><FiLogOut /></span>
+              <span className="text">Logout</span>
+            </button>
+          </li>
+          <li className="nav-item">
+            <Link 
+              to="/settings" 
+              className="nav-link"
+              data-tooltip="Settings"
+            >
+              <span className="icon"><FiSettings /></span>
+              <span className="text">Settings</span>
             </Link>
           </li>
-        ))}
-      </ul>
-      
-      <div className="sidebar-footer">
-        <button className="nav-link" onClick={onLogout}>
-          <span className="icon"><FiLogOut /></span>
-          <span className="text">Logout</span>
-        </button>
-
-        {/* 4. Cambia el 'Settings' también a un <Link> */}
-        <Link to="/settings" className="nav-link">
-          <span className="icon"><FiSettings /></span>
-          <span className="text">Settings</span>
-        </Link>
+        </ul>
       </div>
     </div>
   );

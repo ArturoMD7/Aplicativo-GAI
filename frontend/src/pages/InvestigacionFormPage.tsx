@@ -455,17 +455,26 @@ function InvestigacionFormPage() {
           
           <div className="form-row">
             <div className="form-group">
-              <label>Centro (CODUNI) *</label>
-              <select name="centro" value={formState.centro} onChange={handleChange} required>
-                <option value="">Seleccione...</option>
+              <label>Centro de Trabajo *</label>
+              <input 
+                type="text"
+                name="centro"
+                value={formState.centro}
+                onChange={handleChange}
+                list="centros-coduni"
+                required
+                maxLength={100}
+                placeholder="Escriba o seleccione el centro (CODUNI)"
+              />
+              <datalist id="centros-coduni">
                 {centrosCoduni.map(centro => (
-                  <option key={centro} value={centro}>{centro}</option>
+                  <option key={centro} value={centro} />
                 ))}
-              </select>
+              </datalist>
             </div>
-            
+
             <div className="form-group">
-              <label>Área/Depto (CODUNI) *</label>
+              <label>Área/Departamento*</label>
               <select name="area_depto" value={formState.area_depto} onChange={handleChange} required>
                 <option value="">Seleccione...</option>
                 {areasCoduni.map(area => (

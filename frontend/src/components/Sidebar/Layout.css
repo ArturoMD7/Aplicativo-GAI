@@ -1,15 +1,20 @@
+/* src/components/Sidebar/Sidebar.css */
+
 .sidebar {
   height: 100vh;
   position: sticky;
   top: 0;
   left: 0;
-  background-color: #282c34; /* Mismo color del form */
+  background: linear-gradient(180deg, #1e5b4f 0%, #002f2a 100%);
   color: #ffffff;
-  transition: width 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
   display: flex;
   flex-direction: column;
-  /* Evita que el sidebar se encoja */
-  flex-shrink: 0; 
+  flex-shrink: 0;
+  border-right: 1px solid #002f2a;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  overflow: hidden;
 }
 
 /* Estilo cuando está ABIERTO */
@@ -19,89 +24,192 @@
 
 /* Estilo cuando está COLAPSADO */
 .sidebar.collapsed {
-  width: 80px;
+  width: 70px;
 }
 
-/* Encabezado del Sidebar (con el botón de toggle) */
+/* Encabezado del Sidebar - Simplificado sin botón */
 .sidebar-header {
-  padding: 20px;
+  padding: 24px 20px;
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* Mueve el botón a la derecha */
+  justify-content: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
 }
 
-/* Botón para abrir/cerrar */
-.toggle-btn {
-  background: none;
-  border: none;
-  color: #61dafb;
-  cursor: pointer;
-  font-size: 1.5rem; /* 24px */
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  background: #ffffff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #002f2a;
+  font-size: 16px;
+  font-family: 'Arial', sans-serif;
 }
 
-/* Contenedor de los links de navegación */
+/* Contenedor de navegación */
+.sidebar-nav {
+  flex-grow: 1;
+  padding: 20px 0;
+  overflow-y: auto;
+}
+
+/* Lista de links */
 .sidebar-links {
   list-style: none;
   padding: 0;
   margin: 0;
-  flex-grow: 1; /* Ocupa el espacio disponible */
 }
 
-/* Cada link */
+/* Items de navegación */
+.nav-item {
+  margin: 4px 12px;
+}
+
 .nav-link {
   display: flex;
   align-items: center;
-  color: #fff;
+  color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
-  padding: 15px 20px;
-  margin: 5px 10px;
+  padding: 14px 16px;
   border-radius: 8px;
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
+  position: relative;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  font-size: 0.95rem;
 }
 
 .nav-link:hover {
-  background-color: #3a3f47;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  transform: translateX(4px);
+}
+
+.nav-link.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border-left: 4px solid #ffffff;
 }
 
 .nav-link .icon {
-  font-size: 1.25rem; /* 20px */
+  font-size: 1.3rem;
+  min-width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
 }
 
-/* El texto del link */
+.nav-link:hover .icon {
+  transform: scale(1.1);
+}
+
 .nav-link .text {
-  margin-left: 20px;
-  white-space: nowrap; /* Evita que el texto se rompa */
+  margin-left: 16px;
+  white-space: nowrap;
+  font-weight: 500;
+  transition: all 0.2s ease;
   opacity: 1;
-  transition: opacity 0.2s;
 }
 
-/* Oculta el texto cuando está colapsado */
 .sidebar.collapsed .nav-link .text {
   opacity: 0;
   display: none;
 }
 
-/* Centra el ícono cuando está colapsado */
-.sidebar.collapsed .nav-link {
-  justify-content: center;
-}
-
-.sidebar.collapsed .sidebar-header {
-  justify-content: center;
-}
-
+/* Footer del sidebar */
 .sidebar-footer {
-  /* Estilos para el footer si los necesitas */
+  padding: 16px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
 }
 
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Tooltip para sidebar colapsado */
+.sidebar.collapsed .nav-link {
+  position: relative;
+  justify-content: center;
+}
+
+.sidebar.collapsed .nav-link::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1a1a1a;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  margin-left: 10px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-weight: 500;
+}
+
+.sidebar.collapsed .nav-link:hover::after {
+  opacity: 1;
+}
+
+/* Scrollbar personalizado */
+.sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Efecto de hover para el sidebar completo */
+.sidebar {
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Asegurar que los botones se vean consistentes */
 button.nav-link {
-  background: none;
-  border: none;
   cursor: pointer;
-  width: 100%; 
-  text-align: left; 
-  padding: 0; 
-  margin: 0; 
-  color: inherit;
-  font: inherit;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    transform: translateX(-100%);
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+    width: 260px;
+  }
+  
+  .sidebar.collapsed {
+    transform: translateX(-100%);
+  }
 }

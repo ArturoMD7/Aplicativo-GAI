@@ -11,6 +11,8 @@ import UsersPage from './UserPage';
 import RegisterPage from './RegisterPage'; 
 import InvestigacionListPage from './InvestigacionListPage';
 import InvestigacionFormPage from './InvestigacionFormPage';
+import EditUserPage from './EditUserPage';
+import Settings from './Settings';
 
 type HomePageProps = {
   onLogout: () => void; 
@@ -42,6 +44,9 @@ function HomePage({ onLogout }: HomePageProps) {
           {/* --- 2. AÑADE ESTAS NUEVAS RUTAS --- */}
           {/* El dashboard/listado de investigaciones */}
           <Route path="/investigaciones" element={<InvestigacionListPage />} />
+          <Route path="/settings" element={<Settings />} />
+
+          <Route path="/admin/edit-user/:userId" element={<EditUserPage />} />
           
           {/* El formulario para crear una nueva */}
           <Route path="/investigaciones/nuevo" element={<InvestigacionFormPage />} />

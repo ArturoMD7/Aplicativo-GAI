@@ -1,9 +1,8 @@
+// src/components/Register/RegisterPage.tsx
 import React, { useEffect, useState, type FormEvent } from 'react';
 import apiClient from '../api/apliClient.ts';
-import '../styles/AuthForms.css';
-import pemexLogo from '../assets/pemexlogo.png';
-import '@fortawesome/fontawesome-free/css/all.min.css';
-import { useNavigate } from 'react-router-dom';
+import '../styles/AdminRegister.css';
+import { useNavigate, Link } from 'react-router-dom';
 
 type Group = {
   id: number;
@@ -24,40 +23,60 @@ function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [loadingGroups, setLoadingGroups] = useState(true);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchGroups = async () => {
       try {
+        setLoadingGroups(true);
         const response = await apiClient.get('/api/groups/');
         setAvailableGroups(response.data);
       } catch (err) {
         console.error('No se pudieron cargar los roles', err);
         setError('Error al cargar la lista de roles. Verifica que eres admin.');
+      } finally {
+        setLoadingGroups(false);
       }
     };
     fetchGroups();
   }, []);
 
-  const handleGroupsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const options = e.target.options;
-    const selected: string[] = [];
-    for (let i = 0; i < options.length; i++) {
-      if (options[i].selected) {
-        selected.push(options[i].value);
+  const handleRoleToggle = (groupName: string) => {
+    setSelectedGroups(prev => {
+      if (prev.includes(groupName)) {
+        return prev.filter(name => name !== groupName);
+      } else {
+        return [...prev, groupName];
       }
-    }
-    setSelectedGroups(selected);
+    });
   };
-  
+
+  const handleSelectAll = () => {
+    if (selectedGroups.length === availableGroups.length) {
+      setSelectedGroups([]);
+    } else {
+      setSelectedGroups(availableGroups.map(group => group.name));
+    }
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setLoading(true);
 
     if (password !== password2) {
       setError('Las contraseñas no coinciden');
+      setLoading(false);
+      return;
+    }
+
+    if (selectedGroups.length === 0) {
+      setError('Debe seleccionar al menos un rol para el usuario');
+      setLoading(false);
       return;
     }
 
@@ -82,113 +101,175 @@ function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
       } else {
         setError('Ocurrió un error. Intenta de nuevo.');
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-card-body">
-          <div className="auth-brand">
-            <img src={pemexLogo} alt="Pemex" />
-            <h3 className="titulo-pemex">Crear Cuenta</h3>
-            <p className="auth-subtitle">Registra tus datos para continuar</p>
-          </div>
+    <div className="admin-register-container">
+      <div className="admin-register-header">
+        <h1>Panel de Administración</h1>
+        <p>Registrar nuevo usuario</p>
+      </div>
 
-          {error && <div className="alert alert-danger">{error}</div>}
-          {success && <div className="alert alert-success">{success}</div>}
+      <div className="admin-register-form-container">
+        {error && <div className="admin-alert admin-alert-error">{error}</div>}
+        {success && <div className="admin-alert admin-alert-success">{success}</div>}
 
-          <form className="auth-form" onSubmit={handleSubmit}>
-            <div className="form-group input-icon">
-              <i className="fas fa-envelope" aria-hidden="true"></i>
+        <form className="admin-register-form" onSubmit={handleSubmit}>
+          <div className="admin-form-group">
+            <label htmlFor="email">Correo electrónico *</label>
+            <div className="admin-input-with-icon">
+              <i className="fas fa-envelope"></i>
               <input
                 type="email"
+                id="email"
                 value={email}
-                placeholder="Correo electrónico"
+                placeholder="usuario@empresa.com"
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                aria-label="Correo electrónico"
               />
             </div>
+          </div>
 
-            <div className="form-group input-icon">
-              <i className="fas fa-user" aria-hidden="true"></i>
-              <input
-                type="text"
-                value={firstName}
-                placeholder="Nombre (opcional)"
-                onChange={(e) => setFirstName(e.target.value)}
-                aria-label="Nombre"
-              />
+          <div className="admin-form-row">
+            <div className="admin-form-group">
+              <label htmlFor="firstName">Nombre</label>
+              <div className="admin-input-with-icon">
+                <i className="fas fa-user"></i>
+                <input
+                  type="text"
+                  id="firstName"
+                  value={firstName}
+                  placeholder="Nombre"
+                  onChange={(e) => setFirstName(e.target.value)}
+                />
+              </div>
+              <div className="admin-form-note">Opcional</div>
             </div>
 
-            <div className="form-group input-icon">
-              <i className="fas fa-user-tag" aria-hidden="true"></i>
-              <input
-                type="text"
-                value={lastName}
-                placeholder="Apellidos (opcional)"
-                onChange={(e) => setLastName(e.target.value)}
-                aria-label="Apellidos"
-              />
+            <div className="admin-form-group">
+              <label htmlFor="lastName">Apellidos</label>
+              <div className="admin-input-with-icon">
+                <i className="fas fa-user-tag"></i>
+                <input
+                  type="text"
+                  id="lastName"
+                  value={lastName}
+                  placeholder="Apellidos"
+                  onChange={(e) => setLastName(e.target.value)}
+                />
+              </div>
+              <div className="admin-form-note">Opcional</div>
             </div>
+          </div>
 
-            <div className="form-group input-icon">
-              <i className="fas fa-lock" aria-hidden="true"></i>
+          <div className="admin-form-group">
+            <label htmlFor="password">Contraseña *</label>
+            <div className="admin-input-with-icon">
+              <i className="fas fa-lock"></i>
               <input
                 type="password"
+                id="password"
                 value={password}
-                placeholder="Contraseña (mín. 8 caracteres)"
+                placeholder="Mínimo 8 caracteres"
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                aria-label="Contraseña"
+                minLength={8}
               />
             </div>
+          </div>
 
-            <div className="form-group input-icon">
-              <i className="fas fa-lock-open" aria-hidden="true"></i>
+          <div className="admin-form-group">
+            <label htmlFor="password2">Confirmar contraseña *</label>
+            <div className="admin-input-with-icon">
+              <i className="fas fa-lock-open"></i>
               <input
                 type="password"
+                id="password2"
                 value={password2}
-                placeholder="Confirmar contraseña"
+                placeholder="Repite la contraseña"
                 onChange={(e) => setPassword2(e.target.value)}
                 required
-                aria-label="Confirmar contraseña"
               />
             </div>
+          </div>
 
-            <div className="form-group input-icon">
-              <i className="fas fa-shield-alt" aria-hidden="true"></i>
-              <select
-                multiple={true}
-                value={selectedGroups}
-                onChange={handleGroupsChange}
-                className="role-select" 
-              >
-                {availableGroups.length === 0 ? (
-                  <option disabled>Cargando roles...</option>
-                ) : (
-                  availableGroups.map(group => (
-                    <option key={group.id} value={group.name}>
-                      {group.name}
-                    </option>
-                  ))
-                )}
-              </select>
+          <div className="admin-form-group">
+            <label>
+              Roles del usuario *
+              <span style={{fontSize: '0.8rem', fontWeight: 'normal', marginLeft: '8px', color: '#666'}}>
+                ({selectedGroups.length} seleccionados)
+              </span>
+            </label>
+            
+            {availableGroups.length > 0 && (
+              <div style={{marginBottom: '12px'}}>
+                <button
+                  type="button"
+                  onClick={handleSelectAll}
+                  style={{
+                    background: 'none',
+                    border: '1px solid #840016',
+                    color: '#840016',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                    fontWeight: '500'
+                  }}
+                >
+                  {selectedGroups.length === availableGroups.length ? 'Deseleccionar todos' : 'Seleccionar todos'}
+                </button>
+              </div>
+            )}
+
+            <div className="admin-roles-container">
+              {loadingGroups ? (
+                <div className="admin-roles-loading">
+                  <i className="fas fa-spinner fa-spin"></i> Cargando roles...
+                </div>
+              ) : availableGroups.length === 0 ? (
+                <div className="admin-roles-error">
+                  No hay roles disponibles
+                </div>
+              ) : (
+                <div className="admin-roles-grid">
+                  {availableGroups.map((group) => (
+                    <div
+                      key={group.id}
+                      className={`admin-role-option ${
+                        selectedGroups.includes(group.name) ? 'selected' : ''
+                      }`}
+                      onClick={() => handleRoleToggle(group.name)}
+                    >
+                      <div className="admin-role-checkbox"></div>
+                      <span className="admin-role-label">{group.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
+            <div className="admin-form-note">
+              Selecciona uno o más roles para el usuario
+            </div>
+          </div>
 
-            <button type="submit" className="btn-pemex">
-              <i className="fas fa-user-plus" aria-hidden="true"></i>
-              Registrarse
-            </button>
+          <button 
+            type="submit" 
+            className="admin-submit-button" 
+            disabled={loading || loadingGroups}
+          >
+            <i className="fas fa-user-plus"></i>
+            {loading ? 'Creando Usuario...' : 'Crear Usuario'}
+          </button>
 
-            <div className="divider">Opciones adicionales</div>
-
-            <p className="auth-switch">
-              ¿Ya tienes cuenta? <span onClick={onSwitchToLogin}>Inicia sesión</span>
-            </p>
-          </form>
-        </div>
+          <Link to="/users" className="admin-back-button">
+            <i className="fas fa-arrow-left"></i>
+            Volver a Gestión de Usuarios
+          </Link>
+        </form>
       </div>
     </div>
   );

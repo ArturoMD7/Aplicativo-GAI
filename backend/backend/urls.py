@@ -20,7 +20,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from login_register.views import RegisterView, UserListView, GroupListView
+from login_register.views import RegisterView, UserListView, GroupListView, user_profile, change_password, user_detail
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,6 +31,9 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/users/', UserListView.as_view(), name='user_list'),
     path('api/groups/', GroupListView.as_view(), name='group-list'),
+    path('api/user/<int:user_id>/', user_detail, name='user_detail'),
+    path('api/user/profile/', user_profile, name='user_profile'),
+    path('api/user/change-password/', change_password, name='change_password'),
 
     path('api/investigaciones/', include('investigaciones.urls')),
 ]
