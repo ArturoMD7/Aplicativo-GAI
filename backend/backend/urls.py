@@ -31,4 +31,6 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/users/', UserListView.as_view(), name='user_list'),
     path('api/groups/', GroupListView.as_view(), name='group-list'),
+
+    path('api/investigaciones/', include('investigaciones.urls')),
 ]

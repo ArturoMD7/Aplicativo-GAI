@@ -8,7 +8,9 @@ import '../styles/HomePage.css';
 // 2. Importa tus nuevas páginas
 import WelcomePage from './WelcomePage';
 import UsersPage from './UserPage';
-import RegisterPage from './RegisterPage'; // ¡La reusamos aquí!
+import RegisterPage from './RegisterPage'; 
+import InvestigacionListPage from './InvestigacionListPage';
+import InvestigacionFormPage from './InvestigacionFormPage';
 
 type HomePageProps = {
   onLogout: () => void; 
@@ -34,11 +36,19 @@ function HomePage({ onLogout }: HomePageProps) {
           <Route 
             path="/admin/register-user" 
             element={<RegisterPage onSwitchToLogin={() => {
-              // Ya no necesita "switch to login",
-              // quizás debería navegar a /users
-              // navigate('/users');
             }} />} 
           />
+
+          {/* --- 2. AÑADE ESTAS NUEVAS RUTAS --- */}
+          {/* El dashboard/listado de investigaciones */}
+          <Route path="/investigaciones" element={<InvestigacionListPage />} />
+          
+          {/* El formulario para crear una nueva */}
+          <Route path="/investigaciones/nuevo" element={<InvestigacionFormPage />} />
+          
+          {/* El formulario para editar una existente (para el futuro) */}
+          <Route path="/investigaciones/editar/:id" element={<InvestigacionFormPage />} />
+          {/* ---------------------------------- */}
           
           {/* Rutas de ejemplo para el futuro */}
           <Route path="/dashboard" element={<h1>Dashboard</h1>} />

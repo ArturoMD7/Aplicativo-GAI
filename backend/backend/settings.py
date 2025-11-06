@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-lfcy#d&=!fq=$gb8wizf^opqnb#f9vwiy84ek#b#)38opw4o76
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    'login_register'
+    'login_register',
+    'investigaciones',
 ]
 
 REST_FRAMEWORK = {
@@ -64,6 +65,7 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173', 
     'http://127.0.0.1:5173',
+    'http://192.168.1.64:5173'
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -93,6 +95,16 @@ DATABASES = {
     'default': {
         'ENGINE': config('DB_ENGINE'),
         'NAME': config('DB_NAME'),
+        'HOST': config('DB_HOST'),
+        'PORT': '',
+        'OPTIONS': {
+            'driver': 'ODBC Driver 17 for SQL Server',
+            'trusted_connection': config('DB_TRUSTED_CONNECTION'),
+        },
+    },
+    'pemex': {
+        'ENGINE': 'mssql',
+        'NAME': 'pemex',
         'HOST': config('DB_HOST'),
         'PORT': '',
         'OPTIONS': {

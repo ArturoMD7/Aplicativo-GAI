@@ -12,7 +12,8 @@ import {
   FiSettings,
   FiChevronsLeft,
   FiChevronsRight,
-  FiLogOut 
+  FiLogOut,
+  FiFileText
 } from 'react-icons/fi';
 
 const navItems = [
@@ -20,6 +21,7 @@ const navItems = [
   { label: "Home", icon: <FiHome />, href: "/" },
   { label: "Dashboard", icon: <FiBarChart2 />, href: "/dashboard" },
   { label: "Projects", icon: <FiFolder />, href: "/projects" },
+  { label: "Investigaciones", icon: <FiFileText />, href: "/investigaciones" },
   { label: "Tasks", icon: <FiCheckSquare />, href: "/tasks" },
   { label: "Users", icon: <FiUsers />, href: "/users" }, // Esta es la ruta clave
 ];
