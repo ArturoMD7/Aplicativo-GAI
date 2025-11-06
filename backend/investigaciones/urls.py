@@ -3,16 +3,16 @@ from rest_framework.routers import DefaultRouter
 from . import views
 
 router = DefaultRouter()
-router.register(r'', views.InvestigacionViewSet, basename='investigacion')
+router.register(r'investigaciones', views.InvestigacionViewSet, basename='investigacion')
 
 urlpatterns = [
     path('', include(router.urls)),
     
-    # Endpoints adicionales para opciones y búsquedas
-    path('opciones/', views.InvestigacionViewSet.as_view({'get': 'opciones'}), name='investigacion-opciones'),
-    path('buscar-empleado/', views.InvestigacionViewSet.as_view({'get': 'buscar_empleado'}), name='buscar-empleado'),
-    path('centros-trabajo/', views.InvestigacionViewSet.as_view({'get': 'centros_trabajo'}), name='centros-trabajo'),
-    path('centros-coduni/', views.InvestigacionViewSet.as_view({'get': 'centros_coduni'}), name='centros-coduni'),
-    path('areas-por-centro/', views.InvestigacionViewSet.as_view({'get': 'areas_por_centro'}), name='areas-por-centro'),
-    path('estadisticas/', views.InvestigacionViewSet.as_view({'get': 'estadisticas'}), name='estadisticas'),
+    
+    path('opciones/', views.opciones_view, name='investigacion-opciones'),
+    path('buscar-empleado/', views.buscar_empleado_view, name='buscar-empleado'),
+    path('centros-trabajo/', views.centros_trabajo_view, name='centros-trabajo'),
+    path('centros-coduni/', views.centros_coduni_view, name='centros-coduni'),
+    path('areas-por-centro/', views.areas_por_centro_view, name='areas-por-centro'),
+    path('estadisticas/', views.estadisticas_view, name='estadisticas'),
 ]

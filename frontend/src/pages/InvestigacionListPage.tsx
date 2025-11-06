@@ -11,14 +11,14 @@ function InvestigacionListPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Carga la lista de investigaciones
     const fetchInvestigaciones = async () => {
       setLoading(true);
       try {
-        const response = await apiClient.get('/api/investigaciones/');
+        const response = await apiClient.get('/api/investigaciones/investigaciones/');
         setInvestigaciones(response.data); 
       } catch (err) {
         setError('No se pudo cargar la lista de investigaciones.');
+        console.error('Error fetching investigaciones:', err);
       } finally {
         setLoading(false);
       }

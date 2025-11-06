@@ -17,14 +17,14 @@ export interface Investigador extends BasePersona {}
 export interface Involucrado extends BasePersona {
   nivel: string;
   edad: number;
-  antiguedad: number; // Asumo que se envía como número
+  antiguedad: number;
   rfc: string;
   curp: string;
   direccion: string;
 }
 
 export interface Testigo extends BasePersona {
-  nivel: string; // Testigo no tenía 'nivel' en tu modelo, pero Involucrado sí. Lo añado por si acaso.
+  nivel: string;
   direccion: string;
   subordinacion: boolean;
 }
@@ -45,8 +45,10 @@ export interface InvestigacionFormState {
   gravedad: string;
   
   // Sección 2
-  fecha_reporte: string; // Usamos string para <input type="date">
+  numero_reporte: string; // AÑADIR ESTA PROPIEDAD FALTANTE
+  fecha_reporte: string;
   fecha_conocimiento_hechos: string;
+  fecha_prescripcion: string;
   economica: boolean;
   
   // Sección 3
@@ -59,14 +61,13 @@ export interface InvestigacionFormState {
   centro_trabajo: string;
   antecedentes: string;
   
-  // Relaciones (los arrays anidados)
+  // Relaciones
   contactos: Contacto[];
   investigadores: Investigador[];
   involucrados: Involucrado[];
   testigos: Testigo[];
 }
 
-// Tipo para las opciones de los Dropdowns
 export interface OpcionesDropdowns {
   direcciones: string[];
   procedencias: string[];
@@ -76,7 +77,6 @@ export interface OpcionesDropdowns {
   gerencias: string[];
 }
 
-// Tipo para el listado (ListSerializer)
 export interface InvestigacionListado {
   id: number;
   numero_reporte: string;
@@ -90,4 +90,18 @@ export interface InvestigacionListado {
   total_involucrados: number;
   total_testigos: number;
   created_at: string;
+}
+
+// Tipo para empleado buscado (puedes eliminar la importación de Empleado)
+export interface EmpleadoBuscado {
+  ficha: string;
+  nombre: string;
+  nivel: string;
+  categoria: string;
+  puesto: string;
+  edad: number;
+  antiguedad: number;
+  rfc: string;
+  curp: string;
+  direccion: string;
 }
