@@ -1,6 +1,8 @@
 from rest_framework import serializers
+from django.utils import timezone
 from django.contrib.auth.models import User
 from .models import Investigacion, Contacto, Investigador, Involucrado, Testigo
+
 
 # Serializers para modelos relacionados
 class ContactoSerializer(serializers.ModelSerializer):
@@ -180,6 +182,11 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         involucrados_data = validated_data.pop('involucrados', [])
         testigos_data = validated_data.pop('testigos', [])
         
+        # Generar número de reporte automáticamente
+        gerencia_responsable = validated_data.get('gerencia_responsable')
+        if gerencia_responsable:
+            validated_data['numero_reporte'] = self.generar_numero_reporte(gerencia_responsable)
+        
         # Crear investigación principal
         investigacion = Investigacion.objects.create(**validated_data)
         
@@ -190,6 +197,33 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         self._create_relations(investigacion, testigos_data, Testigo)
         
         return investigacion
+    
+    def generar_numero_reporte(self, gerencia_responsable):
+        """Genera número de reporte automático basado en la gerencia"""
+        hoy = timezone.now()
+        año = hoy.year
+        
+        # Determinar prefijo basado en gerencia
+        prefijos = {
+            'Norte': 'GRRLRH-NTE',
+            'Sur': 'GRRLRH-SUR', 
+            'Sureste': 'GRRLRH-SURE',
+            'Altiplano': 'GRRLRH-ALT',
+            'Oficinas Centrales': 'GAI'
+        }
+        
+        prefijo = prefijos.get(gerencia_responsable, 'GAI')
+        
+        # Contar investigaciones existentes este año para esta gerencia
+        from .models import Investigacion
+        conteo = Investigacion.objects.filter(
+            gerencia_responsable=gerencia_responsable,
+            created_at__year=año
+        ).count()
+        
+        numero = str(conteo + 1).zfill(3)
+        
+        return f"{prefijo}/{numero}/{año}"
 
     def update(self, instance, validated_data):
         # Extraer datos de relaciones

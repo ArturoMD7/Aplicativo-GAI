@@ -138,7 +138,7 @@ function InvestigacionFormPage() {
     const fetchInvestigacion = async (investigacionId: string) => {
       try {
         setLoading(true);
-        const response = await apiClient.get(`/api/investigaciones/${investigacionId}/`);
+        const response = await apiClient.get(`/api/investigaciones/investigaciones/${investigacionId}/`);
         setFormState(response.data);
       } catch (err) {
         setError('No se pudo cargar la investigación.');
@@ -337,12 +337,12 @@ function InvestigacionFormPage() {
       };
 
       if (isEditMode) {
-        await apiClient.put(`/api/investigaciones/${id}/`, dataToSubmit);
-        setSuccess('Investigación actualizada exitosamente.');
-      } else {
-        await apiClient.post('/api/investigaciones/', dataToSubmit);
-        setSuccess('Investigación creada exitosamente. Redirigiendo...');
-      }
+      await apiClient.put(`/api/investigaciones/investigaciones/${id}/`, dataToSubmit);
+      setSuccess('Investigación actualizada exitosamente.');
+    } else {
+      await apiClient.post('/api/investigaciones/investigaciones/', dataToSubmit);
+      setSuccess('Investigación creada exitosamente. Redirigiendo...');
+    }
       
       setTimeout(() => navigate('/investigaciones'), 1500);
 

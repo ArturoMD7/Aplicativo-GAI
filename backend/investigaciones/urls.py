@@ -8,7 +8,6 @@ router.register(r'investigaciones', views.InvestigacionViewSet, basename='invest
 urlpatterns = [
     path('', include(router.urls)),
     
-    
     path('opciones/', views.opciones_view, name='investigacion-opciones'),
     path('buscar-empleado/', views.buscar_empleado_view, name='buscar-empleado'),
     path('centros-trabajo/', views.centros_trabajo_view, name='centros-trabajo'),
