@@ -395,3 +395,15 @@
     text-align: left;
   }
 }
+
+/* Estilos específicos para el botón en el formulario */
+.admin-personas-section .btn-icon {
+  min-width: auto !important;
+  padding: 6px 10px !important;
+  font-size: 0.85rem !important;
+}
+
+.admin-personas-section .btn-icon-small {
+  padding: 4px 8px !important;
+  min-height: 30px !important;
+}

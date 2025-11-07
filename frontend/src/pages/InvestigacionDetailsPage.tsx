@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import ButtonIcon from '../components/Buttons/ButtonIcon'; 
 import type { InvestigacionFormState } from '../types/investigacion.types';
-import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload } from 'react-icons/fi';
+import { FiEdit} from 'react-icons/fi';
 import { FaArrowLeft } from "react-icons/fa";
 import '../styles/InvestigacionaDetails.css';
 
@@ -152,6 +152,61 @@ function InvestigacionDetailsPage() {
       </div>
 
       <div className="admin-register-form-container">
+
+        {/* SECCIÓN 3: FECHAS IMPORTANTES */}
+        <section className="admin-form-section">
+          <h2 className="admin-section-title">
+            <i className="fas fa-calendar-alt"></i>
+            Fechas Importantes
+          </h2>
+          
+          <div className="admin-dates-grid">
+            <div className="admin-date-card">
+              <i className="fas fa-file-upload"></i>
+              <div>
+                <h4>Fecha de Reporte</h4>
+                <p>{formatDate(investigacion.fecha_reporte)}</p>
+              </div>
+            </div>
+            
+            <div className="admin-date-card">
+              <i className="fas fa-eye"></i>
+              <div>
+                <h4>Conocimiento de Hechos</h4>
+                <p>{formatDate(investigacion.fecha_conocimiento_hechos)}</p>
+              </div>
+            </div>
+            
+            <div className="admin-date-card">
+              <i className="fas fa-calendar-day"></i>
+              <div>
+                <h4>Fecha del Evento</h4>
+                <p>{formatDate(investigacion.fecha_evento)}</p>
+              </div>
+            </div>
+            
+            <div className="admin-date-card">
+              <i className="fas fa-clock"></i>
+              <div>
+                <h4>Fecha de Prescripción</h4>
+                <p>{formatDate(investigacion.fecha_prescripcion)}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="admin-form-group">
+            <div className="admin-checkbox-container">
+              <input 
+                type="checkbox" 
+                checked={investigacion.economica} 
+                readOnly 
+                className="admin-readonly-checkbox"
+              />
+              <label>¿Implica repercusión económica?</label>
+            </div>
+          </div>
+        </section>
+
         {/* SECCIÓN 1: INFORMACIÓN GENERAL */}
         <section className="admin-form-section">
           <h2 className="admin-section-title">
@@ -308,60 +363,6 @@ function InvestigacionDetailsPage() {
           )}
         </section>
 
-        {/* SECCIÓN 3: FECHAS IMPORTANTES */}
-        <section className="admin-form-section">
-          <h2 className="admin-section-title">
-            <i className="fas fa-calendar-alt"></i>
-            Fechas Importantes
-          </h2>
-          
-          <div className="admin-dates-grid">
-            <div className="admin-date-card">
-              <i className="fas fa-file-upload"></i>
-              <div>
-                <h4>Fecha de Reporte</h4>
-                <p>{formatDate(investigacion.fecha_reporte)}</p>
-              </div>
-            </div>
-            
-            <div className="admin-date-card">
-              <i className="fas fa-eye"></i>
-              <div>
-                <h4>Conocimiento de Hechos</h4>
-                <p>{formatDate(investigacion.fecha_conocimiento_hechos)}</p>
-              </div>
-            </div>
-            
-            <div className="admin-date-card">
-              <i className="fas fa-calendar-day"></i>
-              <div>
-                <h4>Fecha del Evento</h4>
-                <p>{formatDate(investigacion.fecha_evento)}</p>
-              </div>
-            </div>
-            
-            <div className="admin-date-card">
-              <i className="fas fa-clock"></i>
-              <div>
-                <h4>Fecha de Prescripción</h4>
-                <p>{formatDate(investigacion.fecha_prescripcion)}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="admin-form-group">
-            <div className="admin-checkbox-container">
-              <input 
-                type="checkbox" 
-                checked={investigacion.economica} 
-                readOnly 
-                className="admin-readonly-checkbox"
-              />
-              <label>¿Implica repercusión económica?</label>
-            </div>
-          </div>
-        </section>
-
         {/* SECCIÓN 4: GERENCIA RESPONSABLE */}
         <section className="admin-form-section">
           <h2 className="admin-section-title">
@@ -491,7 +492,7 @@ function InvestigacionDetailsPage() {
             text="Editar Investigación"
             size="medium"
           />
-          
+
         </div>
       </div>
     </div>

@@ -10,7 +10,10 @@ import type {
   Testigo,
   EmpleadoBuscado 
 } from '../types/investigacion.types';
-import '../styles/InvestigacionForm.css';
+import '../styles/InvestigacionaDetails.css'; 
+import ButtonIcon from '../components/Buttons/ButtonIcon';
+import { FiEdit} from 'react-icons/fi';
+import { FaArrowLeft } from "react-icons/fa";
 
 const initialState: InvestigacionFormState = {
   nombre_corto: '',
@@ -376,631 +379,845 @@ function InvestigacionFormPage() {
     }
   };
 
-  if (!opciones && !isEditMode) return <div>Cargando formulario...</div>;
-  if (loading) return <div>Guardando...</div>;
+  if (!opciones && !isEditMode) return <div className="admin-register-container">Cargando formulario...</div>;
+  if (loading) return <div className="admin-register-container">Guardando...</div>;
 
   return (
-    <div className="form-page">
-      <h2>{isEditMode ? 'Editar' : 'Crear'} Registro de Investigación</h2>
-      <form onSubmit={handleSubmit} className="investigacion-form">
-        
-        {error && (
-          <div className="form-error">
-            <strong>Errores encontrados:</strong>
-            <pre>{error}</pre>
-          </div>
-        )}
-        {success && <div className="form-success">{success}</div>}
+    <div className="admin-register-container">
+      <div className="admin-register-header">
+        <h1>{isEditMode ? 'Editar' : 'Crear'} Registro de Investigación</h1>
+        <p>Complete la información requerida para {isEditMode ? 'actualizar' : 'crear'} el registro</p>
+      </div>
 
-        {/* --- SECCIÓN 1: REGISTRO DE INVESTIGACIÓN --- */}
-        <fieldset>
-          <legend>Sección 1: Registro de Investigación</legend>
-          
-          <div className="form-group">
-            <label>Nombre Corto *</label>
-            <input 
-              type="text" 
-              name="nombre_corto" 
-              value={formState.nombre_corto} 
-              onChange={handleChange} 
-              required 
-              maxLength={50}
-              placeholder="Máximo 50 caracteres"
-            />
-          </div>
-          
-          <div className="form-group">
-            <label>Descripción General *</label>
-            <textarea 
-              name="descripcion_general" 
-              value={formState.descripcion_general} 
-              onChange={handleChange} 
-              required
-              maxLength={140}
-              placeholder="Máximo 140 caracteres"
-            />
-          </div>
-
-          <div className="form-row">
-            <div className="form-group">
-              <label>Dirección *</label>
-              <select name="direccion" value={formState.direccion} onChange={handleChange} required>
-                <option value="">Seleccione...</option>
-                {opciones?.direcciones.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
+      <div className="admin-register-form-container">
+        <form onSubmit={handleSubmit}>
+          {error && (
+            <div className="admin-alert admin-alert-error">
+              <strong>Errores encontrados:</strong>
+              <pre>{error}</pre>
             </div>
+          )}
+          {success && <div className="admin-alert admin-alert-success">{success}</div>}
+
+          {/* --- SECCIÓN 1: INFORMACIÓN GENERAL --- */}
+          <section className="admin-form-section">
+            <h2 className="admin-section-title">
+              <i className="fas fa-info-circle"></i>
+              Información General
+            </h2>
             
-            <div className="form-group">
-              <label>Procedencia *</label>
-              <select name="procedencia" value={formState.procedencia} onChange={handleChange} required>
-                <option value="">Seleccione...</option>
-                {opciones?.procedencias.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
-            </div>
-          </div>
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>Nombre Corto *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-heading"></i>
+                  <input 
+                    type="text" 
+                    name="nombre_corto" 
+                    value={formState.nombre_corto} 
+                    onChange={handleChange} 
+                    required 
+                    maxLength={50}
+                    placeholder="Máximo 50 caracteres"
+                  />
+                </div>
+              </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label>Régimen *</label>
-              <select name="regimen" value={formState.regimen} onChange={handleChange} required>
-                <option value="">Seleccione...</option>
-                {opciones?.regimenes.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-              </select>
+              <div className="admin-form-group">
+                <label>Número de Reporte</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-hashtag"></i>
+                  <input 
+                    type="text" 
+                    value={formState.numero_reporte || 'No asignado'} 
+                    readOnly 
+                    className="admin-readonly-field"
+                  />
+                </div>
+              </div>
             </div>
+
+            <div className="admin-form-group">
+              <label>Descripción General *</label>
+              <div className="admin-input-with-icon">
+                <i className="fas fa-heading"></i>
+                <input
+                  name="descripcion_general" 
+                  value={formState.descripcion_general} 
+                  onChange={handleChange} 
+                  required
+                  maxLength={140}
+                  placeholder="Máximo 140 caracteres"
+                />
+              </div>
+            </div>
+
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>Gravedad *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-exclamation-triangle"></i>
+                  <select name="gravedad" value={formState.gravedad} onChange={handleChange} required>
+                    <option value="">Seleccione...</option>
+                    {opciones?.gravedades.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="admin-form-group">
+                <label>Procedencia *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-source"></i>
+                  <select name="procedencia" value={formState.procedencia} onChange={handleChange} required>
+                    <option value="">Seleccione...</option>
+                    {opciones?.procedencias.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* --- SECCIÓN 2: UBICACIÓN ORGANIZACIONAL --- */}
+          <section className="admin-form-section">
+            <h2 className="admin-section-title">
+              <i className="fas fa-building"></i>
+              Ubicación Organizacional
+            </h2>
             
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>Dirección *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-sitemap"></i>
+                  <select name="direccion" value={formState.direccion} onChange={handleChange} required>
+                    <option value="">Seleccione...</option>
+                    {opciones?.direcciones.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="admin-form-group">
+                <label>Centro *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-industry"></i>
+                  <input 
+                    type="text"
+                    name="centro"
+                    value={formState.centro}
+                    onChange={handleChange}
+                    list="centros-coduni"
+                    required
+                    maxLength={100}
+                    placeholder="Escriba o seleccione el centro (CODUNI)"
+                  />
+                  <datalist id="centros-coduni">
+                    {centrosCoduni.map(centro => (
+                      <option key={centro} value={centro} />
+                    ))}
+                  </datalist>
+                </div>
+              </div>
+            </div>
+
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>Área/Departamento *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-layer-group"></i>
+                  <select name="area_depto" value={formState.area_depto} onChange={handleChange} required>
+                    <option value="">Seleccione...</option>
+                    {areasCoduni.map(area => (
+                      <option key={area} value={area}>{area}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="admin-form-group">
+                <label>Régimen *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-users"></i>
+                  <select name="regimen" value={formState.regimen} onChange={handleChange} required>
+                    <option value="">Seleccione...</option>
+                    {opciones?.regimenes.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+
             {(formState.regimen === 'Sindicalizado' || formState.regimen === 'Ambos') && (
-              <div className="form-group">
+              <div className="admin-form-group">
                 <label>Sindicato *</label>
-                <select name="sindicato" value={formState.sindicato || ''} onChange={handleChange} required>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-handshake"></i>
+                  <select name="sindicato" value={formState.sindicato || ''} onChange={handleChange} required>
+                    <option value="">Seleccione...</option>
+                    {opciones?.sindicatos.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
+          </section>
+
+          {/* --- SECCIÓN 3: FECHAS IMPORTANTES --- */}
+          <section className="admin-form-section">
+            <h2 className="admin-section-title">
+              <i className="fas fa-calendar-alt"></i>
+              Fechas Importantes
+            </h2>
+            
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>Fecha de Reporte *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-file-upload"></i>
+                  <input 
+                    type="date" 
+                    name="fecha_reporte" 
+                    value={formState.fecha_reporte} 
+                    onChange={handleChange} 
+                    required 
+                  />
+                </div>
+              </div>
+              
+              <div className="admin-form-group">
+                <label>Fecha Conocimiento de Hechos *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-eye"></i>
+                  <input 
+                    type="date"
+                    name="fecha_conocimiento_hechos"
+                    value={formState.fecha_conocimiento_hechos}
+                    onChange={handleChange}
+                    required
+                    max={new Date().toISOString().split("T")[0]} 
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>Fecha del Evento *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-calendar-day"></i>
+                  <input 
+                    type="date" 
+                    name="fecha_evento" 
+                    value={formState.fecha_evento} 
+                    onChange={handleChange} 
+                    required 
+                  />
+                </div>
+              </div>
+              
+              <div className="admin-form-group">
+                <label>Fecha de Prescripción</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-clock"></i>
+                  <input 
+                    type="date" 
+                    name="fecha_prescripcion" 
+                    value={formState.fecha_prescripcion} 
+                    readOnly
+                    className="admin-readonly-field"
+                  />
+                </div>
+                <small>Calculada automáticamente (30 días después del conocimiento)</small>
+              </div>
+            </div>
+
+            <div className="admin-form-group">
+              <div className="admin-checkbox-container">
+                <input 
+                  type="checkbox" 
+                  name="economica" 
+                  checked={formState.economica} 
+                  onChange={handleChange} 
+                  id="economica_check" 
+                />
+                <label htmlFor="economica_check">¿Implica repercusión económica?</label>
+              </div>
+            </div>
+          </section>
+
+          {/* --- SECCIÓN 4: GERENCIA RESPONSABLE --- */}
+          <section className="admin-form-section">
+            <h2 className="admin-section-title">
+              <i className="fas fa-user-tie"></i>
+              Gerencia Responsable
+            </h2>
+            
+            <div className="admin-form-group">
+              <label>Gerencia Responsable *</label>
+              <div className="admin-input-with-icon">
+                <i className="fas fa-briefcase"></i>
+                <select name="gerencia_responsable" value={formState.gerencia_responsable} onChange={handleChange} required>
                   <option value="">Seleccione...</option>
-                  {opciones?.sindicatos.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  {opciones?.gerencias.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                 </select>
               </div>
-            )}
-          </div>
-          
-          <div className="form-row">
-            <div className="form-group">
-              <label>Centro de Trabajo *</label>
-              <input 
-                type="text"
-                name="centro"
-                value={formState.centro}
-                onChange={handleChange}
-                list="centros-coduni"
-                required
-                maxLength={100}
-                placeholder="Escriba o seleccione el centro (CODUNI)"
-              />
-              <datalist id="centros-coduni">
-                {centrosCoduni.map(centro => (
-                  <option key={centro} value={centro} />
-                ))}
-              </datalist>
             </div>
 
-            <div className="form-group">
-              <label>Área/Departamento*</label>
-              <select name="area_depto" value={formState.area_depto} onChange={handleChange} required>
-                <option value="">Seleccione...</option>
-                {areasCoduni.map(area => (
-                  <option key={area} value={area}>{area}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Gravedad *</label>
-            <select name="gravedad" value={formState.gravedad} onChange={handleChange} required>
-              <option value="">Seleccione...</option>
-              {opciones?.gravedades.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-            </select>
-          </div>
-        </fieldset>
-
-        {/* --- SECCIÓN 2: CONOCIMIENTO DE HECHOS --- */}
-        <fieldset>
-          <legend>Sección 2: Conocimiento de Hechos</legend>
-          
-          <div className="form-row">
-            <div className="form-group">
-              <label>Fecha de Reporte *</label>
-              <input 
-                type="date" 
-                name="fecha_reporte" 
-                value={formState.fecha_reporte} 
-                onChange={handleChange} 
-                required 
-              />
-            </div>
-            
-            <div className="form-group">
-              <label>Fecha Conocimiento de Hechos *</label>
-              <input 
-                type="date"
-                name="fecha_conocimiento_hechos"
-                value={formState.fecha_conocimiento_hechos}
-                onChange={handleChange}
-                required
-                max={new Date().toISOString().split("T")[0]} 
-              />
-            </div>
-            
-            <div className="form-group">
-              <label>Fecha Prescripción</label>
-              <input 
-                type="date" 
-                name="fecha_prescripcion" 
-                value={formState.fecha_prescripcion} 
-                readOnly
-                className="readonly-field"
-              />
-              <small>Calculada automáticamente (30 días después del conocimiento)</small>
-            </div>
-          </div>
-          
-          <div className="form-group form-check">
-            <input 
-              type="checkbox" 
-              name="economica" 
-              checked={formState.economica} 
-              onChange={handleChange} 
-              id="economica_check" 
-            />
-            <label htmlFor="economica_check">¿Implica repercusión económica?</label>
-          </div>
-        </fieldset>
-        
-        {/* --- SECCIÓN 3: GERENCIA RESPONSABLE --- */}
-        <fieldset>
-          <legend>Sección 3: Gerencia Responsable</legend>
-          
-          <div className="form-group">
-            <label>Gerencia Responsable *</label>
-            <select name="gerencia_responsable" value={formState.gerencia_responsable} onChange={handleChange} required>
-              <option value="">Seleccione...</option>
-              {opciones?.gerencias.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-            </select>
-          </div>
-
-          {/* Contacto */}
-          <div className="persona-section">
-            <h4>Contacto</h4>
-            <div className="form-row">
-              <div className="form-group">
+            {/* Contactos */}
+            <div className="admin-personas-section">
+              <h3>Contactos</h3>
+              <div className="admin-form-group">
                 <label>Ficha</label>
+
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <input 
+                    type="text" 
+                    value={contactoActual.ficha}
+                    onChange={(e) => setContactoActual(prev => ({ ...prev, ficha: e.target.value }))}
+                    placeholder="Ingrese ficha"
+                    style={{ flex: 1 }}
+                  />
+
+                  <button 
+                    type="button" 
+                    onClick={() => buscarEmpleado(contactoActual.ficha, 'contacto')}
+                    className="admin-submit-button"
+                    style={{
+                      marginTop: '3px',   
+                      padding: '10px 20px', 
+                      fontSize: '0.9rem',
+                      height: '40px',
+                      minWidth: '100px',     
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    Buscar
+                  </button>
+                </div>
+              </div>
+
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Nombre</label>
+                  <input type="text" value={contactoActual.nombre} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Categoría</label>
+                  <input type="text" value={contactoActual.categoria} readOnly className="admin-readonly-field" />
+                </div>
+              </div>
+              
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Puesto</label>
+                  <input type="text" value={contactoActual.puesto} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Extensión</label>
+                  <input 
+                    type="text" 
+                    value={contactoActual.extension}
+                    onChange={(e) => setContactoActual(prev => ({ ...prev, extension: e.target.value }))}
+                    placeholder="Extensión"
+                  />
+                </div>
+              </div>
+              
+              <div className="admin-form-group">
+                <label>Email</label>
                 <input 
-                  type="text" 
-                  value={contactoActual.ficha}
-                  onChange={(e) => setContactoActual(prev => ({ ...prev, ficha: e.target.value }))}
-                  placeholder="Ingrese ficha"
+                  type="email" 
+                  value={contactoActual.email}
+                  onChange={(e) => setContactoActual(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="Correo electrónico"
                 />
               </div>
-              <button 
-                type="button" 
-                onClick={() => buscarEmpleado(contactoActual.ficha, 'contacto')}
-                className="btn-buscar"
-              >
-                Buscar
+              
+              <div className="admin-form-group">
+                <label>Tipo</label>
+                <select 
+                  value={contactoActual.tipo}
+                  onChange={(e) => setContactoActual(prev => ({ ...prev, tipo: e.target.value as 'contacto' | 'responsable' }))}
+                >
+                  <option value="contacto">Contacto</option>
+                  <option value="responsable">Responsable</option>
+                </select>
+              </div>
+              
+              <button type="button" onClick={agregarContacto} className="admin-submit-button" style={{maxWidth: '200px'}}>
+                Agregar Contacto
               </button>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label>Nombre</label>
-                <input type="text" value={contactoActual.nombre} readOnly className="readonly-field" />
-              </div>
-              <div className="form-group">
-                <label>Categoría</label>
-                <input type="text" value={contactoActual.categoria} readOnly className="readonly-field" />
-              </div>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label>Puesto</label>
-                <input type="text" value={contactoActual.puesto} readOnly className="readonly-field" />
-              </div>
-              <div className="form-group">
-                <label>Extensión</label>
-                <input 
-                  type="text" 
-                  value={contactoActual.extension}
-                  onChange={(e) => setContactoActual(prev => ({ ...prev, extension: e.target.value }))}
-                  placeholder="Extensión"
-                />
-              </div>
-            </div>
-            
-            <div className="form-group">
-              <label>Email</label>
-              <input 
-                type="email" 
-                value={contactoActual.email}
-                onChange={(e) => setContactoActual(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="Correo electrónico"
-              />
-            </div>
-            
-            <div className="form-group">
-              <label>Tipo</label>
-              <select 
-                value={contactoActual.tipo}
-                onChange={(e) => setContactoActual(prev => ({ ...prev, tipo: e.target.value as 'contacto' | 'responsable' }))}
-              >
-                <option value="contacto">Contacto</option>
-                <option value="responsable">Responsable</option>
-              </select>
-            </div>
-            
-            <button type="button" onClick={agregarContacto} className="btn-agregar">
-              Agregar Contacto
-            </button>
 
-            {/* Lista de contactos agregados */}
-            {formState.contactos.length > 0 && (
-              <div className="lista-personas">
-                <h5>Contactos Agregados:</h5>
-                {formState.contactos.map((contacto, index) => (
-                  <div key={index} className="persona-item">
-                    <span>{contacto.nombre} ({contacto.ficha}) - {contacto.tipo}</span>
-                    <button 
-                      type="button" 
-                      onClick={() => eliminarPersona('contactos', index)}
-                      className="btn-eliminar"
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+              {/* Lista de contactos agregados */}
+              {formState.contactos.length > 0 && (
+                <div className="admin-personas-grid" style={{marginTop: '20px'}}>
+                  <h4>Contactos Agregados:</h4>
+                  {formState.contactos.map((contacto, index) => (
+                    <div key={index} className="admin-persona-card">
+                      <div className="admin-persona-header">
+                        <h4>{contacto.nombre}</h4>
+                        <span className="admin-ficha">Ficha: {contacto.ficha}</span>
+                      </div>
+                      <div className="admin-persona-details">
+                        <div className="admin-detail-row">
+                          <span className="admin-label">Tipo:</span>
+                          <span className="admin-badge admin-badge-primary">{contacto.tipo}</span>
+                        </div>
+                        <div className="admin-detail-row">
+                          <span className="admin-label">Email:</span>
+                          <span className="admin-value">{contacto.email}</span>
+                        </div>
+                        <div className="admin-detail-row">
+                          <span className="admin-label">Extensión:</span>
+                          <span className="admin-value">{contacto.extension}</span>
+                        </div>
+                      </div>
+                      <button 
+                        type="button" 
+                        onClick={() => eliminarPersona('contactos', index)}
+                        className="admin-back-button"
+                        style={{marginTop: '10px', padding: '5px 10px', fontSize: '12px'}}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          {/* Investigadores */}
-          <div className="persona-section">
-            <h4>Investigadores</h4>
-            <div className="form-row">
-              <div className="form-group">
+            {/* Investigadores */}
+            <div className="admin-personas-section">
+              <h3>Investigadores</h3>
+              <div className="admin-form-group">
                 <label>Ficha</label>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  
+                  <input 
+                    type="text" 
+                    value={investigadorActual.ficha}
+                    onChange={(e) => setInvestigadorActual(prev => ({ ...prev, ficha: e.target.value }))}
+                    placeholder="Ingrese ficha"
+                  />
+                  <button 
+                  type="button" 
+                  onClick={() => buscarEmpleado(investigadorActual.ficha, 'investigador')}
+                  className="admin-submit-button"
+                  style={{
+                      marginTop: '3px',   
+                      padding: '10px 20px', 
+                      fontSize: '0.9rem',
+                      height: '40px',
+                      minWidth: '100px',     
+                      whiteSpace: 'nowrap'
+                    }}
+                >
+                  Buscar
+                </button>
+                </div>
+                
+              </div>
+              
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Nombre</label>
+                  <input type="text" value={investigadorActual.nombre} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Categoría</label>
+                  <input type="text" value={investigadorActual.categoria} readOnly className="admin-readonly-field" />
+                </div>
+              </div>
+              
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Puesto</label>
+                  <input type="text" value={investigadorActual.puesto} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Extensión</label>
+                  <input 
+                    type="text" 
+                    value={investigadorActual.extension}
+                    onChange={(e) => setInvestigadorActual(prev => ({ ...prev, extension: e.target.value }))}
+                    placeholder="Extensión"
+                  />
+                </div>
+              </div>
+              
+              <div className="admin-form-group">
+                <label>Email</label>
                 <input 
-                  type="text" 
-                  value={investigadorActual.ficha}
-                  onChange={(e) => setInvestigadorActual(prev => ({ ...prev, ficha: e.target.value }))}
-                  placeholder="Ingrese ficha"
+                  type="email" 
+                  value={investigadorActual.email}
+                  onChange={(e) => setInvestigadorActual(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="Correo electrónico"
                 />
               </div>
-              <button 
-                type="button" 
-                onClick={() => buscarEmpleado(investigadorActual.ficha, 'investigador')}
-                className="btn-buscar"
-              >
-                Buscar
+              
+              <button type="button" onClick={agregarInvestigador} className="admin-submit-button" style={{maxWidth: '200px'}}>
+                Agregar Investigador
               </button>
+
+              {/* Lista de investigadores agregados */}
+              {formState.investigadores.length > 0 && (
+                <div className="admin-personas-grid" style={{marginTop: '20px'}}>
+                  <h4>Investigadores Agregados:</h4>
+                  {formState.investigadores.map((investigador, index) => (
+                    <div key={index} className="admin-persona-card">
+                      <div className="admin-persona-header">
+                        <h4>{investigador.nombre}</h4>
+                        <span className="admin-ficha">Ficha: {investigador.ficha}</span>
+                      </div>
+                      <div className="admin-persona-details">
+                        <div className="admin-detail-row">
+                          <span className="admin-label">Email:</span>
+                          <span className="admin-value">{investigador.email}</span>
+                        </div>
+                        <div className="admin-detail-row">
+                          <span className="admin-label">Extensión:</span>
+                          <span className="admin-value">{investigador.extension}</span>
+                        </div>
+                      </div>
+                      <button 
+                        type="button" 
+                        onClick={() => eliminarPersona('investigadores', index)}
+                        className="admin-back-button"
+                        style={{marginTop: '10px', padding: '5px 10px', fontSize: '12px'}}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
+          </section>
+
+          {/* --- SECCIÓN 5: INFORMACIÓN DEL EVENTO --- */}
+          <section className="admin-form-section">
+            <h2 className="admin-section-title">
+              <i className="fas fa-calendar-check"></i>
+              Información del Evento
+            </h2>
             
-            <div className="form-row">
-              <div className="form-group">
-                <label>Nombre</label>
-                <input type="text" value={investigadorActual.nombre} readOnly className="readonly-field" />
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>Lugar de los hechos *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-map-marker-alt"></i>
+                  <input 
+                    type="text" 
+                    name="lugar" 
+                    value={formState.lugar} 
+                    onChange={handleChange} 
+                    required
+                    maxLength={50}
+                    placeholder="Lugar donde ocurrió el evento"
+                  />
+                </div>
               </div>
-              <div className="form-group">
-                <label>Categoría</label>
-                <input type="text" value={investigadorActual.categoria} readOnly className="readonly-field" />
+
+              <div className="admin-form-group">
+                <label>Centro de Trabajo *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-hard-hat"></i>
+                  <input 
+                    type="text" 
+                    name="centro_trabajo" 
+                    value={formState.centro_trabajo} 
+                    onChange={handleChange} 
+                    list="centros-trabajo"
+                    required
+                    maxLength={100}
+                    placeholder="Escriba o seleccione el centro de trabajo"
+                  />
+                  <datalist id="centros-trabajo">
+                    {centrosTrabajo.map(centro => (
+                      <option key={centro} value={centro} />
+                    ))}
+                  </datalist>
+                </div>
               </div>
             </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label>Puesto</label>
-                <input type="text" value={investigadorActual.puesto} readOnly className="readonly-field" />
-              </div>
-              <div className="form-group">
-                <label>Extensión</label>
-                <input 
-                  type="text" 
-                  value={investigadorActual.extension}
-                  onChange={(e) => setInvestigadorActual(prev => ({ ...prev, extension: e.target.value }))}
-                  placeholder="Extensión"
+
+            <div className="admin-form-group">
+              <label>Observaciones</label>
+              <div className="admin-input-with-icon">
+                <i className="fas fa-sticky-note"></i>
+                <input
+                  name="observaciones" 
+                  value={formState.observaciones} 
+                  onChange={handleChange} 
+                  maxLength={140}
+                  placeholder="Observaciones generales (máximo 140 caracteres)"
                 />
               </div>
             </div>
-            
-            <div className="form-group">
-              <label>Email</label>
-              <input 
-                type="email" 
-                value={investigadorActual.email}
-                onChange={(e) => setInvestigadorActual(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="Correo electrónico"
-              />
-            </div>
-            
-            <button type="button" onClick={agregarInvestigador} className="btn-agregar">
-              Agregar Investigador
-            </button>
 
-            {/* Lista de investigadores agregados */}
-            {formState.investigadores.length > 0 && (
-              <div className="lista-personas">
-                <h5>Investigadores Agregados:</h5>
-                {formState.investigadores.map((investigador, index) => (
-                  <div key={index} className="persona-item">
-                    <span>{investigador.nombre} ({investigador.ficha})</span>
-                    <button 
-                      type="button" 
-                      onClick={() => eliminarPersona('investigadores', index)}
-                      className="btn-eliminar"
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-                ))}
+            <div className="admin-form-group">
+              <label>Antecedentes</label>
+              <div className="admin-input-with-icon">
+                <i className="fas fa-history"></i>
+                <input
+                  name="antecedentes" 
+                  value={formState.antecedentes} 
+                  onChange={handleChange} 
+                  maxLength={150}
+                  placeholder="Antecedentes del evento (máximo 150 caracteres)"
+                />
               </div>
-            )}
-          </div>
-        </fieldset>
-
-        {/* --- SECCIÓN 4: EVENTO --- */}
-        <fieldset>
-          <legend>Sección 4: Evento</legend>
-          
-          <div className="form-row">
-            <div className="form-group">
-              <label>Lugar de los hechos*</label>
-              <input 
-                type="text" 
-                name="lugar" 
-                value={formState.lugar} 
-                onChange={handleChange} 
-                required
-                maxLength={50}
-                placeholder="Lugar donde ocurrió el evento"
-              />
             </div>
+          </section>
+
+          {/* --- SECCIÓN 6: PERSONAS INVOLUCRADAS --- */}
+          <section className="admin-form-section">
+            <h2 className="admin-section-title">
+              <i className="fas fa-users"></i>
+              Personas Involucradas
+            </h2>
             
-            <div className="form-group">
-              <label>Fecha de los hechos *</label>
-              <input 
-                type="date" 
-                name="fecha_evento" 
-                value={formState.fecha_evento} 
-                onChange={handleChange} 
-                required 
-              />
-            </div>
-          </div>
-
-          <div className="form-group">
-            <label>Centro de Trabajo *</label>
-            <input 
-              type="text" 
-              name="centro_trabajo" 
-              value={formState.centro_trabajo} 
-              onChange={handleChange} 
-              list="centros-trabajo"
-              required
-              maxLength={100}
-              placeholder="Escriba o seleccione el centro de trabajo"
-            />
-            <datalist id="centros-trabajo">
-              {centrosTrabajo.map(centro => (
-                <option key={centro} value={centro} />
-              ))}
-            </datalist>
-          </div>
-
-          <div className="form-group">
-            <label>Observaciones</label>
-            <textarea 
-              name="observaciones" 
-              value={formState.observaciones} 
-              onChange={handleChange} 
-              maxLength={140}
-              placeholder="Observaciones generales (máximo 140 caracteres)"
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Antecedentes</label>
-            <textarea 
-              name="antecedentes" 
-              value={formState.antecedentes} 
-              onChange={handleChange} 
-              maxLength={150}
-              placeholder="Antecedentes del evento (máximo 150 caracteres)"
-            />
-          </div>
-
-          {/* Involucrados */}
-          <div className="persona-section">
-            <h4>Involucrados</h4>
-            <div className="form-row">
-              <div className="form-group">
+            {/* Involucrados */}
+            <div className="admin-personas-section">
+              <h3>Involucrados</h3>
+              <div className="admin-form-group">
                 <label>Ficha</label>
-                <input 
-                  type="text" 
-                  value={involucradoActual.ficha}
-                  onChange={(e) => setInvolucradoActual(prev => ({ ...prev, ficha: e.target.value }))}
-                  placeholder="Ingrese ficha"
-                />
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  
+                  <input 
+                    type="text" 
+                    value={involucradoActual.ficha}
+                    onChange={(e) => setInvolucradoActual(prev => ({ ...prev, ficha: e.target.value }))}
+                    placeholder="Ingrese ficha"
+                  />
+                  <button 
+                  type="button" 
+                  onClick={() => buscarEmpleado(involucradoActual.ficha, 'involucrado')}
+                  className="admin-submit-button"
+                  style={{
+                            marginTop: '3px',       
+                            padding: '10px 20px',   
+                            fontSize: '0.9rem',
+                            height: '40px',
+                            minWidth: '100px',      
+                            whiteSpace: 'nowrap'
+                          }}
+                >
+                  Buscar
+                </button>
+                </div>
+                
               </div>
-              <button 
-                type="button" 
-                onClick={() => buscarEmpleado(involucradoActual.ficha, 'involucrado')}
-                className="btn-buscar"
-              >
-                Buscar
+              
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Nombre</label>
+                  <input type="text" value={involucradoActual.nombre} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Nivel</label>
+                  <input type="text" value={involucradoActual.nivel} readOnly className="admin-readonly-field" />
+                </div>
+              </div>
+              
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Categoría</label>
+                  <input type="text" value={involucradoActual.categoria} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Puesto</label>
+                  <input type="text" value={involucradoActual.puesto} readOnly className="admin-readonly-field" />
+                </div>
+              </div>
+              
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Edad</label>
+                  <input type="number" value={involucradoActual.edad} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Antigüedad</label>
+                  <input type="number" value={involucradoActual.antiguedad} readOnly className="admin-readonly-field" />
+                </div>
+              </div>
+              
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>RFC</label>
+                  <input type="text" value={involucradoActual.rfc} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>CURP</label>
+                  <input type="text" value={involucradoActual.curp} readOnly className="admin-readonly-field" />
+                </div>
+              </div>
+              
+              <div className="admin-form-group">
+                <label>Dirección</label>
+                <input type="text" value={involucradoActual.direccion} readOnly className="admin-readonly-field" />
+              </div>
+              
+              <button type="button" onClick={agregarInvolucrado} className="admin-submit-button" style={{maxWidth: '200px'}}>
+                Agregar Involucrado
               </button>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label>Nombre</label>
-                <input type="text" value={involucradoActual.nombre} readOnly className="readonly-field" />
-              </div>
-              <div className="form-group">
-                <label>Nivel</label>
-                <input type="text" value={involucradoActual.nivel} readOnly className="readonly-field" />
-              </div>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label>Categoría</label>
-                <input type="text" value={involucradoActual.categoria} readOnly className="readonly-field" />
-              </div>
-              <div className="form-group">
-                <label>Puesto</label>
-                <input type="text" value={involucradoActual.puesto} readOnly className="readonly-field" />
-              </div>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label>Edad</label>
-                <input type="number" value={involucradoActual.edad} readOnly className="readonly-field" />
-              </div>
-              <div className="form-group">
-                <label>Antigüedad</label>
-                <input type="number" value={involucradoActual.antiguedad} readOnly className="readonly-field" />
-              </div>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label>RFC</label>
-                <input type="text" value={involucradoActual.rfc} readOnly className="readonly-field" />
-              </div>
-              <div className="form-group">
-                <label>CURP</label>
-                <input type="text" value={involucradoActual.curp} readOnly className="readonly-field" />
-              </div>
-            </div>
-            
-            <div className="form-group">
-              <label>Dirección</label>
-              <input type="text" value={involucradoActual.direccion} readOnly className="readonly-field" />
-            </div>
-            
-            <button type="button" onClick={agregarInvolucrado} className="btn-agregar">
-              Agregar Involucrado
-            </button>
 
-            {/* Lista de involucrados agregados */}
-            {formState.involucrados.length > 0 && (
-              <div className="lista-personas">
-                <h5>Involucrados Agregados:</h5>
-                {formState.involucrados.map((involucrado, index) => (
-                  <div key={index} className="persona-item">
-                    <span>{involucrado.nombre} ({involucrado.ficha})</span>
-                    <button 
-                      type="button" 
-                      onClick={() => eliminarPersona('involucrados', index)}
-                      className="btn-eliminar"
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+              {/* Lista de involucrados agregados */}
+              {formState.involucrados.length > 0 && (
+                <div className="admin-personas-grid" style={{marginTop: '20px'}}>
+                  <h4>Involucrados Agregados:</h4>
+                  {formState.involucrados.map((involucrado, index) => (
+                    <div key={index} className="admin-persona-card">
+                      <div className="admin-persona-header">
+                        <h4>{involucrado.nombre}</h4>
+                        <span className="admin-ficha">Ficha: {involucrado.ficha}</span>
+                      </div>
+                      <div className="admin-persona-details">
+                        <div className="admin-detail-row">
+                          <span className="admin-label">Nivel:</span>
+                          <span className="admin-value">{involucrado.nivel}</span>
+                        </div>
+                        <div className="admin-detail-row">
+                          <span className="admin-label">Edad:</span>
+                          <span className="admin-value">{involucrado.edad} años</span>
+                        </div>
+                        <div className="admin-detail-row">
+                          <span className="admin-label">Antigüedad:</span>
+                          <span className="admin-value">{involucrado.antiguedad} años</span>
+                        </div>
+                      </div>
+                      <button 
+                        type="button" 
+                        onClick={() => eliminarPersona('involucrados', index)}
+                        className="admin-back-button"
+                        style={{marginTop: '10px', padding: '5px 10px', fontSize: '12px'}}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          {/* Testigos */}
-          <div className="persona-section">
-            <h4>Testigos</h4>
-            <div className="form-row">
-              <div className="form-group">
-                <label>Ficha</label>
-                <input 
-                  type="text" 
-                  value={testigoActual.ficha}
-                  onChange={(e) => setTestigoActual(prev => ({ ...prev, ficha: e.target.value }))}
-                  placeholder="Ingrese ficha"
-                />
+            {/* Testigos */}
+            <div className="admin-personas-section">
+              <h3>Testigos</h3>
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Ficha</label>
+                  <input 
+                    type="text" 
+                    value={testigoActual.ficha}
+                    onChange={(e) => setTestigoActual(prev => ({ ...prev, ficha: e.target.value }))}
+                    placeholder="Ingrese ficha"
+                  />
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => buscarEmpleado(testigoActual.ficha, 'testigo')}
+                  className="admin-submit-button"
+                  style={{maxWidth: '120px', padding: '10px'}}
+                >
+                  Buscar
+                </button>
               </div>
-              <button 
-                type="button" 
-                onClick={() => buscarEmpleado(testigoActual.ficha, 'testigo')}
-                className="btn-buscar"
-              >
-                Buscar
+              
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Nombre</label>
+                  <input type="text" value={testigoActual.nombre} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Nivel</label>
+                  <input type="text" value={testigoActual.nivel} readOnly className="admin-readonly-field" />
+                </div>
+              </div>
+              
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Categoría</label>
+                  <input type="text" value={testigoActual.categoria} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Puesto</label>
+                  <input type="text" value={testigoActual.puesto} readOnly className="admin-readonly-field" />
+                </div>
+              </div>
+              
+              <div className="admin-form-group">
+                <label>Dirección</label>
+                <input type="text" value={testigoActual.direccion} readOnly className="admin-readonly-field" />
+              </div>
+              
+              <div className="admin-form-group">
+                <div className="admin-checkbox-container">
+                  <input 
+                    type="checkbox" 
+                    checked={testigoActual.subordinacion}
+                    onChange={(e) => setTestigoActual(prev => ({ ...prev, subordinacion: e.target.checked }))}
+                    id="subordinacion_check" 
+                  />
+                  <label htmlFor="subordinacion_check">Subordinación</label>
+                </div>
+              </div>
+              
+              <button type="button" onClick={agregarTestigo} className="admin-submit-button" style={{maxWidth: '200px'}}>
+                Agregar Testigo
               </button>
+
+              {/* Lista de testigos agregados */}
+              {formState.testigos.length > 0 && (
+                <div className="admin-personas-grid" style={{marginTop: '20px'}}>
+                  <h4>Testigos Agregados:</h4>
+                  {formState.testigos.map((testigo, index) => (
+                    <div key={index} className="admin-persona-card">
+                      <div className="admin-persona-header">
+                        <h4>{testigo.nombre}</h4>
+                        <span className="admin-ficha">Ficha: {testigo.ficha}</span>
+                      </div>
+                      <div className="admin-persona-details">
+                        <div className="admin-detail-row">
+                          <span className="admin-label">Nivel:</span>
+                          <span className="admin-value">{testigo.nivel}</span>
+                        </div>
+                        <div className="admin-detail-row">
+                          <span className="admin-label">Subordinación:</span>
+                          <span className={`admin-badge ${testigo.subordinacion ? 'admin-badge-warning' : 'admin-badge-secondary'}`}>
+                            {testigo.subordinacion ? 'Sí' : 'No'}
+                          </span>
+                        </div>
+                      </div>
+                      <button 
+                        type="button" 
+                        onClick={() => eliminarPersona('testigos', index)}
+                        className="admin-back-button"
+                        style={{marginTop: '10px', padding: '5px 10px', fontSize: '12px'}}
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label>Nombre</label>
-                <input type="text" value={testigoActual.nombre} readOnly className="readonly-field" />
-              </div>
-              <div className="form-group">
-                <label>Nivel</label>
-                <input type="text" value={testigoActual.nivel} readOnly className="readonly-field" />
-              </div>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label>Categoría</label>
-                <input type="text" value={testigoActual.categoria} readOnly className="readonly-field" />
-              </div>
-              <div className="form-group">
-                <label>Puesto</label>
-                <input type="text" value={testigoActual.puesto} readOnly className="readonly-field" />
-              </div>
-            </div>
-            
-            <div className="form-group">
-              <label>Dirección</label>
-              <input type="text" value={testigoActual.direccion} readOnly className="readonly-field" />
-            </div>
-            
-            <div className="form-group form-check">
-              <input 
-                type="checkbox" 
-                checked={testigoActual.subordinacion}
-                onChange={(e) => setTestigoActual(prev => ({ ...prev, subordinacion: e.target.checked }))}
-                id="subordinacion_check" 
-              />
-              <label htmlFor="subordinacion_check">Subordinación</label>
-            </div>
-            
-            <button type="button" onClick={agregarTestigo} className="btn-agregar">
-              Agregar Testigo
+          </section>
+
+          <div className="admin-form-actions">
+            <button 
+              type="button" 
+              onClick={() => navigate('/investigaciones')} 
+              className="admin-back-button"
+            >
+              Cancelar
             </button>
-
-            {/* Lista de testigos agregados */}
-            {formState.testigos.length > 0 && (
-              <div className="lista-personas">
-                <h5>Testigos Agregados:</h5>
-                {formState.testigos.map((testigo, index) => (
-                  <div key={index} className="persona-item">
-                    <span>{testigo.nombre} ({testigo.ficha}) {testigo.subordinacion ? '(Subordinación)' : ''}</span>
-                    <button 
-                      type="button" 
-                      onClick={() => eliminarPersona('testigos', index)}
-                      className="btn-eliminar"
-                    >
-                      Eliminar
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+            <button 
+              type="submit" 
+              className="admin-submit-button" 
+              disabled={loading}
+            >
+              {isEditMode ? 'Actualizar' : 'Guardar'} Investigación
+            </button>
           </div>
-        </fieldset>
-
-        <div className="form-actions">
-          <button type="button" onClick={() => navigate('/investigaciones')} className="btn-cancel">
-            Cancelar
-          </button>
-          <button type="submit" className="btn-submit-form" disabled={loading}>
-            {isEditMode ? 'Actualizar' : 'Guardar'} Investigación
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }
