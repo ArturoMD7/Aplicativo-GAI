@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiPlus,FiEdit, FiFileText, FiSearch, FiDownload } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload } from 'react-icons/fi';
+import ButtonIcon from '../components/Buttons/ButtonIcon'; 
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import '../styles/InvestigacionPage.css'; 
@@ -92,13 +92,21 @@ function InvestigacionListPage() {
             />
           </div>
 
-          <button className="btn-export" onClick={exportToExcel}>
-            <FiDownload /> Exportar Excel
-          </button>
+          <ButtonIcon
+            variant="view"
+            icon={<FiDownload />}
+            text="Exportar Excel"
+            onClick={exportToExcel}
+            size="medium"
+          />
 
-          <Link to="/investigaciones/nuevo" className="btn-add-new">
-            <FiPlus /> Nuevo Registro
-          </Link>
+          <ButtonIcon
+            variant="download"
+            to="/investigaciones/nuevo"
+            icon={<FiPlus />}
+            text="Nuevo Registro"
+            size="medium"
+          />
         </div>
       </div>
 
@@ -138,9 +146,22 @@ function InvestigacionListPage() {
                 <td>{new Date(inv.fecha_prescripcion).toLocaleDateString()}</td>
                 <td>{inv.dias_restantes}</td>
                 <td>
-                  <Link to={`/investigaciones/editar/${inv.id}`} className="btn-edit">
-                    <FiEdit /> Editar
-                  </Link>
+                  <div className="action-buttons">
+                    <ButtonIcon
+                      variant="view"
+                      to={`/investigaciones/detalles/${inv.id}`}
+                      icon={<FiEye />}
+                      title="Ver detalles"
+                      size="medium"
+                    />
+                    <ButtonIcon
+                      variant="edit"
+                      to={`/investigaciones/editar/${inv.id}`}
+                      icon={<FiEdit />}
+                      title="Editar"
+                      size="medium"
+                    />
+                  </div>
                 </td>
               </tr>
             ))}

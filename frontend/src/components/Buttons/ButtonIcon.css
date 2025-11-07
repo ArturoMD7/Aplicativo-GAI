@@ -1,0 +1,164 @@
+/* Componente ButtonIcon */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  background-color: var(--btn-color, #6c757d);
+  color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.btn-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-icon:hover::before {
+  left: 100%;
+}
+
+.btn-icon:hover:not(.btn-icon-disabled) {
+  background-color: var(--btn-hover-color, #545b62);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.btn-icon:active:not(.btn-icon-disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Contenido del botón */
+.btn-icon-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-icon-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: inherit;
+  transition: transform 0.2s ease;
+}
+
+.btn-icon:hover .btn-icon-icon:not(.btn-icon-disabled) {
+  transform: scale(1.1);
+}
+
+.btn-icon-text {
+  font-size: 1em;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* Tamaños */
+.btn-icon-small {
+  padding: 8px 12px;
+  font-size: 0.9em;
+  min-height: 36px;
+  min-width: 36px;
+}
+
+.btn-icon-medium {
+  padding: 10px 16px;
+  font-size: 1em;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.btn-icon-large {
+  padding: 12px 20px;
+  font-size: 1.1em;
+  min-height: 52px;
+  min-width: 52px;
+}
+
+/* Estado deshabilitado */
+.btn-icon-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.btn-icon-disabled:hover {
+  background-color: var(--btn-color, #6c757d) !important;
+  transform: none !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Versión solo ícono (cuando no hay texto) */
+.btn-icon:not(:has(.btn-icon-text)) {
+  padding: 10px;
+}
+
+.btn-icon-small:not(:has(.btn-icon-text)) {
+  padding: 8px;
+}
+
+.btn-icon-medium:not(:has(.btn-icon-text)) {
+  padding: 10px;
+}
+
+.btn-icon-large:not(:has(.btn-icon-text)) {
+  padding: 12px;
+}
+
+/* Tooltips nativos */
+.btn-icon[title] {
+  position: relative;
+}
+
+.btn-icon[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 0.75em;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+/* Mejoras de accesibilidad */
+.btn-icon:focus {
+  outline: 2px solid rgba(132, 0, 22, 0.5);
+  outline-offset: 2px;
+}
+
+.btn-icon:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Efecto de pulso al hover */
+@keyframes btnIconPulse {
+  0% { transform: translateY(-2px) scale(1); }
+  50% { transform: translateY(-2px) scale(1.05); }
+  100% { transform: translateY(-2px) scale(1); }
+}
+
+.btn-icon:hover:not(.btn-icon-disabled) {
+  animation: btnIconPulse 0.6s ease-in-out;
+}

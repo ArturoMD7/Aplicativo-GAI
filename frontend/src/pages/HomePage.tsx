@@ -13,6 +13,8 @@ import InvestigacionListPage from './InvestigacionListPage';
 import InvestigacionFormPage from './InvestigacionFormPage';
 import EditUserPage from './auth/EditUserPage';
 import Settings from './auth/Settings';
+import InvestigacionDetailsPage from './InvestigacionDetailsPage';
+
 
 type HomePageProps = {
   onLogout: () => void; 
@@ -53,6 +55,7 @@ function HomePage({ onLogout }: HomePageProps) {
             <Route path="/investigaciones/nuevo" element={<InvestigacionFormPage />} />
             
             <Route path="/investigaciones/editar/:id" element={<InvestigacionFormPage />} />
+            <Route path="/investigaciones/detalles/:id" element={<InvestigacionDetailsPage />} />
             
 
             {/* Ruta de 'no encontrado' (opcional) */}
