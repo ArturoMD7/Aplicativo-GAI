@@ -156,6 +156,12 @@ function InvestigacionFormPage() {
     }
   }, [id]);
 
+  useEffect(() => {
+    if (isEditMode && formState.centro) {
+      cargarAreasPorCentro(formState.centro);
+    }
+  }, [isEditMode, formState.centro]);
+
   // --- Handlers para el formulario principal ---
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -182,12 +188,17 @@ function InvestigacionFormPage() {
   };
 
   const cargarAreasPorCentro = async (centro: string) => {
-    if (!centro) return;
+    if (!centro) {
+      setAreasCoduni([]);
+      return;
+    }
+    
     try {
       const response = await apiClient.get(`/api/investigaciones/areas-por-centro/?centro=${encodeURIComponent(centro)}`);
       setAreasCoduni(response.data);
     } catch (err) {
       console.error('Error al cargar áreas:', err);
+      setAreasCoduni([]);
     }
   };
 
