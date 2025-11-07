@@ -1,7 +1,7 @@
 import React, { useEffect, useState, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import apiClient from '../api/apliClient';
-import '../styles/AdminRegister.css'; // reutilizamos estilos de registro
+import apiClient from '../../api/apliClient';
+import '../../styles/Auth/AdminRegister.css'; // reutilizamos estilos de registro
 
 type Group = { id: number; name: string };
 type UserData = {

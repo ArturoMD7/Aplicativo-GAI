@@ -1,6 +1,6 @@
 // src/App.tsx
 import { useState, useEffect } from 'react';
-import LoginPage from './pages/LoginPage.tsx';
+import LoginPage from './pages/auth/LoginPage.tsx';
 import HomePage from './pages/HomePage.tsx';
 import './App.css'; 
 

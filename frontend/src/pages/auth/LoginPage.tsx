@@ -1,9 +1,9 @@
 
 import React, { useState, type FormEvent } from 'react';
-import apiClient from '../api/apliClient.ts';
-import '../styles/AuthForms.css';
-import '../assets/pemexlogo.png';
-import pemexLogo from '../assets/pemexlogo.png'; 
+import apiClient from '../../api/apliClient.ts';
+import '../../styles/Auth/AuthForms.css';
+import '../../assets/pemexlogo.png';
+import pemexLogo from '../../assets/pemexlogo.png'; 
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 type LoginPageProps = {

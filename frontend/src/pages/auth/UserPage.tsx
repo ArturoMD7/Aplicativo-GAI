@@ -1,9 +1,9 @@
 // src/components/Users/UsersPage.tsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom'; 
-import apiClient from '../api/apliClient';
+import apiClient from '../../api/apliClient';
 import { FiPlus, FiUsers, FiEdit2, FiTrash2, FiLoader, FiUserX } from 'react-icons/fi';
-import '../styles/UserPage.css'; 
+import '../../styles/Auth/UserPage.css'; 
 
 type User = {
   id: number;

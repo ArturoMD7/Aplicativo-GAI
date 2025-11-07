@@ -1,7 +1,7 @@
 // src/components/Register/RegisterPage.tsx
 import React, { useEffect, useState, type FormEvent } from 'react';
-import apiClient from '../api/apliClient.ts';
-import '../styles/AdminRegister.css';
+import apiClient from '../../api/apliClient.ts';
+import '../../styles/Auth/AdminRegister.css';
 import { useNavigate, Link } from 'react-router-dom';
 
 type Group = {

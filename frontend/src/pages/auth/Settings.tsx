@@ -1,7 +1,7 @@
 // src/components/Settings/Settings.tsx
 import React, { useState, useEffect } from 'react';
-import apiClient from '../api/apliClient';
-import '../styles/Settings.css';
+import apiClient from '../../api/apliClient';
+import '../../styles/Auth/Settings.css';
 
 interface UserProfile {
   id: number;

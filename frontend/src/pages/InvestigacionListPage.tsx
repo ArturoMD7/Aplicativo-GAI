@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiPlus, FiFileText, FiSearch, FiDownload } from 'react-icons/fi';
+import { FiPlus,FiEdit, FiFileText, FiSearch, FiDownload } from 'react-icons/fi';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import '../styles/InvestigacionPage.css'; 
@@ -92,12 +92,10 @@ function InvestigacionListPage() {
             />
           </div>
 
-          {/* 📤 Botón Excel */}
           <button className="btn-export" onClick={exportToExcel}>
             <FiDownload /> Exportar Excel
           </button>
 
-          {/* ➕ Nuevo registro */}
           <Link to="/investigaciones/nuevo" className="btn-add-new">
             <FiPlus /> Nuevo Registro
           </Link>
@@ -141,7 +139,7 @@ function InvestigacionListPage() {
                 <td>{inv.dias_restantes}</td>
                 <td>
                   <Link to={`/investigaciones/editar/${inv.id}`} className="btn-edit">
-                    Editar
+                    <FiEdit /> Editar
                   </Link>
                 </td>
               </tr>
