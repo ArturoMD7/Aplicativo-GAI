@@ -290,9 +290,11 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
         dias_restantes = self.get_dias_restantes(obj)
         if dias_restantes is None:
             return 'gray'
-        elif dias_restantes <= 7:
+        elif dias_restantes <= 5:
             return 'red'
-        elif dias_restantes <= 15:
+        elif dias_restantes <= 10:
+            return 'orange'
+        elif dias_restantes <= 20:
             return 'yellow'
         else:
             return 'green'

@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import './Layout.css';
 import { Link, useLocation } from 'react-router-dom';
+import pemexLogo from '../../assets/logo_min.png'; 
 import {
   FiHome,
   FiBarChart2,
@@ -14,9 +15,9 @@ import {
 } from 'react-icons/fi';
 
 const navItems = [
-  { label: "Home", icon: <FiHome />, href: "/" },
+  { label: "Inicio", icon: <FiHome />, href: "/" },
   { label: "Investigaciones", icon: <FiFileText />, href: "/investigaciones" },
-  { label: "Users", icon: <FiUsers />, href: "/users" },
+  { label: "Usuarios", icon: <FiUsers />, href: "/users" },
 ];
 
 type SidebarProps = {
@@ -47,7 +48,7 @@ function Sidebar({ onLogout }: SidebarProps) {
     >
       {/* Header simplificado - solo logo */}
       <div className="sidebar-header">
-        <div className="brand-logo">GAI</div>
+        <img src={pemexLogo} alt="Pemex" />
       </div>
 
       {/* Navegación principal */}
@@ -78,7 +79,7 @@ function Sidebar({ onLogout }: SidebarProps) {
               data-tooltip="Logout"
             >
               <span className="icon"><FiLogOut /></span>
-              <span className="text">Logout</span>
+              <span className="text">Cerrar Sesión</span>
             </button>
           </li>
           <li className="nav-item">
@@ -88,7 +89,7 @@ function Sidebar({ onLogout }: SidebarProps) {
               data-tooltip="Settings"
             >
               <span className="icon"><FiSettings /></span>
-              <span className="text">Settings</span>
+              <span className="text">Ajustes</span>
             </Link>
           </li>
         </ul>

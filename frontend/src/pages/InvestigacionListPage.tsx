@@ -30,6 +30,7 @@ function InvestigacionListPage() {
   const getSemaforoColor = (semaforo: string) => {
     const colors: Record<string, string> = {
       red: '#e74c3c',
+      orange: '#f17c0fff',
       yellow: '#f1c40f',
       green: '#2ecc71',
       gray: '#95a5a6'
@@ -57,9 +58,11 @@ function InvestigacionListPage() {
               <th>No. Reporte</th>
               <th>Nombre Corto</th>
               <th>Gravedad</th>
-              <th>Días Rest.</th>
+              
               <th>Creado Por</th>
               <th>Fecha Creación</th>
+              <th>Fecha Prescripción</th>
+              <th>Días Rest.</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -76,9 +79,11 @@ function InvestigacionListPage() {
                 <td>{inv.numero_reporte}</td>
                 <td>{inv.nombre_corto}</td>
                 <td>{inv.gravedad}</td>
-                <td>{inv.dias_restantes}</td>
+                
                 <td>{inv.created_by_name}</td>
                 <td>{new Date(inv.created_at).toLocaleDateString()}</td>
+                <td>{new Date(inv.fecha_prescripcion).toLocaleDateString()}</td>
+                <td>{inv.dias_restantes}</td>
                 <td>
                   {/* Link para editar (lo dejamos listo) */}
                   <Link to={`/investigaciones/editar/${inv.id}`} className="btn-edit">

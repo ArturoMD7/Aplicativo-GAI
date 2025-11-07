@@ -12,7 +12,6 @@ import type {
 } from '../types/investigacion.types';
 import '../styles/InvestigacionForm.css';
 
-// Estado inicial actualizado
 const initialState: InvestigacionFormState = {
   nombre_corto: '',
   descripcion_general: '',
@@ -326,6 +325,13 @@ function InvestigacionFormPage() {
     setError('');
     setSuccess('');
 
+    const hoy = new Date().toISOString().split('T')[0];
+      if (formState.fecha_conocimiento_hechos > hoy) {
+        setLoading(false);
+        setError('La fecha de conocimiento de hechos no puede ser posterior a la fecha actual.');
+        return;
+      }
+
     try {
       const dataToSubmit = {
         ...formState,
@@ -512,11 +518,12 @@ function InvestigacionFormPage() {
             <div className="form-group">
               <label>Fecha Conocimiento de Hechos *</label>
               <input 
-                type="date" 
-                name="fecha_conocimiento_hechos" 
-                value={formState.fecha_conocimiento_hechos} 
-                onChange={handleChange} 
-                required 
+                type="date"
+                name="fecha_conocimiento_hechos"
+                value={formState.fecha_conocimiento_hechos}
+                onChange={handleChange}
+                required
+                max={new Date().toISOString().split("T")[0]} 
               />
             </div>
             
@@ -741,7 +748,7 @@ function InvestigacionFormPage() {
           
           <div className="form-row">
             <div className="form-group">
-              <label>Lugar del Evento *</label>
+              <label>Lugar de los hechos*</label>
               <input 
                 type="text" 
                 name="lugar" 
@@ -754,7 +761,7 @@ function InvestigacionFormPage() {
             </div>
             
             <div className="form-group">
-              <label>Fecha del Evento *</label>
+              <label>Fecha de los hechos *</label>
               <input 
                 type="date" 
                 name="fecha_evento" 

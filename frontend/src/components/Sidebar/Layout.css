@@ -213,3 +213,15 @@ button.nav-link {
     transform: translateX(-100%);
   }
 }
+
+.sidebar-header img {
+  width: 50px;            /* o un valor fijo como 80px */
+  max-width: 50px;      /* evita que crezca demasiado */
+  height: auto;          /* mantiene proporciones */
+  object-fit: contain;   /* evita distorsión */
+  display: block;
+}
+
+.sidebar-header {
+  padding: 5px;
+}
