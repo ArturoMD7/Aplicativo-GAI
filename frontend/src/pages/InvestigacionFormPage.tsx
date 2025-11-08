@@ -119,6 +119,51 @@ function InvestigacionFormPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
+  const [timeLeft, setTimeLeft] = useState<number>(20 * 60); // 20 minutos en segundos
+  const [showTimeoutWarning, setShowTimeoutWarning] = useState<boolean>(false);
+  const [isTimeUp, setIsTimeUp] = useState<boolean>(false);
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setInterval>;
+
+    if (!isEditMode) {
+      timer = setInterval(() => {
+        setTimeLeft(prevTime => {
+          if (prevTime <= 0) {
+            clearInterval(timer);
+            handleTimeout();
+            return 0;
+          }
+          
+          // Mostrar advertencia cuando queden 2 minutos
+          if (prevTime === 2 * 60) {
+            setShowTimeoutWarning(true);
+          }
+          
+          return prevTime - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isEditMode]);
+
+  // Función para manejar el timeout
+  const handleTimeout = () => {
+    setShowTimeoutWarning(false);
+    setIsTimeUp(true); 
+    setError('El tiempo para completar el formulario ha expirado. No puedes guardar esta investigación.');
+  };
+
+  // Función para formatear el tiempo (mm:ss)
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   // --- Cargar datos ---
   useEffect(() => {
     const fetchDatosIniciales = async () => {
@@ -335,6 +380,12 @@ function InvestigacionFormPage() {
   // --- Handler para enviar formulario ---
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (isTimeUp && !isEditMode) {
+      setError('El tiempo para completar el formulario ha expirado. No puedes guardar esta investigación.');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setSuccess('');
@@ -398,6 +449,21 @@ function InvestigacionFormPage() {
       <div className="admin-register-header">
         <h1>{isEditMode ? 'Editar' : 'Crear'} Registro de Investigación</h1>
         <p>Complete la información requerida para {isEditMode ? 'actualizar' : 'crear'} el registro</p>
+
+        {!isEditMode && (
+          <div className={`time-counter ${timeLeft <= 5 * 60 ? 'time-warning' : ''} ${showTimeoutWarning ? 'time-critical' : ''}`}>
+            <div className="time-counter-header">
+              <i className="fas fa-clock"></i>
+              <span>Tiempo restante: {formatTime(timeLeft)}</span>
+            </div>
+            {showTimeoutWarning && (
+              <div className="timeout-warning">
+                <i className="fas fa-exclamation-triangle"></i>
+                <span>¡Atención! Solo quedan 2 minutos para completar el formulario</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="admin-register-form-container">
@@ -1222,7 +1288,8 @@ function InvestigacionFormPage() {
             <button 
               type="submit" 
               className="admin-submit-button" 
-              disabled={loading}
+              disabled={loading || (isTimeUp && !isEditMode)}
+              title={isTimeUp && !isEditMode ? 'El tiempo para guardar ha expirado' : ''}
             >
               {isEditMode ? 'Actualizar' : 'Guardar'} Investigación
             </button>

@@ -407,3 +407,67 @@
   padding: 4px 8px !important;
   min-height: 30px !important;
 }
+
+/* Estilos para el contador de tiempo */
+.time-counter {
+  background: #e3f2fd;
+  border: 2px solid #2196f3;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 15px 0;
+  text-align: center;
+}
+
+.time-counter.time-warning {
+  background: #fff3e0;
+  border-color: #ff9800;
+  animation: pulse 2s infinite;
+}
+
+.time-counter.time-critical {
+  background: #ffebee;
+  border-color: #f44336;
+  animation: pulse 1s infinite;
+}
+
+.time-counter-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1976d2;
+}
+
+.time-warning .time-counter-header {
+  color: #f57c00;
+}
+
+.time-critical .time-counter-header {
+  color: #d32f2f;
+}
+
+.timeout-warning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(255, 152, 0, 0.1);
+  border-radius: 4px;
+  font-weight: 500;
+  color: #e65100;
+}
+
+.timeout-warning i {
+  color: #ff9800;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
