@@ -18,6 +18,7 @@ const navItems = [
   { label: "Inicio", icon: <FiHome />, href: "/" },
   { label: "Investigaciones", icon: <FiFileText />, href: "/investigaciones" },
   { label: "Usuarios", icon: <FiUsers />, href: "/users" },
+  { label: "Logs", icon: <FiUsers />, href: "/logs" },
 ];
 
 type SidebarProps = {

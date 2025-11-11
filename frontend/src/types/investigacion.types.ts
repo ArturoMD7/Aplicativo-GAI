@@ -92,7 +92,6 @@ export interface InvestigacionListado {
   created_at: string;
 }
 
-// Tipo para empleado buscado (puedes eliminar la importación de Empleado)
 export interface EmpleadoBuscado {
   ficha: string;
   nombre: string;
@@ -105,3 +104,4 @@ export interface EmpleadoBuscado {
   curp: string;
   direccion: string;
 }
+

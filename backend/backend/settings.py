@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'login_register',
     'investigaciones',
+    'auditoria',
 ]
 
 REST_FRAMEWORK = {
@@ -66,6 +67,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'auditoria.middleware.ActivityLoggingMiddleware',
 ]
 
 CORS_ALLOWED_ORIGINS = [

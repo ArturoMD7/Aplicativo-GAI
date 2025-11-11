@@ -13,16 +13,13 @@ apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
     
-    console.log('🔐 Token en localStorage:', token); // ← AÑADE ESTO
-    console.log('🌐 Request URL:', config.url); // ← AÑADE ESTO
     
     if (token) {
       if (config.headers) {
         config.headers['Authorization'] = `Bearer ${token}`;
-        console.log('✅ Token añadido a headers'); // ← AÑADE ESTO
       }
     } else {
-      console.log('❌ No hay token disponible'); // ← AÑADE ESTO
+      console.log('No hay token disponible'); 
     }
     
     return config;
@@ -32,12 +29,10 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Añade interceptor de respuesta para manejar errores
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      console.log('❌ Token inválido o expirado');
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       // Redirigir al login

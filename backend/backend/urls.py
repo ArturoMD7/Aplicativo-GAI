@@ -36,4 +36,5 @@ urlpatterns = [
     path('api/user/change-password/', change_password, name='change_password'),
 
     path('api/investigaciones/', include('investigaciones.urls')),
+    path('api/auditoria/', include('auditoria.urls')),
 ]

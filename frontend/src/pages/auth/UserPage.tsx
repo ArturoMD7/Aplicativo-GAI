@@ -36,7 +36,6 @@ function UsersPage() {
   }, []);
 
   const handleEdit = (userId: number) => {
-    // TODO: Implementar edición de usuario
     console.log('Editar usuario:', userId);
     alert(`Funcionalidad de edición para usuario ${userId} - Próximamente`);
   };
@@ -49,7 +48,7 @@ function UsersPage() {
     try {
       await apiClient.delete(`/api/user/${userId}/`);
       alert(`Usuario ${userEmail} eliminado correctamente.`);
-      setUsers(users.filter(u => u.id !== userId)); // actualiza la lista
+      setUsers(users.filter(u => u.id !== userId));
     } catch (err: any) {
       console.error('Error eliminando usuario:', err.response?.data);
       alert(err.response?.data?.error || 'No se pudo eliminar el usuario.');

@@ -119,7 +119,7 @@ function InvestigacionFormPage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const [timeLeft, setTimeLeft] = useState<number>(20 * 60); // 20 minutos en segundos
+  const [timeLeft, setTimeLeft] = useState<number>(20 * 60);
   const [showTimeoutWarning, setShowTimeoutWarning] = useState<boolean>(false);
   const [isTimeUp, setIsTimeUp] = useState<boolean>(false);
 
