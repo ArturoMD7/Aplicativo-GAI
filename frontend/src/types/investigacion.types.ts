@@ -80,10 +80,13 @@ export interface OpcionesDropdowns {
 export interface InvestigacionListado {
   id: number;
   numero_reporte: string;
+  procedencia: string;
   nombre_corto: string;
   descripcion_general: string;
   gravedad: string;
+  gerencia_responsable: string;
   fecha_prescripcion: string;
+  fecha_reporte: string;
   created_by_name: string;
   dias_restantes: number;
   semaforo: 'red' | 'yellow' | 'green' | 'gray';

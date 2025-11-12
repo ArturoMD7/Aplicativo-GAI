@@ -272,7 +272,7 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Investigacion
         fields = [
-            'id', 'numero_reporte', 'nombre_corto', 'descripcion_general',
+            'id', 'numero_reporte', 'nombre_corto', 'procedencia', 'descripcion_general',
             'direccion', 'gravedad', 'fecha_reporte', 'fecha_prescripcion',
             'gerencia_responsable', 'created_by_name', 'dias_restantes',
             'semaforo', 'total_involucrados', 'total_testigos', 'created_at'

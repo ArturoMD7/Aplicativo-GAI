@@ -1,5 +1,9 @@
 .admin-page {
-  width: 100%;
+  max-width: 1600px; 
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1rem;
+  width: 100%; 
 }
 
 .page-header {

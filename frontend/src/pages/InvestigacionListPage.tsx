@@ -120,11 +120,14 @@ function InvestigacionListPage() {
               <th>Semáforo</th>
               <th>No. Reporte</th>
               <th>Nombre Corto</th>
+              <th>Procedencia</th>
               <th>Gravedad</th>
-              <th>Creado Por</th>
+              <th>Región</th>
               <th>Fecha Creación</th>
+              <th>Fecha de Reporte</th>
               <th>Fecha Prescripción</th>
               <th>Días Rest.</th>
+              <th>Creado Por</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -140,11 +143,14 @@ function InvestigacionListPage() {
                 </td>
                 <td>{inv.numero_reporte}</td>
                 <td>{inv.nombre_corto}</td>
+                <td>{inv.procedencia}</td>
                 <td>{inv.gravedad}</td>
-                <td>{inv.created_by_name}</td>
+                <td>{inv.gerencia_responsable}</td>
                 <td>{new Date(inv.created_at).toLocaleDateString()}</td>
                 <td>{new Date(inv.fecha_prescripcion).toLocaleDateString()}</td>
+                <td>{new Date(inv.fecha_reporte).toLocaleDateString()}</td>
                 <td>{inv.dias_restantes}</td>
+                <td>{inv.created_by_name}</td>
                 <td>
                   <div className="action-buttons">
                     <ButtonIcon
