@@ -117,6 +117,8 @@ function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
         {error && <div className="admin-alert admin-alert-error">{error}</div>}
         {success && <div className="admin-alert admin-alert-success">{success}</div>}
 
+        <div className="admin-register-form-container">
+
         <form className="admin-register-form" onSubmit={handleSubmit}>
           <div className="admin-form-group">
             <label htmlFor="email">Correo electrónico *</label>
@@ -270,6 +272,7 @@ function RegisterPage({ onSwitchToLogin }: RegisterPageProps) {
             Volver a Gestión de Usuarios
           </Link>
         </form>
+        </div>
       </div>
     </div>
   );

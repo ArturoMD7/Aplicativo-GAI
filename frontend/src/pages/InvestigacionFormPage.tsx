@@ -207,9 +207,31 @@ function InvestigacionFormPage() {
     }
   }, [isEditMode, formState.centro]);
 
-  // --- Handlers para el formulario principal ---
+  /*
+  useEffect(() => {
+    if (formState.fecha_conocimiento_hechos) {
+      const calcularFechaPrescripcion = () => {
+        const fechaConocimiento = new Date(formState.fecha_conocimiento_hechos);
+        const fechaPrescripcion = new Date(fechaConocimiento);
+        fechaPrescripcion.setDate(fechaPrescripcion.getDate() + 30);
+
+        setFormState(prev => ({
+          ...prev,
+          fecha_prescripcion: fechaPrescripcion.toISOString().split('T')[0]
+        }));
+      };
+
+      calcularFechaPrescripcion();
+    }
+  }, [formState.fecha_conocimiento_hechos]);
+ */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
+
+    // Prevenir edición manual de fecha_prescripcion
+    if (name === 'fecha_prescripcion') {
+      return;
+    }
 
     let processedValue: any = value;
 
@@ -217,17 +239,37 @@ function InvestigacionFormPage() {
       processedValue = e.target.checked;
     }
 
+    // LÓGICA MODIFICADA
     if (name === 'regimen') {
       setFormState(prev => ({
         ...prev,
         regimen: value,
         sindicato: (value === 'Sindicalizado' || value === 'Ambos') ? prev.sindicato : null
       }));
-    } else if (name === 'centro') {
-      // Cuando cambia el centro, cargar las áreas correspondientes
+    }
+    else if (name === 'centro') {
       setFormState(prev => ({ ...prev, centro: value, area_depto: '' }));
       cargarAreasPorCentro(value);
-    } else {
+    }
+    else if (name === 'fecha_conocimiento_hechos') {
+      let nuevaFechaPrescripcion = formState.fecha_prescripcion;
+
+      if (value) {
+        const fechaConocimiento = new Date(value + 'T12:00:00');
+        const fechaCalc = new Date(fechaConocimiento);
+
+        fechaCalc.setDate(fechaCalc.getDate() + 30);
+
+        nuevaFechaPrescripcion = fechaCalc.toISOString().split('T')[0];
+      }
+
+      setFormState(prev => ({
+        ...prev,
+        [name]: processedValue,
+        fecha_prescripcion: nuevaFechaPrescripcion
+      }));
+    }
+    else {
       setFormState(prev => ({ ...prev, [name]: processedValue }));
     }
   };

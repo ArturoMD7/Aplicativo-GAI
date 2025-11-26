@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
+from datetime import timedelta
 from django.contrib.auth.models import User
 from .models import Investigacion, Contacto, Investigador, Involucrado, Testigo
 
@@ -176,6 +177,8 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
+        if 'fecha_conocimiento_hechos' in validated_data:
+            validated_data['fecha_prescripcion'] = validated_data['fecha_conocimiento_hechos'] + timedelta(days=30)
         # Extraer datos de relaciones
         contactos_data = validated_data.pop('contactos', [])
         investigadores_data = validated_data.pop('investigadores', [])
@@ -226,6 +229,11 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         return f"{prefijo}/{numero}/{año}"
 
     def update(self, instance, validated_data):
+
+        if 'fecha_conocimiento_hechos' in validated_data:
+            nuevo_conocimiento = validated_data['fecha_conocimiento_hechos']
+            instance.fecha_prescripcion = nuevo_conocimiento + timedelta(days=30)
+            
         # Extraer datos de relaciones
         contactos_data = validated_data.pop('contactos', None)
         investigadores_data = validated_data.pop('investigadores', None)
@@ -275,7 +283,7 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
             'id', 'numero_reporte', 'nombre_corto', 'procedencia', 'descripcion_general',
             'direccion', 'gravedad', 'fecha_reporte', 'fecha_prescripcion',
             'gerencia_responsable', 'created_by_name', 'dias_restantes',
-            'semaforo', 'total_involucrados', 'total_testigos', 'created_at'
+            'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos'
         ]
 
     def get_dias_restantes(self, obj):

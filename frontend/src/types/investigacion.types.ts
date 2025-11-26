@@ -12,7 +12,7 @@ export interface Contacto extends BasePersona {
   tipo: 'contacto' | 'responsable';
 }
 
-export interface Investigador extends BasePersona {}
+export interface Investigador extends BasePersona { }
 
 export interface Involucrado extends BasePersona {
   nivel: string;
@@ -34,7 +34,7 @@ export interface InvestigacionFormState {
   id?: number;
   nombre_corto: string;
   descripcion_general: string;
-  
+
   // Sección 1
   direccion: string;
   procedencia: string;
@@ -43,24 +43,24 @@ export interface InvestigacionFormState {
   centro: string;
   area_depto: string;
   gravedad: string;
-  
+
   // Sección 2
   numero_reporte: string; // AÑADIR ESTA PROPIEDAD FALTANTE
   fecha_reporte: string;
   fecha_conocimiento_hechos: string;
   fecha_prescripcion: string;
   economica: boolean;
-  
+
   // Sección 3
   gerencia_responsable: string;
-  
+
   // Sección 4
   lugar: string;
   observaciones: string;
   fecha_evento: string;
   centro_trabajo: string;
   antecedentes: string;
-  
+
   // Relaciones
   contactos: Contacto[];
   investigadores: Investigador[];
@@ -93,6 +93,7 @@ export interface InvestigacionListado {
   total_involucrados: number;
   total_testigos: number;
   created_at: string;
+  fecha_conocimiento_hechos: string;
 }
 
 export interface EmpleadoBuscado {

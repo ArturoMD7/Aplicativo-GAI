@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import apiClient from '../api/apliClient';
-import ButtonIcon from '../components/Buttons/ButtonIcon'; 
+import ButtonIcon from '../components/Buttons/ButtonIcon';
 import type { InvestigacionFormState } from '../types/investigacion.types';
-import { FiEdit} from 'react-icons/fi';
+import { FiEdit } from 'react-icons/fi';
 import { FaArrowLeft } from "react-icons/fa";
 import '../styles/InvestigacionaDetails.css';
 
@@ -33,9 +33,10 @@ function InvestigacionDetailsPage() {
     }
   }, [id]);
 
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'No especificada';
-    return new Date(dateString).toLocaleDateString('es-ES');
+  const formatDate = (str: string) => {
+    if (!str) return '';
+    const [year, month, day] = str.split("-");
+    return `${day}/${month}/${year}`;
   };
 
   const renderPersonas = (personas: any[], tipo: string) => {
@@ -51,7 +52,7 @@ function InvestigacionDetailsPage() {
               <h4>{persona.nombre}</h4>
               <span className="admin-ficha">Ficha: {persona.ficha}</span>
             </div>
-            
+
             <div className="admin-persona-details">
               <div className="admin-detail-row">
                 <span className="admin-label">Categoría:</span>
@@ -61,70 +62,70 @@ function InvestigacionDetailsPage() {
                 <span className="admin-label">Puesto:</span>
                 <span className="admin-value">{persona.puesto || 'No especificado'}</span>
               </div>
-              
+
               {persona.nivel && (
                 <div className="admin-detail-row">
                   <span className="admin-label">Nivel:</span>
                   <span className="admin-value">{persona.nivel}</span>
                 </div>
               )}
-              
+
               {persona.extension && (
                 <div className="admin-detail-row">
                   <span className="admin-label">Extensión:</span>
                   <span className="admin-value">{persona.extension}</span>
                 </div>
               )}
-              
+
               {persona.email && (
                 <div className="admin-detail-row">
                   <span className="admin-label">Email:</span>
                   <span className="admin-value">{persona.email}</span>
                 </div>
               )}
-              
+
               {persona.tipo && (
                 <div className="admin-detail-row">
                   <span className="admin-label">Tipo:</span>
                   <span className="admin-badge admin-badge-primary">{persona.tipo}</span>
                 </div>
               )}
-              
+
               {persona.edad !== undefined && (
                 <div className="admin-detail-row">
                   <span className="admin-label">Edad:</span>
                   <span className="admin-value">{persona.edad} años</span>
                 </div>
               )}
-              
+
               {persona.antiguedad !== undefined && (
                 <div className="admin-detail-row">
                   <span className="admin-label">Antigüedad:</span>
                   <span className="admin-value">{persona.antiguedad} años</span>
                 </div>
               )}
-              
+
               {persona.rfc && (
                 <div className="admin-detail-row">
                   <span className="admin-label">RFC:</span>
                   <span className="admin-value">{persona.rfc}</span>
                 </div>
               )}
-              
+
               {persona.curp && (
                 <div className="admin-detail-row">
                   <span className="admin-label">CURP:</span>
                   <span className="admin-value">{persona.curp}</span>
                 </div>
               )}
-              
+
               {persona.direccion && (
                 <div className="admin-detail-row">
                   <span className="admin-label">Dirección:</span>
                   <span className="admin-value">{persona.direccion}</span>
                 </div>
               )}
-              
+
               {persona.subordinacion !== undefined && (
                 <div className="admin-detail-row">
                   <span className="admin-label">Subordinación:</span>
@@ -159,7 +160,7 @@ function InvestigacionDetailsPage() {
             <i className="fas fa-calendar-alt"></i>
             Fechas Importantes
           </h2>
-          
+
           <div className="admin-dates-grid">
             <div className="admin-date-card">
               <i className="fas fa-file-upload"></i>
@@ -168,7 +169,7 @@ function InvestigacionDetailsPage() {
                 <p>{formatDate(investigacion.fecha_reporte)}</p>
               </div>
             </div>
-            
+
             <div className="admin-date-card">
               <i className="fas fa-eye"></i>
               <div>
@@ -176,7 +177,7 @@ function InvestigacionDetailsPage() {
                 <p>{formatDate(investigacion.fecha_conocimiento_hechos)}</p>
               </div>
             </div>
-            
+
             <div className="admin-date-card">
               <i className="fas fa-calendar-day"></i>
               <div>
@@ -184,7 +185,7 @@ function InvestigacionDetailsPage() {
                 <p>{formatDate(investigacion.fecha_evento)}</p>
               </div>
             </div>
-            
+
             <div className="admin-date-card">
               <i className="fas fa-clock"></i>
               <div>
@@ -196,10 +197,10 @@ function InvestigacionDetailsPage() {
 
           <div className="admin-form-group">
             <div className="admin-checkbox-container">
-              <input 
-                type="checkbox" 
-                checked={investigacion.economica} 
-                readOnly 
+              <input
+                type="checkbox"
+                checked={investigacion.economica}
+                readOnly
                 className="admin-readonly-checkbox"
               />
               <label>¿Implica repercusión económica?</label>
@@ -213,16 +214,16 @@ function InvestigacionDetailsPage() {
             <i className="fas fa-info-circle"></i>
             Información General
           </h2>
-          
+
           <div className="admin-form-row">
             <div className="admin-form-group">
               <label>Nombre Corto</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-heading"></i>
-                <input 
-                  type="text" 
-                  value={investigacion.nombre_corto} 
-                  readOnly 
+                <input
+                  type="text"
+                  value={investigacion.nombre_corto}
+                  readOnly
                   className="admin-readonly-field"
                 />
               </div>
@@ -232,10 +233,10 @@ function InvestigacionDetailsPage() {
               <label>Número de Reporte</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-hashtag"></i>
-                <input 
-                  type="text" 
-                  value={investigacion.numero_reporte || 'No asignado'} 
-                  readOnly 
+                <input
+                  type="text"
+                  value={investigacion.numero_reporte || 'No asignado'}
+                  readOnly
                   className="admin-readonly-field"
                 />
               </div>
@@ -246,9 +247,9 @@ function InvestigacionDetailsPage() {
             <label>Descripción General</label>
             <div className="admin-input-with-icon">
               <i className="fas fa-file-alt"></i>
-              <textarea 
-                value={investigacion.descripcion_general} 
-                readOnly 
+              <textarea
+                value={investigacion.descripcion_general}
+                readOnly
                 className="admin-readonly-field admin-textarea"
                 rows={3}
               />
@@ -260,10 +261,10 @@ function InvestigacionDetailsPage() {
               <label>Gravedad</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-exclamation-triangle"></i>
-                <input 
-                  type="text" 
-                  value={investigacion.gravedad} 
-                  readOnly 
+                <input
+                  type="text"
+                  value={investigacion.gravedad}
+                  readOnly
                   className="admin-readonly-field"
                 />
               </div>
@@ -273,10 +274,10 @@ function InvestigacionDetailsPage() {
               <label>Procedencia</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-source"></i>
-                <input 
-                  type="text" 
-                  value={investigacion.procedencia} 
-                  readOnly 
+                <input
+                  type="text"
+                  value={investigacion.procedencia}
+                  readOnly
                   className="admin-readonly-field"
                 />
               </div>
@@ -290,16 +291,16 @@ function InvestigacionDetailsPage() {
             <i className="fas fa-building"></i>
             Ubicación Organizacional
           </h2>
-          
+
           <div className="admin-form-row">
             <div className="admin-form-group">
               <label>Dirección</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-sitemap"></i>
-                <input 
-                  type="text" 
-                  value={investigacion.direccion} 
-                  readOnly 
+                <input
+                  type="text"
+                  value={investigacion.direccion}
+                  readOnly
                   className="admin-readonly-field"
                 />
               </div>
@@ -309,10 +310,10 @@ function InvestigacionDetailsPage() {
               <label>Centro</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-industry"></i>
-                <input 
-                  type="text" 
-                  value={investigacion.centro} 
-                  readOnly 
+                <input
+                  type="text"
+                  value={investigacion.centro}
+                  readOnly
                   className="admin-readonly-field"
                 />
               </div>
@@ -324,10 +325,10 @@ function InvestigacionDetailsPage() {
               <label>Área/Departamento</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-layer-group"></i>
-                <input 
-                  type="text" 
-                  value={investigacion.area_depto} 
-                  readOnly 
+                <input
+                  type="text"
+                  value={investigacion.area_depto}
+                  readOnly
                   className="admin-readonly-field"
                 />
               </div>
@@ -337,10 +338,10 @@ function InvestigacionDetailsPage() {
               <label>Régimen</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-users"></i>
-                <input 
-                  type="text" 
-                  value={investigacion.regimen} 
-                  readOnly 
+                <input
+                  type="text"
+                  value={investigacion.regimen}
+                  readOnly
                   className="admin-readonly-field"
                 />
               </div>
@@ -352,10 +353,10 @@ function InvestigacionDetailsPage() {
               <label>Sindicato</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-handshake"></i>
-                <input 
-                  type="text" 
-                  value={investigacion.sindicato} 
-                  readOnly 
+                <input
+                  type="text"
+                  value={investigacion.sindicato}
+                  readOnly
                   className="admin-readonly-field"
                 />
               </div>
@@ -369,15 +370,15 @@ function InvestigacionDetailsPage() {
             <i className="fas fa-user-tie"></i>
             Gerencia Responsable
           </h2>
-          
+
           <div className="admin-form-group">
             <label>Gerencia Responsable</label>
             <div className="admin-input-with-icon">
               <i className="fas fa-briefcase"></i>
-              <input 
-                type="text" 
-                value={investigacion.gerencia_responsable} 
-                readOnly 
+              <input
+                type="text"
+                value={investigacion.gerencia_responsable}
+                readOnly
                 className="admin-readonly-field"
               />
             </div>
@@ -400,16 +401,16 @@ function InvestigacionDetailsPage() {
             <i className="fas fa-calendar-check"></i>
             Información del Evento
           </h2>
-          
+
           <div className="admin-form-row">
             <div className="admin-form-group">
               <label>Lugar de los hechos</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-map-marker-alt"></i>
-                <input 
-                  type="text" 
-                  value={investigacion.lugar || 'No especificado'} 
-                  readOnly 
+                <input
+                  type="text"
+                  value={investigacion.lugar || 'No especificado'}
+                  readOnly
                   className="admin-readonly-field"
                 />
               </div>
@@ -419,10 +420,10 @@ function InvestigacionDetailsPage() {
               <label>Centro de Trabajo</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-hard-hat"></i>
-                <input 
-                  type="text" 
-                  value={investigacion.centro_trabajo || 'No especificado'} 
-                  readOnly 
+                <input
+                  type="text"
+                  value={investigacion.centro_trabajo || 'No especificado'}
+                  readOnly
                   className="admin-readonly-field"
                 />
               </div>
@@ -433,9 +434,9 @@ function InvestigacionDetailsPage() {
             <label>Observaciones</label>
             <div className="admin-input-with-icon">
               <i className="fas fa-sticky-note"></i>
-              <textarea 
-                value={investigacion.observaciones || 'Sin observaciones'} 
-                readOnly 
+              <textarea
+                value={investigacion.observaciones || 'Sin observaciones'}
+                readOnly
                 className="admin-readonly-field admin-textarea"
                 rows={3}
               />
@@ -446,9 +447,9 @@ function InvestigacionDetailsPage() {
             <label>Antecedentes</label>
             <div className="admin-input-with-icon">
               <i className="fas fa-history"></i>
-              <textarea 
-                value={investigacion.antecedentes || 'Sin antecedentes'} 
-                readOnly 
+              <textarea
+                value={investigacion.antecedentes || 'Sin antecedentes'}
+                readOnly
                 className="admin-readonly-field admin-textarea"
                 rows={3}
               />
@@ -462,7 +463,7 @@ function InvestigacionDetailsPage() {
             <i className="fas fa-users"></i>
             Personas Involucradas
           </h2>
-          
+
           <div className="admin-personas-section">
             <h3>Involucrados</h3>
             {renderPersonas(investigacion.involucrados || [], 'involucrados')}
@@ -483,7 +484,7 @@ function InvestigacionDetailsPage() {
             text="Volver a la lista"
             size="medium"
           />
-          
+
           <ButtonIcon
             variant="edit"
             to={`/investigaciones/editar/${id}`}

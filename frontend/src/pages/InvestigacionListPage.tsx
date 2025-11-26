@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
 import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload } from 'react-icons/fi';
-import ButtonIcon from '../components/Buttons/ButtonIcon'; 
+import ButtonIcon from '../components/Buttons/ButtonIcon';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import '../styles/InvestigacionPage.css'; 
+import '../styles/InvestigacionPage.css';
 
 function InvestigacionListPage() {
   const [investigaciones, setInvestigaciones] = useState<InvestigacionListado[]>([]);
@@ -48,6 +48,12 @@ function InvestigacionListPage() {
     );
   });
 
+  const formatDate = (str: string) => {
+    if (!str) return '';
+    const [year, month, day] = str.split("-");
+    return `${day}/${month}/${year}`;
+  };
+
   // 📤 Exportar a Excel (respeta el filtro)
   const exportToExcel = () => {
     if (filteredInvestigaciones.length === 0) {
@@ -66,6 +72,8 @@ function InvestigacionListPage() {
       'Fecha Prescripción': new Date(inv.fecha_prescripcion).toLocaleDateString(),
       'Días Restantes': inv.dias_restantes
     }));
+
+
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
@@ -123,8 +131,8 @@ function InvestigacionListPage() {
               <th>Procedencia</th>
               <th>Gravedad</th>
               <th>Región</th>
-              <th>Fecha Creación</th>
               <th>Fecha de Reporte</th>
+              <th>Fecha Conocimiento Hechos</th>
               <th>Fecha Prescripción</th>
               <th>Días Rest.</th>
               <th>Creado Por</th>
@@ -135,8 +143,8 @@ function InvestigacionListPage() {
             {filteredInvestigaciones.map((inv) => (
               <tr key={inv.id}>
                 <td>
-                  <span 
-                    className="semaforo-dot" 
+                  <span
+                    className="semaforo-dot"
                     style={{ backgroundColor: getSemaforoColor(inv.semaforo) }}
                     title={`Días restantes: ${inv.dias_restantes}`}
                   ></span>
@@ -146,9 +154,9 @@ function InvestigacionListPage() {
                 <td>{inv.procedencia}</td>
                 <td>{inv.gravedad}</td>
                 <td>{inv.gerencia_responsable}</td>
-                <td>{new Date(inv.created_at).toLocaleDateString()}</td>
-                <td>{new Date(inv.fecha_prescripcion).toLocaleDateString()}</td>
-                <td>{new Date(inv.fecha_reporte).toLocaleDateString()}</td>
+                <td>{formatDate(inv.fecha_reporte)}</td>
+                <td>{formatDate(inv.fecha_conocimiento_hechos)}</td>
+                <td>{formatDate(inv.fecha_prescripcion)}</td>
                 <td>{inv.dias_restantes}</td>
                 <td>{inv.created_by_name}</td>
                 <td>
@@ -178,7 +186,7 @@ function InvestigacionListPage() {
           <div className="no-results">No se encontraron coincidencias.</div>
         )}
       </div>
-    </div>
+    </div >
   );
 }
 

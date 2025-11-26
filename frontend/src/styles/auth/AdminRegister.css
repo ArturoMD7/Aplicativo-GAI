@@ -1,3 +1,24 @@
+.admin-register-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: calc(100vh - 60px);
+  padding: 40px 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-register-form-container {
+  background: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 500px;
+  margin-top: 20px;
+}
+
 .admin-register-header h1 {
   color: #840016;
   margin-bottom: 8px;
