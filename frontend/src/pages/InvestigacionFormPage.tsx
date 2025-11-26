@@ -1,18 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/apliClient';
-import type { 
-  InvestigacionFormState, 
-  OpcionesDropdowns, 
-  Contacto, 
-  Investigador, 
-  Involucrado, 
+import type {
+  InvestigacionFormState,
+  OpcionesDropdowns,
+  Contacto,
+  Investigador,
+  Involucrado,
   Testigo,
-  EmpleadoBuscado 
+  EmpleadoBuscado
 } from '../types/investigacion.types';
-import '../styles/InvestigacionaDetails.css'; 
+import '../styles/InvestigacionaDetails.css';
 import ButtonIcon from '../components/Buttons/ButtonIcon';
-import { FiEdit} from 'react-icons/fi';
+import { FiEdit } from 'react-icons/fi';
 import { FaArrowLeft } from "react-icons/fa";
 
 const initialState: InvestigacionFormState = {
@@ -25,7 +25,7 @@ const initialState: InvestigacionFormState = {
   centro: '',
   area_depto: '',
   gravedad: '',
-  numero_reporte: '', 
+  numero_reporte: '',
   fecha_reporte: new Date().toISOString().split('T')[0],
   fecha_conocimiento_hechos: '',
   fecha_prescripcion: '',
@@ -98,7 +98,7 @@ function InvestigacionFormPage() {
   const [centrosTrabajo, setCentrosTrabajo] = useState<string[]>([]);
   const [centrosCoduni, setCentrosCoduni] = useState<string[]>([]);
   const [areasCoduni, setAreasCoduni] = useState<string[]>([]);
-  
+
   // Estados para las secciones de personas
   const [contactoActual, setContactoActual] = useState<ContactoForm>({
     ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', tipo: 'contacto'
@@ -107,11 +107,11 @@ function InvestigacionFormPage() {
     ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: ''
   });
   const [involucradoActual, setInvolucradoActual] = useState<InvolucradoForm>({
-    ficha: '', nombre: '', nivel: '', categoria: '', puesto: '', 
+    ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
     edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: ''
   });
   const [testigoActual, setTestigoActual] = useState<TestigoForm>({
-    ficha: '', nombre: '', nivel: '', categoria: '', puesto: '', 
+    ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
     direccion: '', subordinacion: false
   });
 
@@ -134,12 +134,12 @@ function InvestigacionFormPage() {
             handleTimeout();
             return 0;
           }
-          
+
           // Mostrar advertencia cuando queden 2 minutos
           if (prevTime === 2 * 60) {
             setShowTimeoutWarning(true);
           }
-          
+
           return prevTime - 1;
         });
       }, 1000);
@@ -153,7 +153,7 @@ function InvestigacionFormPage() {
   // Función para manejar el timeout
   const handleTimeout = () => {
     setShowTimeoutWarning(false);
-    setIsTimeUp(true); 
+    setIsTimeUp(true);
     setError('El tiempo para completar el formulario ha expirado. No puedes guardar esta investigación.');
   };
 
@@ -173,7 +173,7 @@ function InvestigacionFormPage() {
           apiClient.get('/api/investigaciones/centros-trabajo/'),
           apiClient.get('/api/investigaciones/centros-coduni/')
         ]);
-        
+
         setOpciones(opcionesRes.data);
         setCentrosTrabajo(centrosTrabajoRes.data);
         setCentrosCoduni(centrosCoduniRes.data);
@@ -210,13 +210,13 @@ function InvestigacionFormPage() {
   // --- Handlers para el formulario principal ---
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    
+
     let processedValue: any = value;
-    
+
     if (type === 'checkbox' && e.target instanceof HTMLInputElement) {
       processedValue = e.target.checked;
     }
-    
+
     if (name === 'regimen') {
       setFormState(prev => ({
         ...prev,
@@ -237,7 +237,7 @@ function InvestigacionFormPage() {
       setAreasCoduni([]);
       return;
     }
-    
+
     try {
       const response = await apiClient.get(`/api/investigaciones/areas-por-centro/?centro=${encodeURIComponent(centro)}`);
       setAreasCoduni(response.data);
@@ -347,7 +347,7 @@ function InvestigacionFormPage() {
     }));
 
     setInvolucradoActual({
-      ficha: '', nombre: '', nivel: '', categoria: '', puesto: '', 
+      ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
       edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: ''
     });
   };
@@ -364,7 +364,7 @@ function InvestigacionFormPage() {
     }));
 
     setTestigoActual({
-      ficha: '', nombre: '', nivel: '', categoria: '', puesto: '', 
+      ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
       direccion: '', subordinacion: false
     });
   };
@@ -391,11 +391,11 @@ function InvestigacionFormPage() {
     setSuccess('');
 
     const hoy = new Date().toISOString().split('T')[0];
-      if (formState.fecha_conocimiento_hechos > hoy) {
-        setLoading(false);
-        setError('La fecha de conocimiento de hechos no puede ser posterior a la fecha actual.');
-        return;
-      }
+    if (formState.fecha_conocimiento_hechos > hoy) {
+      setLoading(false);
+      setError('La fecha de conocimiento de hechos no puede ser posterior a la fecha actual.');
+      return;
+    }
 
     try {
       const dataToSubmit = {
@@ -408,18 +408,18 @@ function InvestigacionFormPage() {
       };
 
       if (isEditMode) {
-      await apiClient.put(`/api/investigaciones/investigaciones/${id}/`, dataToSubmit);
-      setSuccess('Investigación actualizada exitosamente.');
-    } else {
-      await apiClient.post('/api/investigaciones/investigaciones/', dataToSubmit);
-      setSuccess('Investigación creada exitosamente. Redirigiendo...');
-    }
-      
+        await apiClient.put(`/api/investigaciones/investigaciones/${id}/`, dataToSubmit);
+        setSuccess('Investigación actualizada exitosamente.');
+      } else {
+        await apiClient.post('/api/investigaciones/investigaciones/', dataToSubmit);
+        setSuccess('Investigación creada exitosamente. Redirigiendo...');
+      }
+
       setTimeout(() => navigate('/investigaciones'), 1500);
 
     } catch (err: any) {
       console.error('Error completo:', err.response?.data);
-      
+
       if (err.response?.status === 400) {
         const errorData = err.response.data;
         if (typeof errorData === 'object') {
@@ -482,18 +482,18 @@ function InvestigacionFormPage() {
               <i className="fas fa-info-circle"></i>
               Información General
             </h2>
-            
+
             <div className="admin-form-row">
               <div className="admin-form-group">
                 <label>Nombre Corto *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-heading"></i>
-                  <input 
-                    type="text" 
-                    name="nombre_corto" 
-                    value={formState.nombre_corto} 
-                    onChange={handleChange} 
-                    required 
+                  <input
+                    type="text"
+                    name="nombre_corto"
+                    value={formState.nombre_corto}
+                    onChange={handleChange}
+                    required
                     maxLength={50}
                     placeholder="Máximo 50 caracteres"
                   />
@@ -504,10 +504,10 @@ function InvestigacionFormPage() {
                 <label>Número de Reporte</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-hashtag"></i>
-                  <input 
-                    type="text" 
-                    value={formState.numero_reporte || 'No asignado'} 
-                    readOnly 
+                  <input
+                    type="text"
+                    value={formState.numero_reporte || 'No asignado'}
+                    readOnly
                     className="admin-readonly-field"
                   />
                 </div>
@@ -519,9 +519,9 @@ function InvestigacionFormPage() {
               <div className="admin-input-with-icon">
                 <i className="fas fa-heading"></i>
                 <input
-                  name="descripcion_general" 
-                  value={formState.descripcion_general} 
-                  onChange={handleChange} 
+                  name="descripcion_general"
+                  value={formState.descripcion_general}
+                  onChange={handleChange}
                   required
                   maxLength={140}
                   placeholder="Máximo 140 caracteres"
@@ -560,7 +560,7 @@ function InvestigacionFormPage() {
               <i className="fas fa-building"></i>
               Ubicación Organizacional
             </h2>
-            
+
             <div className="admin-form-row">
               <div className="admin-form-group">
                 <label>Dirección *</label>
@@ -577,7 +577,7 @@ function InvestigacionFormPage() {
                 <label>Centro *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-industry"></i>
-                  <input 
+                  <input
                     type="text"
                     name="centro"
                     value={formState.centro}
@@ -642,33 +642,33 @@ function InvestigacionFormPage() {
               <i className="fas fa-calendar-alt"></i>
               Fechas Importantes
             </h2>
-            
+
             <div className="admin-form-row">
               <div className="admin-form-group">
                 <label>Fecha de Reporte *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-file-upload"></i>
-                  <input 
-                    type="date" 
-                    name="fecha_reporte" 
-                    value={formState.fecha_reporte} 
-                    onChange={handleChange} 
-                    required 
+                  <input
+                    type="date"
+                    name="fecha_reporte"
+                    value={formState.fecha_reporte}
+                    onChange={handleChange}
+                    required
                   />
                 </div>
               </div>
-              
+
               <div className="admin-form-group">
                 <label>Fecha Conocimiento de Hechos *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-eye"></i>
-                  <input 
+                  <input
                     type="date"
                     name="fecha_conocimiento_hechos"
                     value={formState.fecha_conocimiento_hechos}
                     onChange={handleChange}
                     required
-                    max={new Date().toISOString().split("T")[0]} 
+                    max={new Date().toISOString().split("T")[0]}
                   />
                 </div>
               </div>
@@ -679,24 +679,24 @@ function InvestigacionFormPage() {
                 <label>Fecha del Evento *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-calendar-day"></i>
-                  <input 
-                    type="date" 
-                    name="fecha_evento" 
-                    value={formState.fecha_evento} 
-                    onChange={handleChange} 
-                    required 
+                  <input
+                    type="date"
+                    name="fecha_evento"
+                    value={formState.fecha_evento}
+                    onChange={handleChange}
+                    required
                   />
                 </div>
               </div>
-              
+
               <div className="admin-form-group">
                 <label>Fecha de Prescripción</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-clock"></i>
-                  <input 
-                    type="date" 
-                    name="fecha_prescripcion" 
-                    value={formState.fecha_prescripcion} 
+                  <input
+                    type="date"
+                    name="fecha_prescripcion"
+                    value={formState.fecha_prescripcion}
                     readOnly
                     className="admin-readonly-field"
                   />
@@ -707,12 +707,12 @@ function InvestigacionFormPage() {
 
             <div className="admin-form-group">
               <div className="admin-checkbox-container">
-                <input 
-                  type="checkbox" 
-                  name="economica" 
-                  checked={formState.economica} 
-                  onChange={handleChange} 
-                  id="economica_check" 
+                <input
+                  type="checkbox"
+                  name="economica"
+                  checked={formState.economica}
+                  onChange={handleChange}
+                  id="economica_check"
                 />
                 <label htmlFor="economica_check">¿Implica repercusión económica?</label>
               </div>
@@ -725,7 +725,7 @@ function InvestigacionFormPage() {
               <i className="fas fa-user-tie"></i>
               Gerencia Responsable
             </h2>
-            
+
             <div className="admin-form-group">
               <label>Gerencia Responsable *</label>
               <div className="admin-input-with-icon">
@@ -744,24 +744,24 @@ function InvestigacionFormPage() {
                 <label>Ficha</label>
 
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={contactoActual.ficha}
                     onChange={(e) => setContactoActual(prev => ({ ...prev, ficha: e.target.value }))}
                     placeholder="Ingrese ficha"
                     style={{ flex: 1 }}
                   />
 
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => buscarEmpleado(contactoActual.ficha, 'contacto')}
                     className="admin-submit-button"
                     style={{
-                      marginTop: '3px',   
-                      padding: '10px 20px', 
+                      marginTop: '3px',
+                      padding: '10px 20px',
                       fontSize: '0.9rem',
                       height: '40px',
-                      minWidth: '100px',     
+                      minWidth: '100px',
                       whiteSpace: 'nowrap'
                     }}
                   >
@@ -780,7 +780,7 @@ function InvestigacionFormPage() {
                   <input type="text" value={contactoActual.categoria} readOnly className="admin-readonly-field" />
                 </div>
               </div>
-              
+
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label>Puesto</label>
@@ -788,28 +788,28 @@ function InvestigacionFormPage() {
                 </div>
                 <div className="admin-form-group">
                   <label>Extensión</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={contactoActual.extension}
                     onChange={(e) => setContactoActual(prev => ({ ...prev, extension: e.target.value }))}
                     placeholder="Extensión"
                   />
                 </div>
               </div>
-              
+
               <div className="admin-form-group">
                 <label>Email</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   value={contactoActual.email}
                   onChange={(e) => setContactoActual(prev => ({ ...prev, email: e.target.value }))}
                   placeholder="Correo electrónico"
                 />
               </div>
-              
+
               <div className="admin-form-group">
                 <label>Tipo</label>
-                <select 
+                <select
                   value={contactoActual.tipo}
                   onChange={(e) => setContactoActual(prev => ({ ...prev, tipo: e.target.value as 'contacto' | 'responsable' }))}
                 >
@@ -817,14 +817,14 @@ function InvestigacionFormPage() {
                   <option value="responsable">Responsable</option>
                 </select>
               </div>
-              
-              <button type="button" onClick={agregarContacto} className="admin-submit-button" style={{maxWidth: '200px'}}>
+
+              <button type="button" onClick={agregarContacto} className="admin-submit-button" style={{ maxWidth: '200px' }}>
                 Agregar Contacto
               </button>
 
               {/* Lista de contactos agregados */}
               {formState.contactos.length > 0 && (
-                <div className="admin-personas-grid" style={{marginTop: '20px'}}>
+                <div className="admin-personas-grid" style={{ marginTop: '20px' }}>
                   <h4>Contactos Agregados:</h4>
                   {formState.contactos.map((contacto, index) => (
                     <div key={index} className="admin-persona-card">
@@ -846,11 +846,11 @@ function InvestigacionFormPage() {
                           <span className="admin-value">{contacto.extension}</span>
                         </div>
                       </div>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => eliminarPersona('contactos', index)}
                         className="admin-back-button"
-                        style={{marginTop: '10px', padding: '5px 10px', fontSize: '12px'}}
+                        style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
                       >
                         Eliminar
                       </button>
@@ -866,32 +866,32 @@ function InvestigacionFormPage() {
               <div className="admin-form-group">
                 <label>Ficha</label>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                  
-                  <input 
-                    type="text" 
+
+                  <input
+                    type="text"
                     value={investigadorActual.ficha}
                     onChange={(e) => setInvestigadorActual(prev => ({ ...prev, ficha: e.target.value }))}
                     placeholder="Ingrese ficha"
                   />
-                  <button 
-                  type="button" 
-                  onClick={() => buscarEmpleado(investigadorActual.ficha, 'investigador')}
-                  className="admin-submit-button"
-                  style={{
-                      marginTop: '3px',   
-                      padding: '10px 20px', 
+                  <button
+                    type="button"
+                    onClick={() => buscarEmpleado(investigadorActual.ficha, 'investigador')}
+                    className="admin-submit-button"
+                    style={{
+                      marginTop: '3px',
+                      padding: '10px 20px',
                       fontSize: '0.9rem',
                       height: '40px',
-                      minWidth: '100px',     
+                      minWidth: '100px',
                       whiteSpace: 'nowrap'
                     }}
-                >
-                  Buscar
-                </button>
+                  >
+                    Buscar
+                  </button>
                 </div>
-                
+
               </div>
-              
+
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label>Nombre</label>
@@ -902,7 +902,7 @@ function InvestigacionFormPage() {
                   <input type="text" value={investigadorActual.categoria} readOnly className="admin-readonly-field" />
                 </div>
               </div>
-              
+
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label>Puesto</label>
@@ -910,32 +910,32 @@ function InvestigacionFormPage() {
                 </div>
                 <div className="admin-form-group">
                   <label>Extensión</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={investigadorActual.extension}
                     onChange={(e) => setInvestigadorActual(prev => ({ ...prev, extension: e.target.value }))}
                     placeholder="Extensión"
                   />
                 </div>
               </div>
-              
+
               <div className="admin-form-group">
                 <label>Email</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   value={investigadorActual.email}
                   onChange={(e) => setInvestigadorActual(prev => ({ ...prev, email: e.target.value }))}
                   placeholder="Correo electrónico"
                 />
               </div>
-              
-              <button type="button" onClick={agregarInvestigador} className="admin-submit-button" style={{maxWidth: '200px'}}>
+
+              <button type="button" onClick={agregarInvestigador} className="admin-submit-button" style={{ maxWidth: '200px' }}>
                 Agregar Investigador
               </button>
 
               {/* Lista de investigadores agregados */}
               {formState.investigadores.length > 0 && (
-                <div className="admin-personas-grid" style={{marginTop: '20px'}}>
+                <div className="admin-personas-grid" style={{ marginTop: '20px' }}>
                   <h4>Investigadores Agregados:</h4>
                   {formState.investigadores.map((investigador, index) => (
                     <div key={index} className="admin-persona-card">
@@ -953,11 +953,11 @@ function InvestigacionFormPage() {
                           <span className="admin-value">{investigador.extension}</span>
                         </div>
                       </div>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => eliminarPersona('investigadores', index)}
                         className="admin-back-button"
-                        style={{marginTop: '10px', padding: '5px 10px', fontSize: '12px'}}
+                        style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
                       >
                         Eliminar
                       </button>
@@ -974,17 +974,17 @@ function InvestigacionFormPage() {
               <i className="fas fa-calendar-check"></i>
               Información del Evento
             </h2>
-            
+
             <div className="admin-form-row">
               <div className="admin-form-group">
                 <label>Lugar de los hechos *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-map-marker-alt"></i>
-                  <input 
-                    type="text" 
-                    name="lugar" 
-                    value={formState.lugar} 
-                    onChange={handleChange} 
+                  <input
+                    type="text"
+                    name="lugar"
+                    value={formState.lugar}
+                    onChange={handleChange}
                     required
                     maxLength={50}
                     placeholder="Lugar donde ocurrió el evento"
@@ -996,11 +996,11 @@ function InvestigacionFormPage() {
                 <label>Centro de Trabajo *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-hard-hat"></i>
-                  <input 
-                    type="text" 
-                    name="centro_trabajo" 
-                    value={formState.centro_trabajo} 
-                    onChange={handleChange} 
+                  <input
+                    type="text"
+                    name="centro_trabajo"
+                    value={formState.centro_trabajo}
+                    onChange={handleChange}
                     list="centros-trabajo"
                     required
                     maxLength={100}
@@ -1020,9 +1020,9 @@ function InvestigacionFormPage() {
               <div className="admin-input-with-icon">
                 <i className="fas fa-sticky-note"></i>
                 <input
-                  name="observaciones" 
-                  value={formState.observaciones} 
-                  onChange={handleChange} 
+                  name="observaciones"
+                  value={formState.observaciones}
+                  onChange={handleChange}
                   maxLength={140}
                   placeholder="Observaciones generales (máximo 140 caracteres)"
                 />
@@ -1034,9 +1034,9 @@ function InvestigacionFormPage() {
               <div className="admin-input-with-icon">
                 <i className="fas fa-history"></i>
                 <input
-                  name="antecedentes" 
-                  value={formState.antecedentes} 
-                  onChange={handleChange} 
+                  name="antecedentes"
+                  value={formState.antecedentes}
+                  onChange={handleChange}
                   maxLength={150}
                   placeholder="Antecedentes del evento (máximo 150 caracteres)"
                 />
@@ -1050,39 +1050,39 @@ function InvestigacionFormPage() {
               <i className="fas fa-users"></i>
               Personas Involucradas
             </h2>
-            
+
             {/* Involucrados */}
             <div className="admin-personas-section">
               <h3>Involucrados</h3>
               <div className="admin-form-group">
                 <label>Ficha</label>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                  
-                  <input 
-                    type="text" 
+
+                  <input
+                    type="text"
                     value={involucradoActual.ficha}
                     onChange={(e) => setInvolucradoActual(prev => ({ ...prev, ficha: e.target.value }))}
                     placeholder="Ingrese ficha"
                   />
-                  <button 
-                  type="button" 
-                  onClick={() => buscarEmpleado(involucradoActual.ficha, 'involucrado')}
-                  className="admin-submit-button"
-                  style={{
-                            marginTop: '3px',       
-                            padding: '10px 20px',   
-                            fontSize: '0.9rem',
-                            height: '40px',
-                            minWidth: '100px',      
-                            whiteSpace: 'nowrap'
-                          }}
-                >
-                  Buscar
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => buscarEmpleado(involucradoActual.ficha, 'involucrado')}
+                    className="admin-submit-button"
+                    style={{
+                      marginTop: '3px',
+                      padding: '10px 20px',
+                      fontSize: '0.9rem',
+                      height: '40px',
+                      minWidth: '100px',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    Buscar
+                  </button>
                 </div>
-                
+
               </div>
-              
+
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label>Nombre</label>
@@ -1093,7 +1093,7 @@ function InvestigacionFormPage() {
                   <input type="text" value={involucradoActual.nivel} readOnly className="admin-readonly-field" />
                 </div>
               </div>
-              
+
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label>Categoría</label>
@@ -1104,7 +1104,7 @@ function InvestigacionFormPage() {
                   <input type="text" value={involucradoActual.puesto} readOnly className="admin-readonly-field" />
                 </div>
               </div>
-              
+
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label>Edad</label>
@@ -1115,7 +1115,7 @@ function InvestigacionFormPage() {
                   <input type="number" value={involucradoActual.antiguedad} readOnly className="admin-readonly-field" />
                 </div>
               </div>
-              
+
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label>RFC</label>
@@ -1126,19 +1126,19 @@ function InvestigacionFormPage() {
                   <input type="text" value={involucradoActual.curp} readOnly className="admin-readonly-field" />
                 </div>
               </div>
-              
+
               <div className="admin-form-group">
                 <label>Dirección</label>
                 <input type="text" value={involucradoActual.direccion} readOnly className="admin-readonly-field" />
               </div>
-              
-              <button type="button" onClick={agregarInvolucrado} className="admin-submit-button" style={{maxWidth: '200px'}}>
+
+              <button type="button" onClick={agregarInvolucrado} className="admin-submit-button" style={{ maxWidth: '200px' }}>
                 Agregar Involucrado
               </button>
 
               {/* Lista de involucrados agregados */}
               {formState.involucrados.length > 0 && (
-                <div className="admin-personas-grid" style={{marginTop: '20px'}}>
+                <div className="admin-personas-grid" style={{ marginTop: '20px' }}>
                   <h4>Involucrados Agregados:</h4>
                   {formState.involucrados.map((involucrado, index) => (
                     <div key={index} className="admin-persona-card">
@@ -1160,11 +1160,11 @@ function InvestigacionFormPage() {
                           <span className="admin-value">{involucrado.antiguedad} años</span>
                         </div>
                       </div>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => eliminarPersona('involucrados', index)}
                         className="admin-back-button"
-                        style={{marginTop: '10px', padding: '5px 10px', fontSize: '12px'}}
+                        style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
                       >
                         Eliminar
                       </button>
@@ -1177,26 +1177,35 @@ function InvestigacionFormPage() {
             {/* Testigos */}
             <div className="admin-personas-section">
               <h3>Testigos</h3>
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Ficha</label>
-                  <input 
-                    type="text" 
+              <div className="admin-form-group">
+                <label>Ficha</label>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <input
+                    type="text"
                     value={testigoActual.ficha}
                     onChange={(e) => setTestigoActual(prev => ({ ...prev, ficha: e.target.value }))}
                     placeholder="Ingrese ficha"
+                    style={{ flex: 1 }}
                   />
+
+                  <button
+                    type="button"
+                    onClick={() => buscarEmpleado(testigoActual.ficha, 'testigo')}
+                    className="admin-submit-button"
+                    style={{
+                      marginTop: '3px',
+                      padding: '10px 20px',
+                      fontSize: '0.9rem',
+                      height: '40px',
+                      minWidth: '100px',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    Buscar
+                  </button>
                 </div>
-                <button 
-                  type="button" 
-                  onClick={() => buscarEmpleado(testigoActual.ficha, 'testigo')}
-                  className="admin-submit-button"
-                  style={{maxWidth: '120px', padding: '10px'}}
-                >
-                  Buscar
-                </button>
               </div>
-              
+
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label>Nombre</label>
@@ -1207,7 +1216,7 @@ function InvestigacionFormPage() {
                   <input type="text" value={testigoActual.nivel} readOnly className="admin-readonly-field" />
                 </div>
               </div>
-              
+
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label>Categoría</label>
@@ -1218,31 +1227,31 @@ function InvestigacionFormPage() {
                   <input type="text" value={testigoActual.puesto} readOnly className="admin-readonly-field" />
                 </div>
               </div>
-              
+
               <div className="admin-form-group">
                 <label>Dirección</label>
                 <input type="text" value={testigoActual.direccion} readOnly className="admin-readonly-field" />
               </div>
-              
+
               <div className="admin-form-group">
                 <div className="admin-checkbox-container">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={testigoActual.subordinacion}
                     onChange={(e) => setTestigoActual(prev => ({ ...prev, subordinacion: e.target.checked }))}
-                    id="subordinacion_check" 
+                    id="subordinacion_check"
                   />
                   <label htmlFor="subordinacion_check">Subordinación</label>
                 </div>
               </div>
-              
-              <button type="button" onClick={agregarTestigo} className="admin-submit-button" style={{maxWidth: '200px'}}>
+
+              <button type="button" onClick={agregarTestigo} className="admin-submit-button" style={{ maxWidth: '200px' }}>
                 Agregar Testigo
               </button>
 
               {/* Lista de testigos agregados */}
               {formState.testigos.length > 0 && (
-                <div className="admin-personas-grid" style={{marginTop: '20px'}}>
+                <div className="admin-personas-grid" style={{ marginTop: '20px' }}>
                   <h4>Testigos Agregados:</h4>
                   {formState.testigos.map((testigo, index) => (
                     <div key={index} className="admin-persona-card">
@@ -1262,11 +1271,11 @@ function InvestigacionFormPage() {
                           </span>
                         </div>
                       </div>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={() => eliminarPersona('testigos', index)}
                         className="admin-back-button"
-                        style={{marginTop: '10px', padding: '5px 10px', fontSize: '12px'}}
+                        style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
                       >
                         Eliminar
                       </button>
@@ -1278,16 +1287,16 @@ function InvestigacionFormPage() {
           </section>
 
           <div className="admin-form-actions">
-            <button 
-              type="button" 
-              onClick={() => navigate('/investigaciones')} 
+            <button
+              type="button"
+              onClick={() => navigate('/investigaciones')}
               className="admin-back-button"
             >
               Cancelar
             </button>
-            <button 
-              type="submit" 
-              className="admin-submit-button" 
+            <button
+              type="submit"
+              className="admin-submit-button"
               disabled={loading || (isTimeUp && !isEditMode)}
               title={isTimeUp && !isEditMode ? 'El tiempo para guardar ha expirado' : ''}
             >
