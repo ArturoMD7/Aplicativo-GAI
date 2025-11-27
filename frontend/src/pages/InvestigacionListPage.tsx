@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload, FiAlertCircle } from 'react-icons/fi';
 import ButtonIcon from '../components/Buttons/ButtonIcon';
+import Pagination from '../components/Pagination';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import '../styles/InvestigacionPage.css';
@@ -12,6 +13,9 @@ function InvestigacionListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     const fetchInvestigaciones = async () => {
@@ -32,7 +36,7 @@ function InvestigacionListPage() {
   const getSemaforoColor = (semaforo: string) => {
     const colors: Record<string, string> = {
       red: '#e74c3c',
-      orange: '#f17c0fff',
+      orange: '#f39c12',
       yellow: '#f1c40f',
       green: '#2ecc71',
       gray: '#95a5a6'
@@ -40,7 +44,20 @@ function InvestigacionListPage() {
     return colors[semaforo] || colors.gray;
   };
 
-  // 🔍 Filtrado universal
+  const getGravedadClass = (gravedad: string | null | undefined): string => {
+    const normalized = gravedad ? String(gravedad).toLowerCase().trim() : '';
+
+    if (normalized.includes('alta') || normalized.includes('crítica')) {
+      return 'gravedad-alta';
+    } else if (normalized.includes('media')) {
+      return 'gravedad-media';
+    } else if (normalized.includes('baja') || normalized.includes('leve')) {
+      return 'gravedad-baja';
+    } else {
+      return 'gravedad-default';
+    }
+  };
+
   const filteredInvestigaciones = investigaciones.filter((inv) => {
     const texto = searchTerm.toLowerCase();
     return Object.values(inv).some(value =>
@@ -54,14 +71,11 @@ function InvestigacionListPage() {
     return `${day}/${month}/${year}`;
   };
 
-  // 📤 Exportar a Excel (respeta el filtro)
   const exportToExcel = () => {
     if (filteredInvestigaciones.length === 0) {
       alert('No hay datos para exportar.');
       return;
     }
-
-    // Estructura limpia para Excel
     const data = filteredInvestigaciones.map(inv => ({
       'No. Reporte': inv.numero_reporte,
       'Nombre Corto': inv.nombre_corto,
@@ -73,119 +87,170 @@ function InvestigacionListPage() {
       'Días Restantes': inv.dias_restantes
     }));
 
-
-
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Investigaciones');
-
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
     saveAs(blob, `Investigaciones_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handleItemsPerPageChange = (items: number) => {
+    setItemsPerPage(items);
+    setCurrentPage(1);
+  };
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredInvestigaciones.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredInvestigaciones.length / itemsPerPage);
 
   return (
     <div className="admin-page">
       <div className="page-header">
         <h1><FiFileText /> Módulo de Investigaciones</h1>
         <div className="header-actions">
-          {/* 🔍 Buscador */}
           <div className="search-box">
             <FiSearch className="search-icon" />
             <input
               type="text"
-              placeholder="Buscar..."
+              placeholder="Buscar reporte, nombre..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
             />
           </div>
 
           <ButtonIcon
             variant="view"
             icon={<FiDownload />}
-            text="Exportar Excel"
+            text="Exportar"
             onClick={exportToExcel}
             size="medium"
           />
 
           <ButtonIcon
-            variant="download"
+            variant="download" // Nota: Asegúrate que tu componente ButtonIcon maneje esta variante, o usa "primary"
             to="/investigaciones/nuevo"
             icon={<FiPlus />}
-            text="Nuevo Registro"
+            text="Nuevo"
             size="medium"
           />
         </div>
       </div>
 
-      {loading && <div>Cargando...</div>}
-      {error && <div className="error-message">{error}</div>}
+      {loading && <div className="loading-message">Cargando investigaciones...</div>}
+      {error && (
+        <div className="error-message">
+          <FiAlertCircle style={{ marginRight: 8, fontSize: '1.2rem' }} />
+          {error}
+        </div>
+      )}
 
-      <div className="table-container">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Semáforo</th>
-              <th>No. Reporte</th>
-              <th>Nombre Corto</th>
-              <th>Procedencia</th>
-              <th>Gravedad</th>
-              <th>Región</th>
-              <th>Fecha de Reporte</th>
-              <th>Fecha Conocimiento Hechos</th>
-              <th>Fecha Prescripción</th>
-              <th>Días Rest.</th>
-              <th>Creado Por</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredInvestigaciones.map((inv) => (
-              <tr key={inv.id}>
-                <td>
-                  <span
-                    className="semaforo-dot"
-                    style={{ backgroundColor: getSemaforoColor(inv.semaforo) }}
-                    title={`Días restantes: ${inv.dias_restantes}`}
-                  ></span>
-                </td>
-                <td>{inv.numero_reporte}</td>
-                <td>{inv.nombre_corto}</td>
-                <td>{inv.procedencia}</td>
-                <td>{inv.gravedad}</td>
-                <td>{inv.gerencia_responsable}</td>
-                <td>{formatDate(inv.fecha_reporte)}</td>
-                <td>{formatDate(inv.fecha_conocimiento_hechos)}</td>
-                <td>{formatDate(inv.fecha_prescripcion)}</td>
-                <td>{inv.dias_restantes}</td>
-                <td>{inv.created_by_name}</td>
-                <td>
-                  <div className="action-buttons">
-                    <ButtonIcon
-                      variant="view"
-                      to={`/investigaciones/detalles/${inv.id}`}
-                      icon={<FiEye />}
-                      title="Ver detalles"
-                      size="medium"
-                    />
-                    <ButtonIcon
-                      variant="edit"
-                      to={`/investigaciones/editar/${inv.id}`}
-                      icon={<FiEdit />}
-                      title="Editar"
-                      size="medium"
-                    />
-                  </div>
-                </td>
+      {!loading && !error && (
+        <div className="table-container">
+          {/* Cambié la clase a "investigacion-table" para aplicar los nuevos estilos */}
+          <table className="investigacion-table">
+            <thead>
+              <tr>
+                <th style={{ textAlign: 'center' }}>Semáforo</th>
+                <th>No. Reporte</th>
+                <th>Nombre Corto</th>
+                <th>Procedencia</th>
+                <th>Gravedad</th>
+                <th>Región</th>
+                <th>Fecha Reporte</th>
+                <th>Prescripción</th>
+                <th style={{ textAlign: 'center' }}>Días Rest.</th>
+                <th>Creado Por</th>
+                <th style={{ textAlign: 'center' }}>Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {currentItems.map((inv) => (
+                <tr key={inv.id}>
+                  <td>
+                    <span
+                      className="semaforo-dot"
+                      style={{ backgroundColor: getSemaforoColor(inv.semaforo) }}
+                      title={`Estado: ${inv.semaforo}`}
+                    ></span>
+                  </td>
 
-        {!loading && filteredInvestigaciones.length === 0 && (
-          <div className="no-results">No se encontraron coincidencias.</div>
-        )}
-      </div>
+                  {/* Negritas y color vino para el número de reporte */}
+                  <td className="col-reporte">
+                    {inv.numero_reporte || <span className="text-muted">Sin asignar</span>}
+                  </td>
+
+                  <td style={{ fontWeight: 500 }}>{inv.nombre_corto}</td>
+                  <td className="text-muted">{inv.procedencia}</td>
+
+                  <td>
+                    <span className={`gravedad-badge ${getGravedadClass(inv.gravedad)}`}>
+                      {inv.gravedad || 'N/D'}
+                    </span>
+                  </td>
+
+                  <td className="text-muted">{inv.gerencia_responsable}</td>
+                  <td>{formatDate(inv.fecha_reporte)}</td>
+                  <td>{formatDate(inv.fecha_prescripcion)}</td>
+                  <td className="col-dias" style={{ color: inv.dias_restantes < 10 ? '#e74c3c' : '#333' }}>
+                    {inv.dias_restantes}
+                  </td>
+
+                  <td className="text-muted" style={{ fontSize: '0.8rem' }}>
+                    {inv.created_by_name}
+                  </td>
+
+                  <td>
+                    <div className="action-buttons">
+                      <ButtonIcon
+                        variant="view"
+                        to={`/investigaciones/detalles/${inv.id}`}
+                        icon={<FiEye />}
+                        title="Ver detalles"
+                        size="medium"
+                      />
+                      <ButtonIcon
+                        variant="edit"
+                        to={`/investigaciones/editar/${inv.id}`}
+                        icon={<FiEdit />}
+                        title="Editar"
+                        size="medium"
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {filteredInvestigaciones.length === 0 && (
+            <div className="no-results">
+              <FiSearch style={{ fontSize: '2rem', marginBottom: '10px', display: 'block', margin: '0 auto' }} />
+              No se encontraron coincidencias.
+            </div>
+          )}
+
+          {filteredInvestigaciones.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              itemsPerPage={itemsPerPage}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              totalItems={filteredInvestigaciones.length}
+            />
+          )}
+        </div>
+      )}
     </div >
   );
 }
