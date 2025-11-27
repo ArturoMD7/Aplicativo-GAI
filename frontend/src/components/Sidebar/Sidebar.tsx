@@ -2,12 +2,11 @@
 import React, { useState } from 'react';
 import './Layout.css';
 import { Link, useLocation } from 'react-router-dom';
-import pemexLogo from '../../assets/logo_min.png'; 
+import pemexLogo from '../../assets/logo_min.png';
+import { GrDocumentTime } from "react-icons/gr";
+
 import {
   FiHome,
-  FiBarChart2,
-  FiFolder,
-  FiCheckSquare,
   FiUsers,
   FiSettings,
   FiLogOut,
@@ -18,7 +17,7 @@ const navItems = [
   { label: "Inicio", icon: <FiHome />, href: "/" },
   { label: "Investigaciones", icon: <FiFileText />, href: "/investigaciones" },
   { label: "Usuarios", icon: <FiUsers />, href: "/users" },
-  { label: "Logs", icon: <FiUsers />, href: "/logs" },
+  { label: "Logs", icon: <GrDocumentTime />, href: "/logs" },
 ];
 
 type SidebarProps = {
@@ -42,7 +41,7 @@ function Sidebar({ onLogout }: SidebarProps) {
   };
 
   return (
-    <div 
+    <div
       className={`sidebar ${isOpen ? 'open' : 'collapsed'}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -57,8 +56,8 @@ function Sidebar({ onLogout }: SidebarProps) {
         <ul className="sidebar-links">
           {navItems.map((item) => (
             <li key={item.label} className="nav-item">
-              <Link 
-                to={item.href} 
+              <Link
+                to={item.href}
                 className={`nav-link ${isActiveLink(item.href) ? 'active' : ''}`}
                 data-tooltip={item.label}
               >
@@ -69,13 +68,13 @@ function Sidebar({ onLogout }: SidebarProps) {
           ))}
         </ul>
       </nav>
-      
+
       {/* Footer */}
       <div className="sidebar-footer">
         <ul className="footer-links">
           <li className="nav-item">
-            <button 
-              className="nav-link" 
+            <button
+              className="nav-link"
               onClick={onLogout}
               data-tooltip="Logout"
             >
@@ -84,8 +83,8 @@ function Sidebar({ onLogout }: SidebarProps) {
             </button>
           </li>
           <li className="nav-item">
-            <Link 
-              to="/settings" 
+            <Link
+              to="/settings"
               className="nav-link"
               data-tooltip="Settings"
             >

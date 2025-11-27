@@ -208,19 +208,18 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         
         # Determinar prefijo basado en gerencia
         prefijos = {
-            'Norte': 'GRRLRH-NTE',
-            'Sur': 'GRRLRH-SUR', 
-            'Sureste': 'GRRLRH-SURE',
-            'Altiplano': 'GRRLRH-ALT',
+            'Norte': 'GRRL-NTE',
+            'Sur': 'GRRL-SUR', 
+            'Sureste': 'GRRL-SURE',
+            'Altiplano': 'GRRL-ALT',
             'Oficinas Centrales': 'GAI'
         }
         
         prefijo = prefijos.get(gerencia_responsable, 'GAI')
         
-        # Contar investigaciones existentes este año para esta gerencia
+        # Contar investigaciones existentes este año (global, no por gerencia)
         from .models import Investigacion
         conteo = Investigacion.objects.filter(
-            gerencia_responsable=gerencia_responsable,
             created_at__year=año
         ).count()
         

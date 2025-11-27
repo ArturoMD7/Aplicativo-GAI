@@ -1,10 +1,17 @@
 /* InvestigacionDetails.css */
+/* InvestigacionDetails.css */
 
-/* Estilos base del contenedor */
 .admin-register-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
+  width: 100%;             
+  max-width: 100%;         
+  padding: 20px 40px;      
+  box-sizing: border-box;  
+}
+
+.admin-register-form-container {
+  max-width: 1000px;       
+  margin: 0 auto;         
+  width: 100%;
 }
 
 .admin-register-header {
@@ -24,13 +31,11 @@
 }
 
 .admin-register-form-container {
-  /* Removed card styling from here to apply to sections */
   background: transparent;
   padding: 0;
   box-shadow: none;
 }
 
-/* Secciones del formulario */
 .admin-form-section {
   background: #fff;
   padding: 30px;
