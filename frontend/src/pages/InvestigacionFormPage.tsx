@@ -164,6 +164,8 @@ function InvestigacionFormPage() {
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  const [antecedentesEncontrados, setAntecedentesEncontrados] = useState<any[]>([]);
+
   // --- Cargar datos ---
   useEffect(() => {
     const fetchDatosIniciales = async () => {
@@ -293,9 +295,15 @@ function InvestigacionFormPage() {
   const buscarEmpleado = async (ficha: string, tipo: 'contacto' | 'investigador' | 'involucrado' | 'testigo') => {
     if (!ficha.trim()) return;
 
+    setAntecedentesEncontrados([]);
+
     try {
       const response = await apiClient.get(`/api/investigaciones/buscar-empleado/?ficha=${ficha}`);
       const empleado: EmpleadoBuscado = response.data;
+
+      if (empleado.antecedentes && empleado.antecedentes.length > 0) {
+        setAntecedentesEncontrados(empleado.antecedentes);
+      }
 
       switch (tipo) {
         case 'contacto':
@@ -385,13 +393,18 @@ function InvestigacionFormPage() {
 
     setFormState(prev => ({
       ...prev,
-      involucrados: [...prev.involucrados, { ...involucradoActual }]
+      involucrados: [...prev.involucrados, {
+        ...involucradoActual,
+        tiene_antecedentes: antecedentesEncontrados.length > 0,
+        antecedentes_detalles: [...antecedentesEncontrados]
+      }]
     }));
 
     setInvolucradoActual({
       ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
-      edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: ''
+      edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: '',
     });
+    setAntecedentesEncontrados([]);
   };
 
   const agregarTestigo = () => {
@@ -1174,44 +1187,192 @@ function InvestigacionFormPage() {
                 <input type="text" value={involucradoActual.direccion} readOnly className="admin-readonly-field" />
               </div>
 
-              <button type="button" onClick={agregarInvolucrado} className="admin-submit-button" style={{ maxWidth: '200px' }}>
-                Agregar Involucrado
+              {antecedentesEncontrados.length > 0 && involucradoActual.ficha && (
+                <div style={{
+                  gridColumn: '1 / -1',
+                  marginTop: '15px',
+                  marginBottom: '15px',
+                  border: '1px solid #f5c6cb',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
+                }}>
+                  {/* Encabezado de Alerta */}
+                  <div style={{
+                    backgroundColor: '#f8d7da',
+                    color: '#721c24',
+                    padding: '10px 15px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    borderBottom: '1px solid #f5c6cb'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
+                      <i className="fas fa-exclamation-triangle"></i>
+                      <span>Se encontraron {antecedentesEncontrados.length} antecedentes</span>
+                    </div>
+                    <small>Esta persona quedará marcada con historial.</small>
+                  </div>
+
+                  {/* Tabla de Detalles */}
+                  <div style={{ maxHeight: '200px', overflowY: 'auto', backgroundColor: '#fff' }}>
+                    <table style={{ width: '100%', fontSize: '0.85rem', borderCollapse: 'collapse' }}>
+                      <thead style={{ backgroundColor: '#fdfdfe', position: 'sticky', top: 0 }}>
+                        <tr>
+                          <th style={{ textAlign: 'left', padding: '8px', borderBottom: '2px solid #eee' }}>Fecha</th>
+                          <th style={{ textAlign: 'left', padding: '8px', borderBottom: '2px solid #eee' }}>Origen</th>
+                          <th style={{ textAlign: 'left', padding: '8px', borderBottom: '2px solid #eee' }}>Referencia</th>
+                          <th style={{ textAlign: 'left', padding: '8px', borderBottom: '2px solid #eee' }}>Descripción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {antecedentesEncontrados.map((ant, idx) => (
+                          <tr key={idx} style={{ borderBottom: '1px solid #f1f1f1' }}>
+                            <td style={{ padding: '8px', color: '#666' }}>{ant.fecha}</td>
+                            <td style={{ padding: '8px' }}>
+                              <span style={{
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                fontSize: '0.75rem',
+                                backgroundColor: ant.origen.includes('Histórico') ? '#e2e3e5' : '#cce5ff',
+                                color: ant.origen.includes('Histórico') ? '#383d41' : '#004085'
+                              }}>
+                                {ant.origen}
+                              </span>
+                            </td>
+                            <td style={{ padding: '8px', fontWeight: '600' }}>{ant.referencia}</td>
+                            <td style={{ padding: '8px' }}>{ant.descripcion}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={agregarInvolucrado}
+                className="admin-submit-button"
+                style={{
+                  maxWidth: '250px',
+                  backgroundColor: antecedentesEncontrados.length > 0 ? '#dc3545' : undefined, // Botón rojo si hay alerta
+                  borderColor: antecedentesEncontrados.length > 0 ? '#dc3545' : undefined
+                }}
+              >
+                {antecedentesEncontrados.length > 0 ? (
+                  <span><i className="fas fa-exclamation-circle"></i> Agregar con Antecedentes</span>
+                ) : "Agregar Involucrado"}
               </button>
 
               {/* Lista de involucrados agregados */}
               {formState.involucrados.length > 0 && (
-                <div className="admin-personas-grid" style={{ marginTop: '20px' }}>
-                  <h4>Involucrados Agregados:</h4>
-                  {formState.involucrados.map((involucrado, index) => (
-                    <div key={index} className="admin-persona-card">
-                      <div className="admin-persona-header">
-                        <h4>{involucrado.nombre}</h4>
-                        <span className="admin-ficha">Ficha: {involucrado.ficha}</span>
-                      </div>
-                      <div className="admin-persona-details">
-                        <div className="admin-detail-row">
-                          <span className="admin-label">Nivel:</span>
-                          <span className="admin-value">{involucrado.nivel}</span>
-                        </div>
-                        <div className="admin-detail-row">
-                          <span className="admin-label">Edad:</span>
-                          <span className="admin-value">{involucrado.edad} años</span>
-                        </div>
-                        <div className="admin-detail-row">
-                          <span className="admin-label">Antigüedad:</span>
-                          <span className="admin-value">{involucrado.antiguedad} años</span>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => eliminarPersona('involucrados', index)}
-                        className="admin-back-button"
-                        style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
+                <div style={{ marginTop: '20px', width: '100%' }}>
+
+                  <h4 style={{ marginBottom: '15px', color: '#333' }}>Involucrados Agregados:</h4>
+
+                  <div className="admin-personas-grid" style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))', 
+                    gap: '20px'
+                  }}>
+                    {formState.involucrados.map((involucrado, index) => (
+                      <div
+                        key={index}
+                        className="admin-persona-card"
+                        style={{
+                          backgroundColor: '#fff',
+                          borderRadius: '8px',
+                          padding: '15px',
+                          boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+                          border: involucrado.tiene_antecedentes ? '1px solid #f5c6cb' : '1px solid #e0e0e0',
+                          borderLeft: involucrado.tiene_antecedentes ? '5px solid #dc3545' : '5px solid #007bff'
+                        }}
                       >
-                        Eliminar
-                      </button>
-                    </div>
-                  ))}
+                        {/* ENCABEZADO */}
+                        <div className="admin-persona-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                          <h4 style={{ margin: '0', fontSize: '1rem', color: '#2c3e50', flex: 1 }}>{involucrado.nombre}</h4>
+                          <span className="admin-ficha" style={{ backgroundColor: '#343a40', color: '#fff', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8rem', height: 'fit-content' }}>
+                            {involucrado.ficha}
+                          </span>
+                        </div>
+
+                        {involucrado.tiene_antecedentes && (
+                          <div style={{
+                            backgroundColor: '#fff3cd',
+                            border: '1px solid #ffeeba',
+                            borderRadius: '6px',
+                            marginBottom: '15px',
+                            overflow: 'hidden'
+                          }}>
+                            {/* Título de la alerta */}
+                            <div style={{
+                              padding: '8px 12px',
+                              backgroundColor: '#ffeeba',
+                              color: '#856404',
+                              fontSize: '0.85rem',
+                              fontWeight: 'bold',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}>
+                              <i className="fas fa-history"></i>
+                              Historial Encontrado:
+                            </div>
+
+                            {/* Mini Tabla de Detalles */}
+                            <div style={{ padding: '0', maxHeight: '150px', overflowY: 'auto' }}>
+                              <table style={{ width: '100%', fontSize: '0.75rem', borderCollapse: 'collapse' }}>
+                                <tbody>
+                                  {involucrado.antecedentes_detalles?.map((ant, i) => (
+                                    <tr key={i} style={{ borderBottom: '1px solid #fae3b3' }}>
+                                      <td style={{ padding: '6px 10px', color: '#555', whiteSpace: 'nowrap' }}>
+                                        {ant.fecha}
+                                      </td>
+                                      <td style={{ padding: '6px 10px' }}>
+                                        <strong>{ant.referencia}</strong>
+                                        <div style={{ color: '#666', fontSize: '0.7rem', marginTop: '2px' }}>
+                                          {ant.descripcion}
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* DETALLES TÉCNICOS */}
+                        <div className="admin-persona-details" style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(3, 1fr)',
+                          gap: '10px',
+                          fontSize: '0.85rem',
+                          color: '#666',
+                          borderTop: '1px solid #f0f0f0',
+                          paddingTop: '10px'
+                        }}>
+                          <div><span style={{ display: 'block', fontWeight: 'bold', fontSize: '0.7rem', color: '#999' }}>NIVEL</span>{involucrado.nivel}</div>
+                          <div><span style={{ display: 'block', fontWeight: 'bold', fontSize: '0.7rem', color: '#999' }}>EDAD</span>{involucrado.edad} años</div>
+                          <div><span style={{ display: 'block', fontWeight: 'bold', fontSize: '0.7rem', color: '#999' }}>ANTIGÜEDAD</span>{involucrado.antiguedad} años</div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => eliminarPersona('involucrados', index)}
+                          style={{
+                            marginTop: '15px', width: '100%', padding: '8px', fontSize: '0.85rem',
+                            backgroundColor: '#fff', border: '1px solid #dc3545', color: '#dc3545', borderRadius: '4px', cursor: 'pointer'
+                          }}
+                          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#fff5f5'}
+                          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#fff'}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

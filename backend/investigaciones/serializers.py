@@ -44,7 +44,7 @@ class InvolucradoSerializer(serializers.ModelSerializer):
         model = Involucrado
         fields = [
             'id', 'ficha', 'nombre', 'nivel', 'categoria', 'puesto',
-            'edad', 'antiguedad', 'rfc', 'curp', 'direccion'
+            'edad', 'antiguedad', 'rfc', 'curp', 'direccion', 'tiene_antecedentes'
         ]
         read_only_fields = ['id']
 
@@ -312,6 +312,12 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
     def get_total_testigos(self, obj):
         return obj.testigos.count()
 
+class AntecedenteSerializer(serializers.Serializer):
+    origen = serializers.CharField() 
+    fecha = serializers.DateField()
+    descripcion = serializers.CharField()
+    referencia = serializers.CharField() 
+
 # Serializer para búsqueda de empleados
 class EmpleadoBusquedaSerializer(serializers.Serializer):
     ficha = serializers.CharField(max_length=20, required=True)
@@ -324,6 +330,7 @@ class EmpleadoBusquedaSerializer(serializers.Serializer):
     rfc = serializers.CharField(max_length=20, read_only=True)
     curp = serializers.CharField(max_length=18, read_only=True)
     direccion = serializers.CharField(max_length=200, read_only=True)
+    antecedentes = AntecedenteSerializer(many=True, read_only=True)
 
 # Serializer para opciones de listas desplegables
 class OpcionesSerializer(serializers.Serializer):
@@ -361,3 +368,4 @@ class EstadisticasSerializer(serializers.Serializer):
     por_gravedad = serializers.DictField(child=serializers.IntegerField())
     por_direccion = serializers.DictField(child=serializers.IntegerField())
     por_gerencia = serializers.DictField(child=serializers.IntegerField())
+

@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from django.db import connections
 from django.utils import timezone
 from datetime import date
-from .models import Investigacion
+from .models import Investigacion, Involucrado, InvestigacionHistorico
 from .serializers import (
     InvestigacionSerializer, InvestigacionListSerializer, 
     EmpleadoBusquedaSerializer, OpcionesSerializer,
@@ -105,25 +105,26 @@ def opciones_view(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def buscar_empleado_view(request):
-    """Buscar empleado en la base de datos de PEMEX"""
+    """Buscar empleado y sus antecedentes"""
     serializer = EmpleadoBusquedaSerializer(data=request.query_params)
     
     if not serializer.is_valid():
         return Response(serializer.errors, status=400)
     
-    ficha = serializer.validated_data['ficha']
+    ficha_buscada = serializer.validated_data['ficha']
     
     try:
+        empleado_data = {}
+        
         with connections['pemex'].cursor() as cursor:
-            # Buscar en 00_tablero_dg
             cursor.execute(
                 "SELECT ficha, nombres, nivel_plaza, catego, mc_stext, edad, antig, rfc + homoclave as rfc, curp, direccion_coduni FROM [00_tablero_dg] WHERE ficha = %s", 
-                [ficha]
+                [ficha_buscada]
             )
             row = cursor.fetchone()
             
             if row:
-                empleado = {
+                empleado_data = {
                     'ficha': row[0],
                     'nombre': row[1],
                     'nivel': row[2],
@@ -135,9 +136,33 @@ def buscar_empleado_view(request):
                     'curp': row[8],
                     'direccion': row[9]
                 }
-                return Response(empleado)
             else:
                 return Response({'error': 'Empleado no encontrado'}, status=404)
+        
+        lista_antecedentes = []
+        
+        historicos = InvestigacionHistorico.objects.filter(ficha=ficha_buscada)
+        for h in historicos:
+            desc = f"{h.motivo_investigacion or ''} - {h.observaciones or ''} (Sanción: {h.sancion_aplicada or 'N/A'})"
+            lista_antecedentes.append({
+                'origen': 'Histórico (Legacy)',
+                'fecha': h.fecha,
+                'descripcion': desc.strip(' -'),
+                'referencia': 'N/A'
+            })
+
+        actuales = Involucrado.objects.filter(ficha=ficha_buscada).select_related('investigacion')
+        for inv in actuales:
+            lista_antecedentes.append({
+                'origen': 'Sistema Actual',
+                'fecha': inv.investigacion.fecha_reporte,
+                'descripcion': inv.investigacion.antecedentes or inv.investigacion.observaciones,
+                'referencia': inv.investigacion.numero_reporte
+            })
+
+        empleado_data['antecedentes'] = lista_antecedentes
+        
+        return Response(empleado_data)
                 
     except Exception as e:
         return Response({'error': str(e)}, status=500)

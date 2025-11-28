@@ -150,76 +150,83 @@ function LogListPage() {
           <ButtonIcon
             variant="view"
             icon={<FiDownload />}
-            text="Exportar Excel"
+            text="Exportar"
             onClick={exportToExcel}
             size="medium"
           />
         </div>
       </div>
 
-      {loading && <div>Cargando...</div>}
+      {loading && <div className="loading-message">Cargando logs...</div>}
       {error && <div className="error-message">{error}</div>}
 
-      <div className="table-container">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th onClick={() => handleSort('id')} className="sortable-header">
-                No. Log {renderSortIcon('id')}
-              </th>
-              <th onClick={() => handleSort('user_name')} className="sortable-header">
-                Usuario {renderSortIcon('user_name')}
-              </th>
-              <th onClick={() => handleSort('action_display')} className="sortable-header">
-                Accion {renderSortIcon('action_display')}
-              </th>
-              <th onClick={() => handleSort('description')} className="sortable-header">
-                Descripción {renderSortIcon('description')}
-              </th>
-              <th onClick={() => handleSort('ip_address')} className="sortable-header">
-                Direccion IP {renderSortIcon('ip_address')}
-              </th>
-              <th onClick={() => handleSort('timestamp')} className="sortable-header">
-                Fecha y Hora {renderSortIcon('timestamp')}
-              </th>
-              <th onClick={() => handleSort('investigacion')} className="sortable-header">
-                Investigación {renderSortIcon('investigacion')}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentItems.map((inv) => (
-              <tr key={inv.id}>
-                <td>{inv.id}</td>
-                <td>{inv.user_name}</td>
-                <td>{inv.action_display}</td>
-                <td>{inv.description}</td>
-                <td>{inv.ip_address}</td>
-                <td>
-                  {new Date(inv.timestamp).toLocaleDateString()} {' '}
-                  {new Date(inv.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                </td>
-                <td>{inv.investigacion}</td>
+      {!loading && !error && (
+        <div className="table-container">
+          <table className="logs-table">
+            <thead>
+              <tr>
+                <th onClick={() => handleSort('id')} className="sortable-header">
+                  No. Log {renderSortIcon('id')}
+                </th>
+                <th onClick={() => handleSort('user_name')} className="sortable-header">
+                  Usuario {renderSortIcon('user_name')}
+                </th>
+                <th onClick={() => handleSort('action_display')} className="sortable-header">
+                  Accion {renderSortIcon('action_display')}
+                </th>
+                <th onClick={() => handleSort('description')} className="sortable-header">
+                  Descripción {renderSortIcon('description')}
+                </th>
+                <th onClick={() => handleSort('ip_address')} className="sortable-header">
+                  Direccion IP {renderSortIcon('ip_address')}
+                </th>
+                <th onClick={() => handleSort('timestamp')} className="sortable-header">
+                  Fecha y Hora {renderSortIcon('timestamp')}
+                </th>
+                <th onClick={() => handleSort('investigacion')} className="sortable-header">
+                  Investigación {renderSortIcon('investigacion')}
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {currentItems.map((inv) => (
+                <tr key={inv.id}>
+                  <td style={{ fontWeight: 700, color: '#840016' }}>{inv.id}</td>
+                  <td style={{ fontWeight: 500 }}>{inv.user_name}</td>
+                  <td>{inv.action_display}</td>
+                  <td className="text-muted">{inv.description}</td>
+                  <td className="text-muted">{inv.ip_address}</td>
+                  <td>
+                    {new Date(inv.timestamp).toLocaleDateString()} {' '}
+                    <span className="text-muted" style={{ fontSize: '0.85em' }}>
+                      {new Date(inv.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </td>
+                  <td>{inv.investigacion || <span className="text-muted">-</span>}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
 
-        {!loading && filteredInvestigaciones.length === 0 && (
-          <div className="no-results">No se encontraron coincidencias.</div>
-        )}
+          {filteredInvestigaciones.length === 0 && (
+            <div className="no-results">
+              <FiSearch style={{ fontSize: '2rem', marginBottom: '10px', display: 'block', margin: '0 auto' }} />
+              No se encontraron coincidencias.
+            </div>
+          )}
 
-        {!loading && filteredInvestigaciones.length > 0 && (
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            itemsPerPage={itemsPerPage}
-            onItemsPerPageChange={handleItemsPerPageChange}
-            totalItems={filteredInvestigaciones.length}
-          />
-        )}
-      </div>
+          {filteredInvestigaciones.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              itemsPerPage={itemsPerPage}
+              onItemsPerPageChange={handleItemsPerPageChange}
+              totalItems={filteredInvestigaciones.length}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 }

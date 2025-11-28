@@ -140,3 +140,38 @@ class Testigo(models.Model):
     puesto = models.CharField(max_length=100)
     direccion = models.CharField(max_length=200)
     subordinacion = models.BooleanField(default=False)
+
+
+class InvestigacionHistorico(models.Model):
+    id_investigacion_historico = models.AutoField(db_column='IdInvestigacionHistorico', primary_key=True)
+    fecha = models.DateField(db_column='Fecha')
+    gerencia = models.CharField(db_column='Gerencia', max_length=50)
+    nombre = models.CharField(db_column='Nombre', max_length=50)
+    ficha = models.CharField(db_column='Ficha', max_length=15)
+    regimen_contractual = models.CharField(db_column='RegimenContractual', max_length=2)
+    centro_trabajo = models.CharField(db_column='CentroTrabajo', max_length=50)
+    
+    motivo_investigacion = models.CharField(db_column='MotivoInvestigacion', max_length=100, null=True)
+    observaciones = models.CharField(db_column='Observaciones', max_length=200, null=True)
+    sancion_aplicada = models.CharField(db_column='SancionAplicada', max_length=50, null=True)
+
+    class Meta:
+        managed = False  
+        db_table = 'Investigacion_Historico'
+
+
+class Involucrado(models.Model):
+    investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='involucrados')
+    ficha = models.CharField(max_length=20)
+    nombre = models.CharField(max_length=100)
+    nivel = models.CharField(max_length=50)
+    categoria = models.CharField(max_length=50)
+    puesto = models.CharField(max_length=100)
+    edad = models.IntegerField()
+    antiguedad = models.IntegerField()
+    rfc = models.CharField(max_length=20)
+    curp = models.CharField(max_length=18)
+    direccion = models.CharField(max_length=200)
+    
+    # NUEVO CAMPO: Para persistir si tiene historial
+    tiene_antecedentes = models.BooleanField(default=False)

@@ -21,6 +21,8 @@ export interface Involucrado extends BasePersona {
   rfc: string;
   curp: string;
   direccion: string;
+  tiene_antecedentes: boolean;
+  antecedentes_detalles?: Antecedente[]; 
 }
 
 export interface Testigo extends BasePersona {
@@ -96,6 +98,13 @@ export interface InvestigacionListado {
   fecha_conocimiento_hechos: string;
 }
 
+export interface Antecedente {
+  origen: string;
+  fecha: string;
+  descripcion: string;
+  referencia: string;
+}
+
 export interface EmpleadoBuscado {
   ficha: string;
   nombre: string;
@@ -107,5 +116,20 @@ export interface EmpleadoBuscado {
   rfc: string;
   curp: string;
   direccion: string;
+  antecedentes?: Antecedente[];
 }
 
+export interface InvolucradoForm {
+  ficha: string;
+  nombre: string;
+  nivel: string;
+  categoria: string;
+  puesto: string;
+  edad: number;
+  antiguedad: number;
+  rfc: string;
+  curp: string;
+  direccion: string;
+  tiene_antecedentes?: boolean; 
+  antecedentes_detalles?: Antecedente[]; 
+}
