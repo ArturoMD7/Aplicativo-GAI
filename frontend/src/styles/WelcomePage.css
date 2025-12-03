@@ -12,7 +12,7 @@
 }
 
 .dashboard-header h1 {
-    color: #840016;
+    color: #000000;
     font-size: 2rem;
     font-weight: 600;
     margin: 0 0 10px 0;
@@ -21,6 +21,7 @@
 .dashboard-header p {
     color: #666;
     font-size: 1.1rem;
+    font: bold;
     margin: 0;
 }
 

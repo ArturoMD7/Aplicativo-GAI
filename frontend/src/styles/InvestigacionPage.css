@@ -16,7 +16,7 @@
 }
 
 .page-header h1 {
-  color: #840016;
+  color: #c76f7e;
   font-size: 2rem;
   font-weight: 600;
   display: flex;
@@ -56,8 +56,8 @@
 }
 
 .search-box input:focus {
-  border-color: #840016;
-  box-shadow: 0 0 0 3px rgba(132, 0, 22, 0.1);
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
 }
 
 .table-container {
@@ -75,13 +75,14 @@
 }
 
 .investigacion-table thead {
-  background: linear-gradient(135deg, #840016 0%, #4e091c 100%);
+  background: linear-gradient(135deg, #fcf9f9 0%, #fcf9f9 100%);
 }
 
 .investigacion-table th {
-  color: white;
+  color: rgb(0, 0, 0);
   font-weight: 600;
   padding: 16px 15px;
+  font: bold 10px 'Roboto', sans-serif;
   text-align: left;
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -96,7 +97,7 @@
 }
 
 .investigacion-table tbody tr:hover {
-  background-color: #fff5f6; /* Un tono muy suave de rojo al pasar el mouse */
+  background-color: #f1f1f1; /* Un tono muy suave de rojo al pasar el mouse */
 }
 
 .investigacion-table tbody tr:last-child {

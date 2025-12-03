@@ -60,17 +60,19 @@
 }
 
 .user-table thead {
-  background: linear-gradient(135deg, #840016 0%, #4e091c 100%);
+    background: linear-gradient(135deg, #fcf9f9 0%, #fcf9f9 100%);
 }
 
 .user-table th {
-  color: white;
+  color: rgb(0, 0, 0);
   font-weight: 600;
-  padding: 16px 20px;
+  padding: 16px 15px;
+  font: bold 10px 'Roboto', sans-serif;
   text-align: left;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .user-table tbody tr {

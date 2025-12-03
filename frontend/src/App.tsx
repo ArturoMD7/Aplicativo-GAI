@@ -6,7 +6,6 @@ import './App.css';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  // 2. 'showLogin' ya no es necesario, siempre es Login
   
   useEffect(() => {
     const token = localStorage.getItem('access_token');

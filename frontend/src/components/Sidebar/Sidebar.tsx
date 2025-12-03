@@ -49,6 +49,7 @@ function Sidebar({ onLogout }: SidebarProps) {
       {/* Header simplificado - solo logo */}
       <div className="sidebar-header">
         <img src={pemexLogo} alt="Pemex" />
+        <span className="brand-text">GAI</span>
       </div>
 
       {/* Navegación principal */}
