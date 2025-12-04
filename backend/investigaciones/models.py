@@ -120,19 +120,6 @@ class Investigador(models.Model):
     email = models.EmailField(blank=True)
     no_constancia = models.CharField(max_length=50, blank=True)
 
-class Involucrado(models.Model):
-    investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='involucrados')
-    ficha = models.CharField(max_length=20)
-    nombre = models.CharField(max_length=100)
-    nivel = models.CharField(max_length=50)
-    categoria = models.CharField(max_length=50)
-    puesto = models.CharField(max_length=100)
-    edad = models.IntegerField()
-    antiguedad = models.IntegerField()
-    rfc = models.CharField(max_length=20)
-    curp = models.CharField(max_length=18)
-    direccion = models.CharField(max_length=200)
-
 class Testigo(models.Model):
     investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='testigos')
     ficha = models.CharField(max_length=20)
@@ -174,6 +161,4 @@ class Involucrado(models.Model):
     rfc = models.CharField(max_length=20)
     curp = models.CharField(max_length=18)
     direccion = models.CharField(max_length=200)
-    
-    # NUEVO CAMPO: Para persistir si tiene historial
     tiene_antecedentes = models.BooleanField(default=False)

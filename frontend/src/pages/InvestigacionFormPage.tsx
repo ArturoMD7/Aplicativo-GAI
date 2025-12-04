@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type {
@@ -693,6 +693,82 @@ function InvestigacionFormPage() {
             </div>
           </section>
 
+          {/* --- SECCIÓN 5: INFORMACIÓN DEL EVENTO --- */}
+          <section className="admin-form-section">
+            <h2 className="admin-section-title">
+              <i className="fas fa-calendar-check"></i>
+              Información del Evento
+            </h2>
+
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>Lugar de los hechos *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-map-marker-alt"></i>
+                  <input
+                    type="text"
+                    name="lugar"
+                    value={formState.lugar}
+                    onChange={handleChange}
+                    required
+                    maxLength={50}
+                    placeholder="Lugar donde ocurrió el evento"
+                  />
+                </div>
+              </div>
+
+              <div className="admin-form-group">
+                <label>Centro de Trabajo *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-hard-hat"></i>
+                  <input
+                    type="text"
+                    name="centro_trabajo"
+                    value={formState.centro_trabajo}
+                    onChange={handleChange}
+                    list="centros-trabajo"
+                    required
+                    maxLength={100}
+                    placeholder="Escriba o seleccione el centro de trabajo"
+                  />
+                  <datalist id="centros-trabajo">
+                    {centrosTrabajo.map(centro => (
+                      <option key={centro} value={centro} />
+                    ))}
+                  </datalist>
+                </div>
+              </div>
+            </div>
+
+            <div className="admin-form-group">
+              <label>Observaciones</label>
+              <div className="admin-input-with-icon">
+                <i className="fas fa-sticky-note"></i>
+                <input
+                  name="observaciones"
+                  value={formState.observaciones}
+                  onChange={handleChange}
+                  maxLength={140}
+                  placeholder="Observaciones generales (máximo 140 caracteres)"
+                />
+              </div>
+            </div>
+
+            <div className="admin-form-group">
+              <label>Antecedentes</label>
+              <div className="admin-input-with-icon">
+                <i className="fas fa-history"></i>
+                <input
+                  name="antecedentes"
+                  value={formState.antecedentes}
+                  onChange={handleChange}
+                  maxLength={150}
+                  placeholder="Antecedentes del evento (máximo 150 caracteres)"
+                />
+              </div>
+            </div>
+          </section>
+
           {/* --- SECCIÓN 3: UBICACIÓN ORGANIZACIONAL --- */}
           <section className="admin-form-section">
             <h2 className="admin-section-title">
@@ -1038,81 +1114,7 @@ function InvestigacionFormPage() {
             </div>
           </section>
 
-          {/* --- SECCIÓN 5: INFORMACIÓN DEL EVENTO --- */}
-          <section className="admin-form-section">
-            <h2 className="admin-section-title">
-              <i className="fas fa-calendar-check"></i>
-              Información del Evento
-            </h2>
-
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label>Lugar de los hechos *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-map-marker-alt"></i>
-                  <input
-                    type="text"
-                    name="lugar"
-                    value={formState.lugar}
-                    onChange={handleChange}
-                    required
-                    maxLength={50}
-                    placeholder="Lugar donde ocurrió el evento"
-                  />
-                </div>
-              </div>
-
-              <div className="admin-form-group">
-                <label>Centro de Trabajo *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-hard-hat"></i>
-                  <input
-                    type="text"
-                    name="centro_trabajo"
-                    value={formState.centro_trabajo}
-                    onChange={handleChange}
-                    list="centros-trabajo"
-                    required
-                    maxLength={100}
-                    placeholder="Escriba o seleccione el centro de trabajo"
-                  />
-                  <datalist id="centros-trabajo">
-                    {centrosTrabajo.map(centro => (
-                      <option key={centro} value={centro} />
-                    ))}
-                  </datalist>
-                </div>
-              </div>
-            </div>
-
-            <div className="admin-form-group">
-              <label>Observaciones</label>
-              <div className="admin-input-with-icon">
-                <i className="fas fa-sticky-note"></i>
-                <input
-                  name="observaciones"
-                  value={formState.observaciones}
-                  onChange={handleChange}
-                  maxLength={140}
-                  placeholder="Observaciones generales (máximo 140 caracteres)"
-                />
-              </div>
-            </div>
-
-            <div className="admin-form-group">
-              <label>Antecedentes</label>
-              <div className="admin-input-with-icon">
-                <i className="fas fa-history"></i>
-                <input
-                  name="antecedentes"
-                  value={formState.antecedentes}
-                  onChange={handleChange}
-                  maxLength={150}
-                  placeholder="Antecedentes del evento (máximo 150 caracteres)"
-                />
-              </div>
-            </div>
-          </section>
+          
 
           {/* --- SECCIÓN 6: PERSONAS INVOLUCRADAS --- */}
           <section className="admin-form-section">
