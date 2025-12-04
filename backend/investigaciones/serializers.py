@@ -30,7 +30,7 @@ class InvestigadorSerializer(serializers.ModelSerializer):
         model = Investigador
         fields = [
             'id', 'ficha', 'nombre', 'categoria', 'puesto', 
-            'extension', 'email'
+            'extension', 'email', 'no_constancia',
         ]
         read_only_fields = ['id']
 
@@ -212,7 +212,8 @@ class InvestigacionSerializer(serializers.ModelSerializer):
             'Sur': 'GRRL-SUR', 
             'Sureste': 'GRRL-SURE',
             'Altiplano': 'GRRL-ALT',
-            'Oficinas Centrales': 'GAI'
+            'Oficinas Centrales': 'OCC',
+            'GAI': 'GAI',
         }
         
         prefijo = prefijos.get(gerencia_responsable, 'GAI')
@@ -276,13 +277,19 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
     total_involucrados = serializers.SerializerMethodField()
     total_testigos = serializers.SerializerMethodField()
 
+    investigadores = serializers.SlugRelatedField(
+        many=True, 
+        read_only=True, 
+        slug_field='nombre'
+    )
+
     class Meta:
         model = Investigacion
         fields = [
             'id', 'numero_reporte', 'nombre_corto', 'procedencia', 'descripcion_general',
             'direccion', 'gravedad', 'fecha_reporte', 'fecha_prescripcion',
             'gerencia_responsable', 'created_by_name', 'dias_restantes',
-            'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos'
+            'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos', 'investigadores'
         ]
 
     def get_dias_restantes(self, obj):

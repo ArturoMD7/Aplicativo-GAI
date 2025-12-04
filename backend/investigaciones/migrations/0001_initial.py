@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
                 ('fecha_conocimiento_hechos', models.DateField()),
                 ('fecha_prescripcion', models.DateField()),
                 ('economica', models.BooleanField(default=False)),
-                ('gerencia_responsable', models.CharField(choices=[('Norte', 'Norte'), ('Sur', 'Sur'), ('Sureste', 'Sureste'), ('Altiplano', 'Altiplano'), ('Oficinas Centrales', 'Oficinas Centrales')], max_length=20)),
+                ('gerencia_responsable', models.CharField(choices=[('Norte', 'Norte'), ('Sur', 'Sur'), ('Sureste', 'Sureste'), ('Altiplano', 'Altiplano'), ('Oficinas Centrales', 'Oficinas Centrales'), ('GAI', 'GAI')], max_length=20)),
                 ('lugar', models.CharField(max_length=50)),
                 ('observaciones', models.CharField(max_length=140)),
                 ('fecha_evento', models.DateField()),

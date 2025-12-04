@@ -64,6 +64,7 @@ class Investigacion(models.Model):
         ('Sureste', 'Sureste'),
         ('Altiplano', 'Altiplano'),
         ('Oficinas Centrales', 'Oficinas Centrales'),
+        ('GAI', 'GAI'),
     ]
     gerencia_responsable = models.CharField(max_length=20, choices=GERENCIA_CHOICES)
     
@@ -117,6 +118,7 @@ class Investigador(models.Model):
     puesto = models.CharField(max_length=100)
     extension = models.CharField(max_length=10, blank=True)
     email = models.EmailField(blank=True)
+    no_constancia = models.CharField(max_length=50, blank=True)
 
 class Involucrado(models.Model):
     investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='involucrados')
