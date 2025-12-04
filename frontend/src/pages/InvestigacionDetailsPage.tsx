@@ -217,7 +217,7 @@ function InvestigacionDetailsPage() {
 
           <div className="admin-form-row">
             <div className="admin-form-group">
-              <label>Nombre Corto</label>
+              <label>Documento de origen *</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-heading"></i>
                 <input

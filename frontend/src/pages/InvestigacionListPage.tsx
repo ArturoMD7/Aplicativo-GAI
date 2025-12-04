@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
 import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload, FiAlertCircle } from 'react-icons/fi';
+import { MdDeleteForever } from "react-icons/md";
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import Pagination from '../components/Pagination';
 import * as XLSX from 'xlsx';
+import Swal  from 'sweetalert2';
 import { saveAs } from 'file-saver';
 import '../styles/InvestigacionPage.css';
 
@@ -44,6 +46,41 @@ function InvestigacionListPage() {
     return colors[semaforo] || colors.gray;
   };
 
+
+  const handleDelete = async (id: number, numeroReporte: string) => {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Se eliminará el reporte ${numeroReporte}. Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33', // Rojo para peligro
+      cancelButtonColor: '#3085d6', // Azul para cancelar
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await apiClient.delete(`/api/investigaciones/investigaciones/${id}/`);
+        
+        setInvestigaciones(prev => prev.filter(item => item.id !== id));
+
+        Swal.fire(
+          '¡Eliminado!',
+          'El registro ha sido eliminado correctamente.',
+          'success'
+        );
+      } catch (err) {
+        console.error(err);
+        Swal.fire(
+          'Error',
+          'Hubo un problema al intentar eliminar el registro.',
+          'error'
+        );
+      }
+    }
+  };
+
   const getGravedadClass = (gravedad: string | null | undefined): string => {
     const normalized = gravedad ? String(gravedad).toLowerCase().trim() : '';
 
@@ -78,7 +115,7 @@ function InvestigacionListPage() {
     }
     const data = filteredInvestigaciones.map(inv => ({
       'No. Reporte': inv.numero_reporte,
-      'Nombre Corto': inv.nombre_corto,
+      'Documento de Origen': inv.nombre_corto,
       'Gravedad': inv.gravedad,
       'Semáforo': inv.semaforo,
       'Creado Por': inv.created_by_name,
@@ -93,6 +130,25 @@ function InvestigacionListPage() {
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
     saveAs(blob, `Investigaciones_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
+  const renderInvestigadores = (investigadores: string[] | string) => {
+    // Validación por si viene nulo o vacío
+    if (!investigadores || (Array.isArray(investigadores) && investigadores.length === 0)) {
+        return <span className="text-muted" style={{ fontSize: '0.85rem' }}>Sin asignar</span>;
+    }
+
+    const lista = Array.isArray(investigadores) ? investigadores : [investigadores];
+
+    return (
+      <div className="investigadores-list">
+        {lista.map((nombre, index) => (
+          <span key={index} className="investigador-badge">
+            {nombre}
+          </span>
+        ))}
+      </div>
+    );
   };
 
   const handlePageChange = (pageNumber: number) => {
@@ -162,7 +218,8 @@ function InvestigacionListPage() {
               <tr>
                 <th style={{ textAlign: 'center' }}>Semáforo</th>
                 <th>No. Reporte</th>
-                <th>Nombre Corto</th>
+                <th>Documento de Origen</th>
+                <th>Investigadores</th>
                 <th>Procedencia</th>
                 <th>Gravedad</th>
                 <th>Región</th>
@@ -190,6 +247,9 @@ function InvestigacionListPage() {
                   </td>
 
                   <td style={{ fontWeight: 500 }}>{inv.nombre_corto}</td>
+                  <td>
+                    {renderInvestigadores(inv.investigadores)}
+                  </td>
                   <td className="text-muted">{inv.procedencia}</td>
 
                   <td>
@@ -223,6 +283,13 @@ function InvestigacionListPage() {
                         to={`/investigaciones/editar/${inv.id}`}
                         icon={<FiEdit />}
                         title="Editar"
+                        size="medium"
+                      />
+                      <ButtonIcon
+                        variant="delete"
+                        onClick={() => handleDelete(inv.id, inv.numero_reporte)} 
+                        icon={<MdDeleteForever />}
+                        title="Eliminar"
                         size="medium"
                       />
                     </div>

@@ -60,6 +60,7 @@ interface InvestigadorForm {
   puesto: string;
   extension: string;
   email: string;
+  no_constancia: string;
 }
 
 interface InvolucradoForm {
@@ -104,7 +105,7 @@ function InvestigacionFormPage() {
     ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', tipo: 'contacto'
   });
   const [investigadorActual, setInvestigadorActual] = useState<InvestigadorForm>({
-    ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: ''
+    ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', no_constancia: ''
   });
   const [involucradoActual, setInvolucradoActual] = useState<InvolucradoForm>({
     ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
@@ -381,7 +382,7 @@ function InvestigacionFormPage() {
     }));
 
     setInvestigadorActual({
-      ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: ''
+      ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', no_constancia: ''
     });
   };
 
@@ -540,7 +541,7 @@ function InvestigacionFormPage() {
 
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label>Nombre Corto *</label>
+                <label>Documento de Origen *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-heading"></i>
                   <input
@@ -609,89 +610,7 @@ function InvestigacionFormPage() {
             </div>
           </section>
 
-          {/* --- SECCIÓN 2: UBICACIÓN ORGANIZACIONAL --- */}
-          <section className="admin-form-section">
-            <h2 className="admin-section-title">
-              <i className="fas fa-building"></i>
-              Ubicación Organizacional
-            </h2>
-
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label>Dirección *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-sitemap"></i>
-                  <select name="direccion" value={formState.direccion} onChange={handleChange} required>
-                    <option value="">Seleccione...</option>
-                    {opciones?.direcciones.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div className="admin-form-group">
-                <label>Centro *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-industry"></i>
-                  <input
-                    type="text"
-                    name="centro"
-                    value={formState.centro}
-                    onChange={handleChange}
-                    list="centros-coduni"
-                    required
-                    maxLength={100}
-                    placeholder="Escriba o seleccione el centro (CODUNI)"
-                  />
-                  <datalist id="centros-coduni">
-                    {centrosCoduni.map(centro => (
-                      <option key={centro} value={centro} />
-                    ))}
-                  </datalist>
-                </div>
-              </div>
-            </div>
-
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label>Área/Departamento *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-layer-group"></i>
-                  <select name="area_depto" value={formState.area_depto} onChange={handleChange} required>
-                    <option value="">Seleccione...</option>
-                    {areasCoduni.map(area => (
-                      <option key={area} value={area}>{area}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="admin-form-group">
-                <label>Régimen *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-users"></i>
-                  <select name="regimen" value={formState.regimen} onChange={handleChange} required>
-                    <option value="">Seleccione...</option>
-                    {opciones?.regimenes.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {(formState.regimen === 'Sindicalizado' || formState.regimen === 'Ambos') && (
-              <div className="admin-form-group">
-                <label>Sindicato *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-handshake"></i>
-                  <select name="sindicato" value={formState.sindicato || ''} onChange={handleChange} required>
-                    <option value="">Seleccione...</option>
-                    {opciones?.sindicatos.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
-                </div>
-              </div>
-            )}
-          </section>
-
-          {/* --- SECCIÓN 3: FECHAS IMPORTANTES --- */}
+          {/* --- SECCIÓN 2: FECHAS IMPORTANTES --- */}
           <section className="admin-form-section">
             <h2 className="admin-section-title">
               <i className="fas fa-calendar-alt"></i>
@@ -774,12 +693,86 @@ function InvestigacionFormPage() {
             </div>
           </section>
 
-          {/* --- SECCIÓN 4: GERENCIA RESPONSABLE --- */}
+          {/* --- SECCIÓN 3: UBICACIÓN ORGANIZACIONAL --- */}
           <section className="admin-form-section">
             <h2 className="admin-section-title">
-              <i className="fas fa-user-tie"></i>
-              Gerencia Responsable
+              <i className="fas fa-building"></i>
+              Ubicación Organizacional
             </h2>
+
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>Dirección *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-sitemap"></i>
+                  <select name="direccion" value={formState.direccion} onChange={handleChange} required>
+                    <option value="">Seleccione...</option>
+                    {opciones?.direcciones.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div className="admin-form-group">
+                <label>Centro *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-industry"></i>
+                  <input
+                    type="text"
+                    name="centro"
+                    value={formState.centro}
+                    onChange={handleChange}
+                    list="centros-coduni"
+                    required
+                    maxLength={100}
+                    placeholder="Escriba o seleccione el centro (CODUNI)"
+                  />
+                  <datalist id="centros-coduni">
+                    {centrosCoduni.map(centro => (
+                      <option key={centro} value={centro} />
+                    ))}
+                  </datalist>
+                </div>
+              </div>
+            </div>
+
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>Área/Departamento *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-layer-group"></i>
+                  <select name="area_depto" value={formState.area_depto} onChange={handleChange} required>
+                    <option value="">Seleccione...</option>
+                    {areasCoduni.map(area => (
+                      <option key={area} value={area}>{area}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="admin-form-group">
+                <label>Régimen *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-users"></i>
+                  <select name="regimen" value={formState.regimen} onChange={handleChange} required>
+                    <option value="">Seleccione...</option>
+                    {opciones?.regimenes.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {(formState.regimen === 'Sindicalizado' || formState.regimen === 'Ambos') && (
+              <div className="admin-form-group">
+                <label>Sindicato *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-handshake"></i>
+                  <select name="sindicato" value={formState.sindicato || ''} onChange={handleChange} required>
+                    <option value="">Seleccione...</option>
+                    {opciones?.sindicatos.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
 
             <div className="admin-form-group">
               <label>Gerencia Responsable *</label>
@@ -791,6 +784,18 @@ function InvestigacionFormPage() {
                 </select>
               </div>
             </div>
+          </section>
+
+          
+
+          {/* --- SECCIÓN 4: GERENCIA RESPONSABLE --- */}
+          <section className="admin-form-section">
+            <h2 className="admin-section-title">
+              <i className="fas fa-user-tie"></i>
+              Gerencia Responsable
+            </h2>
+
+            
 
             {/* Contactos */}
             <div className="admin-personas-section">
@@ -973,6 +978,16 @@ function InvestigacionFormPage() {
                   />
                 </div>
               </div>
+
+              <div className="admin-form-group">
+                  <label>Numero de Constancia de Habilitación</label>
+                  <input
+                    type="text"
+                    value={investigadorActual.no_constancia}
+                    onChange={(e) => setInvestigadorActual(prev => ({ ...prev, no_constancia: e.target.value }))}
+                    placeholder="Numero de Constancia de Habilitación"
+                  />
+                </div>
 
               <div className="admin-form-group">
                 <label>Email</label>

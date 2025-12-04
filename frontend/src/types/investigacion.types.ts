@@ -12,7 +12,9 @@ export interface Contacto extends BasePersona {
   tipo: 'contacto' | 'responsable';
 }
 
-export interface Investigador extends BasePersona { }
+export interface Investigador extends BasePersona { 
+  no_constancia: string;
+}
 
 export interface Involucrado extends BasePersona {
   nivel: string;
@@ -96,6 +98,7 @@ export interface InvestigacionListado {
   total_testigos: number;
   created_at: string;
   fecha_conocimiento_hechos: string;
+  investigadores: string[];
 }
 
 export interface Antecedente {

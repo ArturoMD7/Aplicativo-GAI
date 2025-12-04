@@ -115,7 +115,7 @@ function WelcomePage() {
             <thead>
               <tr>
                 <th>Reporte</th>
-                <th>Nombre Corto</th>
+                <th>Documento de Origen</th>
                 <th>Fecha</th>
                 <th>Estado</th>
               </tr>
