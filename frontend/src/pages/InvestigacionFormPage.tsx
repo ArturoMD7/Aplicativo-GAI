@@ -862,7 +862,7 @@ function InvestigacionFormPage() {
             </div>
           </section>
 
-          
+
 
           {/* --- SECCIÓN 4: GERENCIA RESPONSABLE --- */}
           <section className="admin-form-section">
@@ -871,7 +871,7 @@ function InvestigacionFormPage() {
               Gerencia Responsable
             </h2>
 
-            
+
 
             {/* Contactos */}
             <div className="admin-personas-section">
@@ -960,38 +960,46 @@ function InvestigacionFormPage() {
 
               {/* Lista de contactos agregados */}
               {formState.contactos.length > 0 && (
-                <div className="admin-personas-grid" style={{ marginTop: '20px' }}>
-                  <h4>Contactos Agregados:</h4>
-                  {formState.contactos.map((contacto, index) => (
-                    <div key={index} className="admin-persona-card">
-                      <div className="admin-persona-header">
-                        <h4>{contacto.nombre}</h4>
-                        <span className="admin-ficha">Ficha: {contacto.ficha}</span>
+                <div style={{ marginTop: '20px', width: '100%' }}>
+                  <h4 style={{ marginBottom: '15px', color: '#333' }}>Contactos Agregados:</h4>
+
+                  <div className="admin-personas-grid" style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                    gap: '20px'
+                  }}>
+                    {formState.contactos.map((contacto, index) => (
+                      <div key={index} className="admin-persona-card">
+                        {/* Mantén el contenido actual de cada tarjeta */}
+                        <div className="admin-persona-header">
+                          <h4>{contacto.nombre}</h4>
+                          <span className="admin-ficha">Ficha: {contacto.ficha}</span>
+                        </div>
+                        <div className="admin-persona-details">
+                          <div className="admin-detail-row">
+                            <span className="admin-label">Tipo:</span>
+                            <span className="admin-badge admin-badge-primary">{contacto.tipo}</span>
+                          </div>
+                          <div className="admin-detail-row">
+                            <span className="admin-label">Email:</span>
+                            <span className="admin-value">{contacto.email}</span>
+                          </div>
+                          <div className="admin-detail-row">
+                            <span className="admin-label">Extensión:</span>
+                            <span className="admin-value">{contacto.extension}</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => eliminarPersona('contactos', index)}
+                          className="admin-back-button"
+                          style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
+                        >
+                          Eliminar
+                        </button>
                       </div>
-                      <div className="admin-persona-details">
-                        <div className="admin-detail-row">
-                          <span className="admin-label">Tipo:</span>
-                          <span className="admin-badge admin-badge-primary">{contacto.tipo}</span>
-                        </div>
-                        <div className="admin-detail-row">
-                          <span className="admin-label">Email:</span>
-                          <span className="admin-value">{contacto.email}</span>
-                        </div>
-                        <div className="admin-detail-row">
-                          <span className="admin-label">Extensión:</span>
-                          <span className="admin-value">{contacto.extension}</span>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => eliminarPersona('contactos', index)}
-                        className="admin-back-button"
-                        style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -1056,14 +1064,14 @@ function InvestigacionFormPage() {
               </div>
 
               <div className="admin-form-group">
-                  <label>Numero de Constancia de Habilitación</label>
-                  <input
-                    type="text"
-                    value={investigadorActual.no_constancia}
-                    onChange={(e) => setInvestigadorActual(prev => ({ ...prev, no_constancia: e.target.value }))}
-                    placeholder="Numero de Constancia de Habilitación"
-                  />
-                </div>
+                <label>Numero de Constancia de Habilitación</label>
+                <input
+                  type="text"
+                  value={investigadorActual.no_constancia}
+                  onChange={(e) => setInvestigadorActual(prev => ({ ...prev, no_constancia: e.target.value }))}
+                  placeholder="Numero de Constancia de Habilitación"
+                />
+              </div>
 
               <div className="admin-form-group">
                 <label>Email</label>
@@ -1081,40 +1089,48 @@ function InvestigacionFormPage() {
 
               {/* Lista de investigadores agregados */}
               {formState.investigadores.length > 0 && (
-                <div className="admin-personas-grid" style={{ marginTop: '20px' }}>
-                  <h4>Investigadores Agregados:</h4>
-                  {formState.investigadores.map((investigador, index) => (
-                    <div key={index} className="admin-persona-card">
-                      <div className="admin-persona-header">
-                        <h4>{investigador.nombre}</h4>
-                        <span className="admin-ficha">Ficha: {investigador.ficha}</span>
-                      </div>
-                      <div className="admin-persona-details">
-                        <div className="admin-detail-row">
-                          <span className="admin-label">Email:</span>
-                          <span className="admin-value">{investigador.email}</span>
+                <div style={{ marginTop: '20px', width: '100%' }}>
+                  <h4 style={{ marginBottom: '15px', color: '#333' }}>Investigadores Agregados:</h4>
+
+                  <div className="admin-personas-grid" style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                    gap: '20px'
+                  }}>
+
+                    {formState.investigadores.map((investigador, index) => (
+                      <div key={index} className="admin-persona-card">
+                        <div className="admin-persona-header">
+                          <h4>{investigador.nombre}</h4>
+                          <span className="admin-ficha">Ficha: {investigador.ficha}</span>
                         </div>
-                        <div className="admin-detail-row">
-                          <span className="admin-label">Extensión:</span>
-                          <span className="admin-value">{investigador.extension}</span>
+                        <div className="admin-persona-details">
+                          <div className="admin-detail-row">
+                            <span className="admin-label">Email:</span>
+                            <span className="admin-value">{investigador.email}</span>
+                          </div>
+                          <div className="admin-detail-row">
+                            <span className="admin-label">Extensión:</span>
+                            <span className="admin-value">{investigador.extension}</span>
+                          </div>
                         </div>
+                        <button
+                          type="button"
+                          onClick={() => eliminarPersona('investigadores', index)}
+                          className="admin-back-button"
+                          style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
+                        >
+                          Eliminar
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => eliminarPersona('investigadores', index)}
-                        className="admin-back-button"
-                        style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
           </section>
 
-          
+
 
           {/* --- SECCIÓN 6: PERSONAS INVOLUCRADAS --- */}
           <section className="admin-form-section">
@@ -1290,7 +1306,7 @@ function InvestigacionFormPage() {
 
                   <div className="admin-personas-grid" style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))', 
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))',
                     gap: '20px'
                   }}>
                     {formState.involucrados.map((involucrado, index) => (
@@ -1471,36 +1487,43 @@ function InvestigacionFormPage() {
 
               {/* Lista de testigos agregados */}
               {formState.testigos.length > 0 && (
-                <div className="admin-personas-grid" style={{ marginTop: '20px' }}>
-                  <h4>Testigos Agregados:</h4>
-                  {formState.testigos.map((testigo, index) => (
-                    <div key={index} className="admin-persona-card">
-                      <div className="admin-persona-header">
-                        <h4>{testigo.nombre}</h4>
-                        <span className="admin-ficha">Ficha: {testigo.ficha}</span>
-                      </div>
-                      <div className="admin-persona-details">
-                        <div className="admin-detail-row">
-                          <span className="admin-label">Nivel:</span>
-                          <span className="admin-value">{testigo.nivel}</span>
+                <div style={{ marginTop: '20px', width: '100%' }}>
+                  <h4 style={{ marginBottom: '15px', color: '#333' }}>Testigos Agregados:</h4>
+
+                  <div className="admin-personas-grid" style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                    gap: '20px'
+                  }}>
+                    {formState.testigos.map((testigo, index) => (
+                      <div key={index} className="admin-persona-card">
+                        <div className="admin-persona-header">
+                          <h4>{testigo.nombre}</h4>
+                          <span className="admin-ficha">Ficha: {testigo.ficha}</span>
                         </div>
-                        <div className="admin-detail-row">
-                          <span className="admin-label">Subordinación:</span>
-                          <span className={`admin-badge ${testigo.subordinacion ? 'admin-badge-warning' : 'admin-badge-secondary'}`}>
-                            {testigo.subordinacion ? 'Sí' : 'No'}
-                          </span>
+                        <div className="admin-persona-details">
+                          <div className="admin-detail-row">
+                            <span className="admin-label">Nivel:</span>
+                            <span className="admin-value">{testigo.nivel}</span>
+                          </div>
+                          <div className="admin-detail-row">
+                            <span className="admin-label">Subordinación:</span>
+                            <span className={`admin-badge ${testigo.subordinacion ? 'admin-badge-warning' : 'admin-badge-secondary'}`}>
+                              {testigo.subordinacion ? 'Sí' : 'No'}
+                            </span>
+                          </div>
                         </div>
+                        <button
+                          type="button"
+                          onClick={() => eliminarPersona('testigos', index)}
+                          className="admin-back-button"
+                          style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
+                        >
+                          Eliminar
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => eliminarPersona('testigos', index)}
-                        className="admin-back-button"
-                        style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
