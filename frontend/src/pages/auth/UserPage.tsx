@@ -12,6 +12,7 @@ type User = {
   first_name: string;
   last_name: string;
   groups: string[]; 
+  ficha?: string;
 };
 
 function UsersPage() {
@@ -102,7 +103,7 @@ function UsersPage() {
           <table className="user-table">
             <thead>
               <tr>
-                <th>ID</th>
+                <th>FICHA</th>
                 <th>Email</th>
                 <th>Nombre Completo</th>
                 <th>Roles</th>
@@ -112,7 +113,7 @@ function UsersPage() {
             <tbody>
               {users.map((user) => (
                 <tr key={user.id}>
-                  <td>{user.id}</td>
+                  <td>{user.ficha}</td>
                   <td className="user-email">{user.email}</td>
                   <td className="user-name">
                     {user.first_name || user.last_name 

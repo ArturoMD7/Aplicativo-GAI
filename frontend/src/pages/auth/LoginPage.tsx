@@ -15,6 +15,9 @@ function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [year] = useState(new Date().getFullYear());
+  const [showHelp, setShowHelp] = useState(false);
+
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -87,7 +90,57 @@ function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
               </a>
             </div>
 
+            <div style={{ textAlign: 'center', marginTop: 14 }}>
+                <a
+                  href="#"
+                  className="auth-link"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowHelp(true);
+                  }}
+                >
+                  <i className="fas fa-info-circle" aria-hidden="true" style={{ marginRight: 6 }}></i>
+                  ¿Necesitas Ayuda?
+                </a>
+            </div>
+
+             <div style={{ textAlign: 'center', marginTop: 14 }}>
+              <a className="auth-derechos">
+                <i aria-hidden="true" style={{ marginRight: 6 }}></i>
+                Copyright © {year} Petróleos Mexicanos. Derechos reservados.
+              </a>
+            </div>
+
           </form>
+
+             {showHelp && (
+                <div className="modal-help-overlay">
+                  <div className="modal-help">
+                    <h3><i className="fas fa-info-circle"></i> Contactanos:</h3>
+
+                    <h3><i></i> Gerencia de Asuntos Internos</h3>
+
+                    <ul>
+                      <li><b>Coordinación GAI:</b></li>
+                      <p>Alejandra Gayosso Cabello
+                        alejandra.gayosso@pemex.com</p>
+                      
+                      <li><b>Administrador del Sitema:</b></li>
+                      <p>Ing. Jaime Morales García
+                        jaime.morales@pemex.com</p>
+                      
+                    </ul>
+
+                    <button
+                      className="modal-help-close"
+                      onClick={() => setShowHelp(false)}
+                    >
+                      Cerrar
+                    </button>
+                  </div>
+                </div>
+              )}
+
         </div>
       </div>
     </div>

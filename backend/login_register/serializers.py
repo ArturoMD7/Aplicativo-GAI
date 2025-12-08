@@ -18,11 +18,15 @@ class UserSerializer(serializers.ModelSerializer):
         slug_field="name"
     )
 
+    ficha = serializers.CharField(source='profile.ficha', read_only=True)
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_staff', 'groups']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_staff', 'groups', 'ficha']
 
 class RegisterSerializer(serializers.ModelSerializer):
+
+    ficha = serializers.CharField(write_only=True, required=False)
     email = serializers.EmailField(
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all(), message="Este email ya está en uso.")]
@@ -39,7 +43,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'password', 'password2', 'first_name', 'last_name', 'groups')
+        fields = ('email', 'password', 'password2', 'first_name', 'last_name', 'groups', 'ficha')
+        
+
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -47,6 +53,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
+        ficha_value = validated_data.pop('ficha', None)
         groups_data = validated_data.pop('groups', None)
         
         user = User.objects.create_user(
@@ -62,20 +69,40 @@ class RegisterSerializer(serializers.ModelSerializer):
             user.is_staff = True
             user.save()
 
+        if ficha_value:
+            user.profile.ficha = ficha_value
+            user.profile.save()
+
         return user
     
 class UserUpdateSerializer(serializers.ModelSerializer):
     """
     Serializer para actualizar información básica del usuario
     """
+    ficha = serializers.CharField(source='profile.ficha', required=False)
+
     email = serializers.EmailField(
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all(), message="Este email ya está en uso.")]
     )
 
+    class FichaField(serializers.Field):
+        """
+        Campo personalizado para validar y serializar el número de ficha.
+        """
+        def to_representation(self, value):
+            return str(value) if value else None
+
+        def to_internal_value(self, data):
+            if not data:
+                raise serializers.ValidationError("La ficha es requerida.")
+            if not str(data).isdigit():
+                raise serializers.ValidationError("La ficha debe contener solo números.")
+            return str(data)
+
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'ficha']
         read_only_fields = ['id', 'username']
 
     def update(self, instance, validated_data):

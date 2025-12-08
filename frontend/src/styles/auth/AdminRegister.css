@@ -1,163 +1,266 @@
-.admin-register-container {
+:root {
+  --primary-color: #840016;
+  --primary-hover: #a50121;
+  --bg-color: #f4f6f8;
+  --card-bg: #ffffff;
+  --text-dark: #333;
+  --text-light: #666;
+  --border-color: #dcdfe4;
+  --input-focus-shadow: rgba(132, 0, 22, 0.1);
+}
+
+/* Contenedor principal para centrar todo */
+.admin-register-wrapper {
+  min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: calc(100vh - 60px);
-  padding: 40px 20px;
-  width: 100%;
+  align-items: center; /* Centrado Vertical */
+  justify-content: center; /* Centrado Horizontal */
+  background-color: var(--bg-color);
+  padding: 20px;
   box-sizing: border-box;
 }
 
-.admin-register-form-container {
-  background: #fff;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+.admin-register-container {
   width: 100%;
-  max-width: 500px;
-  margin-top: 20px;
+  max-width: 600px; /* Un poco más ancho para las 3 columnas */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.admin-register-header {
+  text-align: center;
 }
 
 .admin-register-header h1 {
-  color: #840016;
-  margin-bottom: 8px;
+  color: var(--primary-color);
+  margin: 0 0 8px 0;
   font-size: 2rem;
 }
 
 .admin-register-header p {
-  color: #666;
+  color: var(--text-light);
+  margin: 0;
   font-size: 1.1rem;
 }
 
-.admin-register-form-container {
-  background: #fff;
-  padding: 30px;
+/* Tarjeta del formulario (Antes estaba duplicada) */
+.admin-register-card {
+  background: var(--card-bg);
+  padding: 40px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.admin-register-form {
-  max-width: 500px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .admin-form-group {
   margin-bottom: 20px;
 }
 
+/* Grid System para las filas */
 .admin-form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 15px;
+}
+
+/* Clase especial para la fila de Nombre/Apellido/Ficha */
+.admin-form-row.three-cols {
+  grid-template-columns: 1fr 1fr 1fr;
 }
 
 .admin-form-group label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-dark);
+  font-size: 0.9rem;
 }
 
-.admin-form-group input,
-.admin-form-group select {
+/* Inputs y Estilos */
+.admin-input-with-icon {
+  position: relative;
+}
+
+.admin-input-with-icon i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  transition: color 0.3s ease;
+}
+
+.admin-input-with-icon input,
+.admin-input-with-icon select {
   width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #dcdfe4;
+  padding: 12px 16px 12px 42px; /* Padding izquierdo para el icono */
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.admin-input-with-icon input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px var(--input-focus-shadow);
+}
+
+.admin-input-with-icon input:focus + i {
+  color: var(--primary-color);
+}
+
+/* Header de roles */
+.admin-roles-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.selection-count {
+  font-size: 0.8rem;
+  font-weight: normal;
+  margin-left: 8px;
+  color: var(--text-light);
+}
+
+.select-all-btn {
+  background: none;
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.select-all-btn:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* Grid de Roles */
+.admin-roles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.admin-role-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
   background: #fff;
 }
 
-.admin-form-group input:focus,
-.admin-form-group select:focus {
-  outline: none;
-  border-color: #840016;
-  box-shadow: 0 0 0 3px rgba(132, 0, 22, 0.1);
+.admin-role-option:hover {
+  border-color: var(--primary-color);
+  background: #fffafa;
 }
 
-.admin-role-select {
-  height: 120px;
-  resize: vertical;
+.admin-role-option.selected {
+  border-color: var(--primary-color);
+  background: #fff5f5;
 }
 
-.admin-role-select option {
-  padding: 8px 12px;
-  border-bottom: 1px solid #ecf0f1;
-  transition: background-color 0.2s ease;
+.admin-role-checkbox {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.admin-role-select option:hover {
-  background-color: #840016;
+.admin-role-option.selected .admin-role-checkbox {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.admin-role-option.selected .admin-role-checkbox::after {
+  content: '✓';
   color: white;
+  font-size: 10px;
 }
 
-.admin-form-note {
-  font-size: 0.8rem;
-  color: #7f8c8d;
-  margin-top: 4px;
-  font-style: italic;
+.admin-role-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-dark);
 }
 
+/* Botones de acción */
 .admin-submit-button {
-  background: #840016;
+  background: var(--primary-color);
   color: white;
   border: none;
-  padding: 14px 32px;
+  padding: 14px;
   border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 10px;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  margin-top: 10px;
 }
 
 .admin-submit-button:hover:not(:disabled) {
-  background: #a50121;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(132, 0, 22, 0.3);
+  background: var(--primary-hover);
+  transform: translateY(-1px);
 }
 
 .admin-submit-button:disabled {
   background: #ccc;
   cursor: not-allowed;
-  transform: none;
 }
 
 .admin-back-button {
-  background: #95a5a6;
-  color: white;
-  border: none;
-  padding: 12px 24px;
+  background: transparent;
+  color: #7f8c8d;
+  padding: 12px;
   border-radius: 8px;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 12px;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   text-decoration: none;
+  margin-top: 8px;
 }
 
 .admin-back-button:hover {
-  background: #7f8c8d;
-  transform: translateY(-1px);
+  background: #f0f0f0;
+  color: var(--text-dark);
 }
 
+/* Alertas */
 .admin-alert {
   padding: 12px 16px;
   border-radius: 8px;
   margin-bottom: 20px;
   font-weight: 500;
+  font-size: 0.9rem;
 }
 
 .admin-alert-error {
@@ -172,136 +275,15 @@
   border: 1px solid #b8e8d0;
 }
 
-/* Estilos para inputs con iconos */
-.admin-input-with-icon {
-  position: relative;
-}
-
-.admin-input-with-icon i {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #7f8c8d;
-}
-
-.admin-input-with-icon input,
-.admin-input-with-icon select {
-  padding-left: 40px;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
-  .admin-register-container {
-    padding: 16px;
-  }
-
-  .admin-form-row {
-    grid-template-columns: 1fr;
+  .admin-form-row, 
+  .admin-form-row.three-cols {
+    grid-template-columns: 1fr; /* Todo a 1 columna en móvil */
     gap: 0;
   }
-
-  .admin-register-form-container {
+  
+  .admin-register-card {
     padding: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .admin-register-header h1 {
-    font-size: 1.75rem;
-  }
-
-  .admin-register-header p {
-    font-size: 1rem;
-  }
-}
-
-.admin-roles-container {
-  margin-top: 8px;
-}
-
-.admin-roles-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.admin-role-option {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  border: 2px solid #e9ecef;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: #f8f9fa;
-}
-
-.admin-role-option:hover {
-  border-color: #840016;
-  background: #fff5f5;
-}
-
-.admin-role-option.selected {
-  border-color: #840016;
-  background: #fff5f5;
-}
-
-.admin-role-checkbox {
-  width: 18px;
-  height: 18px;
-  border: 2px solid #dcdfe4;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.admin-role-option.selected .admin-role-checkbox {
-  background: #840016;
-  border-color: #840016;
-}
-
-.admin-role-option.selected .admin-role-checkbox::after {
-  content: '✓';
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.admin-role-label {
-  font-weight: 500;
-  color: #333;
-  user-select: none;
-}
-
-.admin-roles-loading {
-  text-align: center;
-  padding: 20px;
-  color: #666;
-  font-style: italic;
-}
-
-.admin-roles-error {
-  text-align: center;
-  padding: 20px;
-  color: #e74c3c;
-  background: #fde8e8;
-  border-radius: 8px;
-  border: 1px solid #fbcbcb;
-}
-
-/* Mejoras responsive para los roles */
-@media (max-width: 768px) {
-  .admin-roles-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-role-option {
-    padding: 10px 12px;
   }
 }

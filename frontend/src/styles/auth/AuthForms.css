@@ -6,6 +6,7 @@
   --pemex-greenlight: #308c1d;
   --pemex-green: #193908;
   --pemex-green2: #0a2516;
+  --pemex-redlight: #883543;
 }
 
 /* Página y cabecera opcional */
@@ -171,6 +172,13 @@
   transition: color 0.3s ease;
 }
 
+.auth-derechos {
+  color: var(--pemex-redlight);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
 .auth-link:hover {
   color: var(--pemex-accent);
   text-decoration: underline;
@@ -271,4 +279,56 @@
   outline: none;
   font-size: 1rem;
   background: #fff;
+}
+
+
+.modal-help-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(3px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-help {
+    background: white;
+    padding: 24px 30px;
+    border-radius: 10px;
+    width: 380px;
+    max-width: 90%;
+    box-shadow: 0px 8px 30px rgba(0,0,0,0.25);
+    animation: fadeIn 0.2s ease-in-out;
+}
+
+.modal-help h3 {
+    text-align: center;
+    margin-bottom: 16px;
+    color: #006847; /* Verde Pemex */
+}
+
+.modal-help-close {
+    margin-top: 18px;
+    width: 100%;
+    padding: 10px;
+    background: #006847;  
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.modal-help-close:hover {
+    background: #004e34;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
