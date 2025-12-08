@@ -24,6 +24,7 @@ function InvestigacionListPage() {
       setLoading(true);
       try {
         const response = await apiClient.get('/api/investigaciones/investigaciones/');
+        console.log("DATA REAL:", response.data);
         setInvestigaciones(response.data);
       } catch (err) {
         setError('No se pudo cargar la lista de investigaciones.');
@@ -133,7 +134,6 @@ function InvestigacionListPage() {
   };
 
   const renderInvestigadores = (investigadores: string[] | string) => {
-    // Validación por si viene nulo o vacío
     if (!investigadores || (Array.isArray(investigadores) && investigadores.length === 0)) {
         return <span className="text-muted" style={{ fontSize: '0.85rem' }}>Sin asignar</span>;
     }
@@ -144,6 +144,24 @@ function InvestigacionListPage() {
       <div className="investigadores-list">
         {lista.map((nombre, index) => (
           <span key={index} className="investigador-badge">
+            {nombre}
+          </span>
+        ))}
+      </div>
+    );
+  };
+
+  const renderInvolucrados = (involucrados: string[] | string) => {
+    if (!involucrados || (Array.isArray(involucrados) && involucrados.length === 0)) {
+        return <span className="text-muted" style={{ fontSize: '0.85rem' }}>Sin asignar</span>;
+    }
+
+    const lista = Array.isArray(involucrados) ? involucrados : [involucrados];
+
+    return (
+      <div className="involucrados-list">
+        {lista.map((nombre, index) => (
+          <span key={index} className="involucrados-badge">
             {nombre}
           </span>
         ))}
@@ -219,7 +237,9 @@ function InvestigacionListPage() {
                 <th style={{ textAlign: 'center' }}>Semáforo</th>
                 <th>No. Reporte</th>
                 <th>Documento de Origen</th>
+                <th>Dirección</th>
                 <th>Investigadores</th>
+                <th>Involucrados</th>
                 <th>Procedencia</th>
                 <th>Gravedad</th>
                 <th>Región</th>
@@ -245,11 +265,17 @@ function InvestigacionListPage() {
                   <td className="col-reporte">
                     {inv.numero_reporte || <span className="text-muted">Sin asignar</span>}
                   </td>
-
+                
                   <td style={{ fontWeight: 500 }}>{inv.nombre_corto}</td>
+                  <td className="text-muted">{inv.direccion}</td>
                   <td>
                     {renderInvestigadores(inv.investigadores)}
                   </td>
+
+                  <td>
+                    {renderInvolucrados(inv.involucrados)}
+                  </td>
+
                   <td className="text-muted">{inv.procedencia}</td>
 
                   <td>

@@ -82,6 +82,7 @@ export interface OpcionesDropdowns {
 }
 
 export interface InvestigacionListado {
+  direccion: string;
   id: number;
   numero_reporte: string;
   procedencia: string;
@@ -99,6 +100,7 @@ export interface InvestigacionListado {
   created_at: string;
   fecha_conocimiento_hechos: string;
   investigadores: string[];
+  involucrados: string[];
 }
 
 export interface Antecedente {

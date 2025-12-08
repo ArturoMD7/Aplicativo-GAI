@@ -132,7 +132,7 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         if obj.fecha_prescripcion:
             hoy = date.today()
             dias = (obj.fecha_prescripcion - hoy).days
-            return max(0, dias)  # No mostrar negativos
+            return dias
         return None
 
     def get_semaforo(self, obj):
@@ -283,13 +283,19 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
         slug_field='nombre'
     )
 
+    involucrados = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='nombre'
+    )
+
     class Meta:
         model = Investigacion
         fields = [
             'id', 'numero_reporte', 'nombre_corto', 'procedencia', 'descripcion_general',
             'direccion', 'gravedad', 'fecha_reporte', 'fecha_prescripcion',
             'gerencia_responsable', 'created_by_name', 'dias_restantes',
-            'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos', 'investigadores',
+            'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos', 'investigadores', 'involucrados'
         ]
 
     def get_dias_restantes(self, obj):
@@ -297,7 +303,7 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
         if obj.fecha_prescripcion:
             hoy = date.today()
             dias = (obj.fecha_prescripcion - hoy).days
-            return max(0, dias)
+            return dias
         return None
 
     def get_semaforo(self, obj):
