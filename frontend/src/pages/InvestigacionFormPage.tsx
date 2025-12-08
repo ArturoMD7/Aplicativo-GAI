@@ -292,7 +292,18 @@ function InvestigacionFormPage() {
     }
   };
 
-  // --- Handlers para búsqueda de empleados ---
+  const handleEnterBusqueda = (
+    e: React.KeyboardEvent<HTMLInputElement>, 
+    ficha: string, 
+    tipo: 'contacto' | 'investigador' | 'involucrado' | 'testigo'
+  ) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); 
+      buscarEmpleado(ficha, tipo);
+    }
+  };
+
+ 
   const buscarEmpleado = async (ficha: string, tipo: 'contacto' | 'investigador' | 'involucrado' | 'testigo') => {
     if (!ficha.trim()) return;
 
@@ -302,7 +313,7 @@ function InvestigacionFormPage() {
       const response = await apiClient.get(`/api/investigaciones/buscar-empleado/?ficha=${ficha}`);
       const empleado: EmpleadoBuscado = response.data;
 
-      if (empleado.antecedentes && empleado.antecedentes.length > 0) {
+      if (tipo === 'involucrado' && empleado.antecedentes && empleado.antecedentes.length > 0) {
         setAntecedentesEncontrados(empleado.antecedentes);
       }
 
@@ -884,25 +895,10 @@ function InvestigacionFormPage() {
                     type="text"
                     value={contactoActual.ficha}
                     onChange={(e) => setContactoActual(prev => ({ ...prev, ficha: e.target.value }))}
+                    onKeyDown={(e) => handleEnterBusqueda(e, contactoActual.ficha, 'contacto')}
                     placeholder="Ingrese ficha"
                     style={{ flex: 1 }}
                   />
-
-                  <button
-                    type="button"
-                    onClick={() => buscarEmpleado(contactoActual.ficha, 'contacto')}
-                    className="admin-submit-button"
-                    style={{
-                      marginTop: '3px',
-                      padding: '10px 20px',
-                      fontSize: '0.9rem',
-                      height: '40px',
-                      minWidth: '100px',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    Buscar
-                  </button>
                 </div>
               </div>
 
@@ -1015,23 +1011,10 @@ function InvestigacionFormPage() {
                     type="text"
                     value={investigadorActual.ficha}
                     onChange={(e) => setInvestigadorActual(prev => ({ ...prev, ficha: e.target.value }))}
+                    onKeyDown={(e) => handleEnterBusqueda(e, investigadorActual.ficha, 'investigador')}
                     placeholder="Ingrese ficha"
                   />
-                  <button
-                    type="button"
-                    onClick={() => buscarEmpleado(investigadorActual.ficha, 'investigador')}
-                    className="admin-submit-button"
-                    style={{
-                      marginTop: '3px',
-                      padding: '10px 20px',
-                      fontSize: '0.9rem',
-                      height: '40px',
-                      minWidth: '100px',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    Buscar
-                  </button>
+                  
                 </div>
 
               </div>
@@ -1150,23 +1133,10 @@ function InvestigacionFormPage() {
                     type="text"
                     value={involucradoActual.ficha}
                     onChange={(e) => setInvolucradoActual(prev => ({ ...prev, ficha: e.target.value }))}
+                    onKeyDown={(e) => handleEnterBusqueda(e, involucradoActual.ficha, 'involucrado')}
                     placeholder="Ingrese ficha"
                   />
-                  <button
-                    type="button"
-                    onClick={() => buscarEmpleado(involucradoActual.ficha, 'involucrado')}
-                    className="admin-submit-button"
-                    style={{
-                      marginTop: '3px',
-                      padding: '10px 20px',
-                      fontSize: '0.9rem',
-                      height: '40px',
-                      minWidth: '100px',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    Buscar
-                  </button>
+                 
                 </div>
 
               </div>
@@ -1420,25 +1390,12 @@ function InvestigacionFormPage() {
                     type="text"
                     value={testigoActual.ficha}
                     onChange={(e) => setTestigoActual(prev => ({ ...prev, ficha: e.target.value }))}
+                    onKeyDown={(e) => handleEnterBusqueda(e, testigoActual.ficha, 'testigo')}
                     placeholder="Ingrese ficha"
                     style={{ flex: 1 }}
                   />
 
-                  <button
-                    type="button"
-                    onClick={() => buscarEmpleado(testigoActual.ficha, 'testigo')}
-                    className="admin-submit-button"
-                    style={{
-                      marginTop: '3px',
-                      padding: '10px 20px',
-                      fontSize: '0.9rem',
-                      height: '40px',
-                      minWidth: '100px',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    Buscar
-                  </button>
+    
                 </div>
               </div>
 
