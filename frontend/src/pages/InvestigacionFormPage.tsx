@@ -126,8 +126,8 @@ function InvestigacionFormPage() {
 
   useEffect(() => {
   if (investigadorActual.no_constancia === '001') {
-    const pdfPath = '629429_001.pdf'; 
-    setPdfUrl(pdfPath);
+    const pdfPath = '.'; 
+    setPdfUrl('/629429_001.pdf');
     setMostrarPDF(true);
   } else {
     setMostrarPDF(false);
@@ -136,15 +136,16 @@ function InvestigacionFormPage() {
   }, [investigadorActual.no_constancia]);
 
   const handleDescargarPDF = () => {
-    if (pdfUrl) {
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      link.download = '001.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  };
+  if (pdfUrl) {
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.download = '629429_001.pdf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+};
+
 
 
 
