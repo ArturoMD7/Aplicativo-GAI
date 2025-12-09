@@ -239,7 +239,7 @@ function InvestigacionListPage() {
                 <th>Documento de Origen</th>
                 <th>Dirección</th>
                 <th>Investigadores</th>
-                <th>Involucrados</th>
+                <th>Personal Reportado</th>
                 <th>Procedencia</th>
                 <th>Gravedad</th>
                 <th>Región</th>
