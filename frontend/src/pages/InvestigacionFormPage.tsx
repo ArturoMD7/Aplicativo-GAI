@@ -97,6 +97,7 @@ function InvestigacionFormPage() {
   const [centrosTrabajo, setCentrosTrabajo] = useState<string[]>([]);
   const [centrosCoduni, setCentrosCoduni] = useState<string[]>([]);
   const [areasCoduni, setAreasCoduni] = useState<string[]>([]);
+  const [showPdfModal, setShowPdfModal] = useState(false);
 
   const [contactoActual, setContactoActual] = useState<ContactoForm>({
     ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', tipo: 'contacto'
@@ -145,10 +146,6 @@ function InvestigacionFormPage() {
     document.body.removeChild(link);
   }
 };
-
-
-
-
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
 
@@ -1090,65 +1087,159 @@ function InvestigacionFormPage() {
                 />
               </div>
 
-              {/* CUADRO SIMPLE PARA DESCARGAR PDF - SOLO APARECE CUANDO ES 001 */}
+              {/* CUADRO SIMPLE PARA DESCARGAR PDF*/}
               {mostrarPDF && (
-                <div className="admin-form-group" style={{
-                  marginTop: '15px',
-                  marginBottom: '15px'
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '12px 15px',
-                    backgroundColor: '#f8f9fa',
-                    border: '1px solid #dee2e6',
-                    borderRadius: '6px',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                <>
+                  <div className="admin-form-group" style={{
+                    marginTop: '15px',
+                    marginBottom: '15px'
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <i className="fas fa-file-pdf" style={{ 
-                        color: '#e74c3c', 
-                        fontSize: '20px' 
-                      }}></i>
-                      <div>
-                        <div style={{ fontWeight: '600', color: '#333' }}>
-                          Constancia de Habilitación #{investigadorActual.no_constancia}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '12px 15px',
+                      backgroundColor: '#f8f9fa',
+                      border: '1px solid #dee2e6',
+                      borderRadius: '6px',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <i className="fas fa-file-pdf" style={{ 
+                          color: '#e74c3c', 
+                          fontSize: '20px' 
+                        }}></i>
+                        <div>
+                          <div style={{ fontWeight: '600', color: '#333' }}>
+                            Constancia de Habilitación #{investigadorActual.no_constancia}
+                          </div>
+                          <div style={{ 
+                            fontSize: '12px', 
+                            color: '#6c757d',
+                            marginTop: '2px'
+                          }}>
+                            Disponible para visualización y descarga
+                          </div>
                         </div>
-                        <div style={{ 
-                          fontSize: '12px', 
-                          color: '#6c757d',
-                          marginTop: '2px'
+                      </div>
+                      
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        {/* BOTÓN PREVISUALIZAR */}
+                        <button
+                          type="button"
+                          onClick={() => setShowPdfModal(true)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            padding: '6px 12px',
+                            backgroundColor: '#17a2b8', 
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            fontWeight: '500'
+                          }}
+                          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#138496'}
+                          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#17a2b8'}
+                        >
+                          <i className="fas fa-eye"></i>
+                          Ver
+                        </button>
+
+                        {/* BOTÓN DESCARGAR  */}
+                        <button
+                          type="button"
+                          onClick={handleDescargarPDF}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            padding: '6px 12px',
+                            backgroundColor: '#28a745',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            fontWeight: '500'
+                          }}
+                          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#218838'}
+                          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#28a745'}
+                        >
+                          <i className="fas fa-download"></i>
+                          Descargar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* MODAL PARA PREVISUALIZAR PDF */}
+                  {showPdfModal && (
+                    <div style={{
+                      position: 'fixed',
+                      top: 0,
+                      left: 0,
+                      width: '100vw',
+                      height: '100vh',
+                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      zIndex: 9999
+                    }}>
+                      <div style={{
+                        width: '90%',
+                        height: '90%',
+                        backgroundColor: 'white',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden',
+                        boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+                      }}>
+                        {/* Cabecera del Modal */}
+                        <div style={{
+                          padding: '10px 20px',
+                          borderBottom: '1px solid #dee2e6',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          backgroundColor: '#f8f9fa'
                         }}>
-                          Disponible para descarga
+                          <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#333' }}>
+                            Previsualización 
+                          </h3>
+                          <button
+                            type="button"
+                            onClick={() => setShowPdfModal(false)}
+                            style={{
+                              background: 'none',
+                              border: 'none',
+                              fontSize: '1.5rem',
+                              cursor: 'pointer',
+                              color: '#666'
+                            }}
+                          >
+                            &times;
+                          </button>
+                        </div>
+                        
+                        {/* Cuerpo del Modal (Iframe) */}
+                        <div style={{ flex: 1, padding: 0, backgroundColor: '#525659' }}>
+                          <iframe
+                            src={pdfUrl}
+                            width="100%"
+                            height="100%"
+                            style={{ border: 'none' }}
+                            title="Visor PDF"
+                          />
                         </div>
                       </div>
                     </div>
-                    
-                    <button
-                      type="button"
-                      onClick={handleDescargarPDF}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '5px',
-                        padding: '6px 12px',
-                        backgroundColor: '#28a745',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontSize: '14px',
-                        fontWeight: '500'
-                      }}
-                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#218838'}
-                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#28a745'}
-                    >
-                      <i className="fas fa-download"></i>
-                      Descargar
-                    </button>
-                  </div>
-                </div>
+                  )}
+                </>
               )}
 
               <div className="admin-form-group">
