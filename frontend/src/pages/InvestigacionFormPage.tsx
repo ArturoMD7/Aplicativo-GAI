@@ -42,7 +42,6 @@ const initialState: InvestigacionFormState = {
   testigos: [],
 };
 
-// Interfaces para formularios temporales
 interface ContactoForm {
   ficha: string;
   nombre: string;
@@ -86,7 +85,6 @@ interface TestigoForm {
   subordinacion: boolean;
 }
 
-// Tipo para los arrays de personas en el estado
 type TipoPersona = 'contactos' | 'investigadores' | 'involucrados' | 'testigos';
 
 function InvestigacionFormPage() {
@@ -100,7 +98,6 @@ function InvestigacionFormPage() {
   const [centrosCoduni, setCentrosCoduni] = useState<string[]>([]);
   const [areasCoduni, setAreasCoduni] = useState<string[]>([]);
 
-  // Estados para las secciones de personas
   const [contactoActual, setContactoActual] = useState<ContactoForm>({
     ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', tipo: 'contacto'
   });
@@ -123,6 +120,33 @@ function InvestigacionFormPage() {
   const [timeLeft, setTimeLeft] = useState<number>(20 * 60);
   const [showTimeoutWarning, setShowTimeoutWarning] = useState<boolean>(false);
   const [isTimeUp, setIsTimeUp] = useState<boolean>(false);
+
+  const [mostrarPDF, setMostrarPDF] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string>('');
+
+  useEffect(() => {
+  if (investigadorActual.no_constancia === '001') {
+    const pdfPath = '629429_001.pdf'; 
+    setPdfUrl(pdfPath);
+    setMostrarPDF(true);
+  } else {
+    setMostrarPDF(false);
+  }
+
+  }, [investigadorActual.no_constancia]);
+
+  const handleDescargarPDF = () => {
+    if (pdfUrl) {
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = '001.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+
 
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
@@ -1065,6 +1089,67 @@ function InvestigacionFormPage() {
                 />
               </div>
 
+              {/* CUADRO SIMPLE PARA DESCARGAR PDF - SOLO APARECE CUANDO ES 001 */}
+              {mostrarPDF && (
+                <div className="admin-form-group" style={{
+                  marginTop: '15px',
+                  marginBottom: '15px'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '12px 15px',
+                    backgroundColor: '#f8f9fa',
+                    border: '1px solid #dee2e6',
+                    borderRadius: '6px',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <i className="fas fa-file-pdf" style={{ 
+                        color: '#e74c3c', 
+                        fontSize: '20px' 
+                      }}></i>
+                      <div>
+                        <div style={{ fontWeight: '600', color: '#333' }}>
+                          Constancia de Habilitación #{investigadorActual.no_constancia}
+                        </div>
+                        <div style={{ 
+                          fontSize: '12px', 
+                          color: '#6c757d',
+                          marginTop: '2px'
+                        }}>
+                          Disponible para descarga
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <button
+                      type="button"
+                      onClick={handleDescargarPDF}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        padding: '6px 12px',
+                        backgroundColor: '#28a745',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                      }}
+                      onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#218838'}
+                      onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#28a745'}
+                    >
+                      <i className="fas fa-download"></i>
+                      Descargar
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="admin-form-group">
                 <label>Email</label>
                 <input
@@ -1075,10 +1160,6 @@ function InvestigacionFormPage() {
                   placeholder="Correo electrónico"
                 />
               </div>
-
-              <button type="button" onClick={agregarInvestigador} className="admin-submit-button" style={{ maxWidth: '200px' }}>
-                Agregar Investigador
-              </button>
 
               {/* Lista de investigadores agregados */}
               {formState.investigadores.length > 0 && (
