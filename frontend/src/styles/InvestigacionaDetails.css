@@ -524,3 +524,28 @@
     grid-template-columns: 1fr; 
   }
 }
+
+
+.admin-input, 
+.admin-select {
+  width: 100%;
+  padding: 12px 16px; 
+  border: 1px solid #dcdfe4;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: #fff;
+  color: #333;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box; 
+}
+
+.admin-input:focus, 
+.admin-select:focus {
+  border-color: #840016;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(132, 0, 22, 0.1);
+}
+
+.admin-input-flex {
+  flex: 1;
+}

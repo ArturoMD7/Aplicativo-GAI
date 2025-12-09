@@ -619,13 +619,27 @@ function InvestigacionFormPage() {
                 </div>
               </div>
             </div>
+
+            <div className="admin-form-group">
+              <div className="admin-checkbox-container">
+                <input
+                  type="checkbox"
+                  name="economica"
+                  checked={formState.economica}
+                  onChange={handleChange}
+                  id="economica_check"
+                />
+                <label htmlFor="economica_check">¿Implica repercusión económica?</label>
+              </div>
+            </div>
+
           </section>
 
           {/* --- SECCIÓN 2: FECHAS IMPORTANTES --- */}
           <section className="admin-form-section">
             <h2 className="admin-section-title">
               <i className="fas fa-calendar-alt"></i>
-              Fechas Importantes
+              Tiempo
             </h2>
 
             <div className="admin-form-row">
@@ -690,25 +704,14 @@ function InvestigacionFormPage() {
               </div>
             </div>
 
-            <div className="admin-form-group">
-              <div className="admin-checkbox-container">
-                <input
-                  type="checkbox"
-                  name="economica"
-                  checked={formState.economica}
-                  onChange={handleChange}
-                  id="economica_check"
-                />
-                <label htmlFor="economica_check">¿Implica repercusión económica?</label>
-              </div>
-            </div>
+            
           </section>
 
           {/* --- SECCIÓN 5: INFORMACIÓN DEL EVENTO --- */}
           <section className="admin-form-section">
             <h2 className="admin-section-title">
               <i className="fas fa-calendar-check"></i>
-              Información del Evento
+              Modo y Lugar
             </h2>
 
             <div className="admin-form-row">
@@ -752,7 +755,7 @@ function InvestigacionFormPage() {
             </div>
 
             <div className="admin-form-group">
-              <label>Observaciones</label>
+              <label>Relatoria de los hechos</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-sticky-note"></i>
                 <input
@@ -889,10 +892,10 @@ function InvestigacionFormPage() {
               <h3>Contactos</h3>
               <div className="admin-form-group">
                 <label>Ficha</label>
-
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                   <input
                     type="text"
+                    className="admin-input"
                     value={contactoActual.ficha}
                     onChange={(e) => setContactoActual(prev => ({ ...prev, ficha: e.target.value }))}
                     onKeyDown={(e) => handleEnterBusqueda(e, contactoActual.ficha, 'contacto')}
@@ -922,6 +925,7 @@ function InvestigacionFormPage() {
                   <label>Extensión</label>
                   <input
                     type="text"
+                    className="admin-input"
                     value={contactoActual.extension}
                     onChange={(e) => setContactoActual(prev => ({ ...prev, extension: e.target.value }))}
                     placeholder="Extensión"
@@ -933,6 +937,7 @@ function InvestigacionFormPage() {
                 <label>Email</label>
                 <input
                   type="email"
+                  className="admin-input"
                   value={contactoActual.email}
                   onChange={(e) => setContactoActual(prev => ({ ...prev, email: e.target.value }))}
                   placeholder="Correo electrónico"
@@ -943,6 +948,7 @@ function InvestigacionFormPage() {
                 <label>Tipo</label>
                 <select
                   value={contactoActual.tipo}
+                  className="admin-input"
                   onChange={(e) => setContactoActual(prev => ({ ...prev, tipo: e.target.value as 'contacto' | 'responsable' }))}
                 >
                   <option value="contacto">Contacto</option>
@@ -1009,6 +1015,7 @@ function InvestigacionFormPage() {
 
                   <input
                     type="text"
+                    className="admin-input"
                     value={investigadorActual.ficha}
                     onChange={(e) => setInvestigadorActual(prev => ({ ...prev, ficha: e.target.value }))}
                     onKeyDown={(e) => handleEnterBusqueda(e, investigadorActual.ficha, 'investigador')}
@@ -1039,6 +1046,7 @@ function InvestigacionFormPage() {
                   <label>Extensión</label>
                   <input
                     type="text"
+                    className="admin-input"
                     value={investigadorActual.extension}
                     onChange={(e) => setInvestigadorActual(prev => ({ ...prev, extension: e.target.value }))}
                     placeholder="Extensión"
@@ -1050,6 +1058,7 @@ function InvestigacionFormPage() {
                 <label>Numero de Constancia de Habilitación</label>
                 <input
                   type="text"
+                  className="admin-input"
                   value={investigadorActual.no_constancia}
                   onChange={(e) => setInvestigadorActual(prev => ({ ...prev, no_constancia: e.target.value }))}
                   placeholder="Numero de Constancia de Habilitación"
@@ -1060,6 +1069,7 @@ function InvestigacionFormPage() {
                 <label>Email</label>
                 <input
                   type="email"
+                  className="admin-input"
                   value={investigadorActual.email}
                   onChange={(e) => setInvestigadorActual(prev => ({ ...prev, email: e.target.value }))}
                   placeholder="Correo electrónico"
@@ -1119,7 +1129,7 @@ function InvestigacionFormPage() {
           <section className="admin-form-section">
             <h2 className="admin-section-title">
               <i className="fas fa-users"></i>
-              Personas Involucradas
+              Personal reportado
             </h2>
 
             {/* Involucrados */}
@@ -1131,6 +1141,7 @@ function InvestigacionFormPage() {
 
                   <input
                     type="text"
+                    className="admin-input"
                     value={involucradoActual.ficha}
                     onChange={(e) => setInvolucradoActual(prev => ({ ...prev, ficha: e.target.value }))}
                     onKeyDown={(e) => handleEnterBusqueda(e, involucradoActual.ficha, 'involucrado')}
@@ -1388,6 +1399,7 @@ function InvestigacionFormPage() {
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                   <input
                     type="text"
+                    className="admin-input"
                     value={testigoActual.ficha}
                     onChange={(e) => setTestigoActual(prev => ({ ...prev, ficha: e.target.value }))}
                     onKeyDown={(e) => handleEnterBusqueda(e, testigoActual.ficha, 'testigo')}
