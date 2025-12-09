@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from django.db import connections
 from django.utils import timezone
 from datetime import date
+from .permissions import IsAdminOrReadOnly
 from .models import Investigacion, Involucrado, InvestigacionHistorico
 from .serializers import (
     InvestigacionSerializer, InvestigacionListSerializer, 
@@ -16,7 +17,7 @@ from .serializers import (
 class InvestigacionViewSet(viewsets.ModelViewSet):
     serializer_class = InvestigacionSerializer
     queryset = Investigacion.objects.all()
-    permission_classes = [IsAuthenticated]  # Añade esto
+    permission_classes = [IsAuthenticated, IsAdminOrReadOnly]  
     
     def get_serializer_class(self):
         if self.action == 'list':
@@ -57,9 +58,10 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
         user = self.request.user
         queryset = Investigacion.objects.all()
         
-        # Filtrar por usuario si no es superusuario
-        if user.is_authenticated and not user.is_superuser:
-            queryset = queryset.filter(created_by=user)
+
+        if user.is_authenticated:
+            if not (user.groups.filter(name='Admin').exists() or user.is_superuser):
+                queryset = queryset.filter(created_by=user)
         
         # Filtros adicionales
         gravedad = self.request.query_params.get('gravedad')
@@ -220,8 +222,9 @@ def estadisticas_view(request):
     queryset = Investigacion.objects.all()
     
     # Filtrar por usuario si no es superusuario
-    if user.is_authenticated and not user.is_superuser:
-        queryset = queryset.filter(created_by=user)
+    if user.is_authenticated:
+        if not (user.groups.filter(name='Admin').exists() or user.is_superuser):
+            queryset = queryset.filter(created_by=user)
     
     hoy = date.today()
     
