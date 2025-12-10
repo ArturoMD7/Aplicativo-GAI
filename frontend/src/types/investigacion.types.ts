@@ -35,6 +35,8 @@ export interface Testigo extends BasePersona {
 
 // El tipo para el formulario de creación/edición
 export interface InvestigacionFormState {
+  montoeconomico: number | null;
+  sanciones: string;
   id?: number;
   nombre_corto: string;
   descripcion_general: string;
@@ -49,7 +51,7 @@ export interface InvestigacionFormState {
   gravedad: string;
 
   // Sección 2
-  numero_reporte: string; // AÑADIR ESTA PROPIEDAD FALTANTE
+  numero_reporte: string; 
   fecha_reporte: string;
   fecha_conocimiento_hechos: string;
   fecha_prescripcion: string;
@@ -75,6 +77,7 @@ export interface InvestigacionFormState {
 export interface OpcionesDropdowns {
   direcciones: string[];
   procedencias: string[];
+  sanciones: string[];
   regimenes: string[];
   sindicatos: string[];
   gravedades: string[];

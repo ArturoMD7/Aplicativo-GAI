@@ -97,11 +97,11 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         model = Investigacion
         fields = [
             # Información básica
-            'id', 'numero_reporte', 'nombre_corto', 'descripcion_general',
+            'id', 'numero_reporte', 'nombre_corto', 'descripcion_general', 
             
             # Sección 1: Registro de Investigación
             'direccion', 'procedencia', 'regimen', 'sindicato', 
-            'centro', 'area_depto', 'gravedad',
+            'centro', 'area_depto', 'gravedad', 'sanciones', 'montoeconomico',
             
             # Sección 2: Conocimiento de Hechos
             'fecha_reporte', 'fecha_conocimiento_hechos', 'fecha_prescripcion',
@@ -352,6 +352,10 @@ class OpcionesSerializer(serializers.Serializer):
         read_only=True
     )
     procedencias = serializers.ListField(
+        child=serializers.CharField(),
+        read_only=True
+    )
+    sanciones = serializers.ListField(
         child=serializers.CharField(),
         read_only=True
     )

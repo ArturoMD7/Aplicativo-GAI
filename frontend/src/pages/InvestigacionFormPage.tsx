@@ -17,6 +17,8 @@ import { FaArrowLeft } from "react-icons/fa";
 
 const initialState: InvestigacionFormState = {
   nombre_corto: '',
+  montoeconomico: null,
+  sanciones: '',
   descripcion_general: '',
   direccion: '',
   procedencia: '',
@@ -98,6 +100,7 @@ function InvestigacionFormPage() {
   const [centrosCoduni, setCentrosCoduni] = useState<string[]>([]);
   const [areasCoduni, setAreasCoduni] = useState<string[]>([]);
   const [showPdfModal, setShowPdfModal] = useState(false);
+  const [showMontoEconomico, setShowMontoEconomico] = useState(false);
 
   const [contactoActual, setContactoActual] = useState<ContactoForm>({
     ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', tipo: 'contacto'
@@ -261,8 +264,17 @@ function InvestigacionFormPage() {
     let processedValue: any = value;
 
     if (type === 'checkbox' && e.target instanceof HTMLInputElement) {
-      processedValue = e.target.checked;
+    processedValue = e.target.checked;
+    
+    if (name === 'economica') {
+      setFormState(prev => ({
+        ...prev,
+        economica: processedValue,
+        montoeconomico: !processedValue ? null : prev.montoeconomico
+      }));
+      return; 
     }
+  }
 
     // LÓGICA MODIFICADA
     if (name === 'regimen') {
@@ -602,21 +614,19 @@ function InvestigacionFormPage() {
                 </div>
               </div>
             </div>
-
+          
+          
             <div className="admin-form-group">
-              <label>Descripción General *</label>
-              <div className="admin-input-with-icon">
-                <i className="fas fa-heading"></i>
-                <input
-                  name="descripcion_general"
-                  value={formState.descripcion_general}
-                  onChange={handleChange}
-                  required
-                  maxLength={140}
-                  placeholder="Máximo 140 caracteres"
-                />
+                <label>Sanciones *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-exclamation-triangle"></i>
+                  <select name="sanciones" value={formState.sanciones} onChange={handleChange} required>
+                    <option value="">Seleccione...</option>
+                    {opciones?.sanciones?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
               </div>
-            </div>
+          
 
             <div className="admin-form-row">
               <div className="admin-form-group">
@@ -655,6 +665,28 @@ function InvestigacionFormPage() {
               </div>
             </div>
 
+            {formState.economica && (
+              <div className="admin-form-group">
+                <label>Monto Económico *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-money-bill-wave"></i>
+                  <input
+                    type="number"
+                    name="montoeconomico"
+                    value={formState.montoeconomico || ''}
+                    onChange={handleChange}
+                    required={formState.economica} // Solo requerido si economica es true
+                    min="0"
+                    step="0.01"
+                    max="999999999"
+                    placeholder="Ingrese el monto económico"
+                  />
+                </div>
+                <small className="admin-field-hint">
+                  Ingrese el monto con dos decimales (ej: 1500.00)
+                </small>
+              </div>
+            )}
           </section>
 
           {/* --- SECCIÓN 2: FECHAS IMPORTANTES --- */}
@@ -1307,7 +1339,7 @@ function InvestigacionFormPage() {
 
             {/* Involucrados */}
             <div className="admin-personas-section">
-              <h3>Involucrados</h3>
+              <h3></h3>
               <div className="admin-form-group">
                 <label>Ficha</label>
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>

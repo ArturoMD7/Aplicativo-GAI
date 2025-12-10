@@ -32,6 +32,28 @@ class Investigacion(models.Model):
         ('Ambos', 'Ambos'),
     ]
     regimen = models.CharField(max_length=15, choices=REGIMEN_CHOICES)
+
+    SANCIONES_CHOICES = [
+        ('SUSPENSION DE LABORES', 'SUSPENSION DE LABORES'),
+        ('SUSTRACCION DE EQUIPO MOBILIARIO', 'SUSTRACCION DE EQUIPO MOBILIARIO'),
+        ('FALTA DE PROBIDAD Y HONRADEZ', 'FALTA DE PROBIDAD Y HONRADEZ'),
+        ('ALTERACION DEL ORDEN', 'ALTERACION DEL ORDEN'),
+        ('PRESENTACION DE DOCUMENTACION IRREGULAR', 'PRESENTACION DE DOCUMENTACION IRREGULAR'),
+        ('ACTITUD INDEBIDA', 'ACTITUD INDEBIDA'),
+        ('FALTAS INJUSTIFICADAS', 'FALTAS INJUSTIFICADAS'),
+        ('NEGLIGENCIA EN EL DESARROLLO DE FUNCIONES', 'NEGLIGENCIA EN EL DESARROLLO DE FUNCIONES'),
+        ('DISCRIMINACION', 'DISCRIMINACION'),
+        ('ACOSO LABORAL O MOBBING', 'ACOSO LABORAL O MOBBING'),
+        ('ACOSO Y/O HOSTIGAMIENTO SEXUAL', 'ACOSO Y/O HOSTIGAMIENTO SEXUAL'),
+        ('CONCURRIR CON EFECTOS DE ESTUPEFACIENTES Y/O EDO DE EBRIEDAD', 'CONCURRIR CON EFECTOS DE ESTUPEFACIENTES Y/O EDO DE EBRIEDAD'),
+        ('INCUMPLIMIENTO DE NORMAS DE TRABAJO Y/O PROCEDIMIENTOS DE TRABAJO', 'INCUMPLIMIENTO DE NORMAS DE TRABAJO Y/O PROCEDIMIENTOS DE TRABAJO'),
+        ('USO INDEBIDO DE UTILES Y/O HERRAMIENTAS DE TRABAJO', 'USO INDEBIDO DE UTILES Y/O HERRAMIENTAS DE TRABAJO'),
+        ('CLAUSULA 253 CCT', 'CLAUSULA 253 CCT'),
+        ('ACTOS DE CORRUPCION', 'ACTOS DE CORRUPCION'),
+        ('MERCADO ILICITO DE COMBUSTIBLES', 'MERCADO ILICITO DE COMBUSTIBLES'),
+        ('OTRAS FALTAS', 'OTRAS FALTAS'),
+    ]
+    sanciones = models.CharField(max_length=65, choices=SANCIONES_CHOICES, default='OTRAS FALTAS')
     
     SINDICATO_CHOICES = [
         ('STPRM', 'STPRM'),
@@ -40,8 +62,8 @@ class Investigacion(models.Model):
     ]
     sindicato = models.CharField(max_length=10, choices=SINDICATO_CHOICES, null=True, blank=True)
     
-    centro = models.CharField(max_length=100)  # Se llenará desde CODUNI_l
-    area_depto = models.CharField(max_length=100)  # Se llenará desde CODUNI_l
+    centro = models.CharField(max_length=100)  
+    area_depto = models.CharField(max_length=100)  
     
     GRAVEDAD_CHOICES = [
         ('Alta', 'Alta'),
@@ -56,6 +78,7 @@ class Investigacion(models.Model):
     fecha_conocimiento_hechos = models.DateField()
     fecha_prescripcion = models.DateField()
     economica = models.BooleanField(default=False)
+    montoeconomico = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
     
     # Sección 3: Gerencia Responsable
     GERENCIA_CHOICES = [

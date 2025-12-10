@@ -101,6 +101,7 @@ def opciones_view(request):
         'sindicatos': [choice[0] for choice in Investigacion.SINDICATO_CHOICES],
         'gravedades': [choice[0] for choice in Investigacion.GRAVEDAD_CHOICES],
         'gerencias': [choice[0] for choice in Investigacion.GERENCIA_CHOICES],
+        'sanciones': [choice[0] for choice in Investigacion.SANCIONES_CHOICES],
     }
     serializer = OpcionesSerializer(opciones)
     return Response(serializer.data)
