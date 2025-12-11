@@ -303,7 +303,7 @@ function SeguimientoPage() {
           </div>
           <div style={{textAlign: 'center'}}>
             <div style={{color: '#840016', fontWeight: '600', marginBottom: '5px', fontSize: '14px'}}>
-              <FiBriefcase /> Gerencia
+              <FiBriefcase /> Regional
             </div>
             <div style={{fontSize: '16px', fontWeight: '600', color: '#333'}}>
               {investigacion?.gerencia_responsable}
@@ -1006,7 +1006,7 @@ function SeguimientoPage() {
             </div>
             
             <div className="admin-personas-section">
-              <h3>Involucrados</h3>
+              <h3>Personal Reportado</h3>
               {renderPersonas(investigacion?.involucrados || [], 'involucrados')}
             </div>
             

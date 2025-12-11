@@ -465,7 +465,7 @@ function InvestigacionDetailsPage() {
           </h2>
 
           <div className="admin-personas-section">
-            <h3>Involucrados</h3>
+            <h3>Personal Reportado</h3>
             {renderPersonas(investigacion.involucrados || [], 'involucrados')}
           </div>
 
