@@ -1,7 +1,17 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-class Investigacion(models.Model):
+class UppercaseMixin:
+    def save(self, *args, **kwargs):
+        for field in self._meta.fields:
+            if isinstance(field, (models.CharField, models.EmailField)):
+                value = getattr(self, field.name)
+                if isinstance(value, str):
+                    setattr(self, field.name, value.upper())
+        super().save(*args, **kwargs)
+
+
+class Investigacion(UppercaseMixin,models.Model):
     # Sección 1: Registro de Investigación
     nombre_corto = models.CharField(max_length=50)
     descripcion_general = models.CharField(max_length=140)
@@ -119,7 +129,7 @@ class Investigacion(models.Model):
     def __str__(self):
         return f"{self.nombre_corto} - {self.numero_reporte}"
 
-class Contacto(models.Model):
+class Contacto(UppercaseMixin,models.Model):
     investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='contactos')
     ficha = models.CharField(max_length=20)
     nombre = models.CharField(max_length=100)
@@ -133,7 +143,7 @@ class Contacto(models.Model):
     ]
     tipo = models.CharField(max_length=15, choices=TIPO_CHOICES)
 
-class Investigador(models.Model):
+class Investigador(UppercaseMixin, models.Model):
     investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='investigadores')
     ficha = models.CharField(max_length=20)
     nombre = models.CharField(max_length=100)
@@ -143,7 +153,7 @@ class Investigador(models.Model):
     email = models.EmailField(blank=True)
     no_constancia = models.CharField(max_length=50, blank=True)
 
-class Reportante(models.Model):
+class Reportante(UppercaseMixin, models.Model):
     investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='reportantes')
     ficha = models.CharField(max_length=20)
     nombre = models.CharField(max_length=100)
@@ -155,7 +165,7 @@ class Reportante(models.Model):
     direccion = models.CharField(max_length=200)
 
 
-class Testigo(models.Model):
+class Testigo(UppercaseMixin, models.Model):
     investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='testigos')
     ficha = models.CharField(max_length=20)
     nombre = models.CharField(max_length=100)
@@ -166,7 +176,7 @@ class Testigo(models.Model):
     subordinacion = models.BooleanField(default=False)
 
 
-class InvestigacionHistorico(models.Model):
+class InvestigacionHistorico(UppercaseMixin, models.Model):
     id_investigacion_historico = models.AutoField(db_column='IdInvestigacionHistorico', primary_key=True)
     fecha = models.DateField(db_column='Fecha')
     gerencia = models.CharField(db_column='Gerencia', max_length=50)
@@ -184,7 +194,7 @@ class InvestigacionHistorico(models.Model):
         db_table = 'Investigacion_Historico'
 
 
-class Involucrado(models.Model):
+class Involucrado(UppercaseMixin, models.Model):
     investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='involucrados')
     ficha = models.CharField(max_length=20)
     nombre = models.CharField(max_length=100)

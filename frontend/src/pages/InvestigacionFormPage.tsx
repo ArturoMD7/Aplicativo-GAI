@@ -350,7 +350,7 @@ function InvestigacionFormPage() {
     ficha: string, 
     tipo: 'contacto' | 'investigador' | 'involucrado' | 'testigo' | 'reportante'
   ) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' || e.key === 'Tab') {
       e.preventDefault(); 
       buscarEmpleado(ficha, tipo);
     }
@@ -760,7 +760,7 @@ function InvestigacionFormPage() {
                     value={reportanteActual.ficha}
                     onChange={(e) => setReportanteActual(prev => ({ ...prev, ficha: e.target.value }))}
                     onKeyDown={(e) => handleEnterBusqueda(e, reportanteActual.ficha, 'reportante')} // Asegúrate de pasar 'reportante'
-                    placeholder="Ingrese ficha y presione Enter"
+                    placeholder="Ingrese ficha y presione Enter o Tab"
                     style={{ flex: 1 }}
                   />
                 </div>
@@ -1119,7 +1119,7 @@ function InvestigacionFormPage() {
                     value={contactoActual.ficha}
                     onChange={(e) => setContactoActual(prev => ({ ...prev, ficha: e.target.value }))}
                     onKeyDown={(e) => handleEnterBusqueda(e, contactoActual.ficha, 'contacto')}
-                    placeholder="Ingrese ficha"
+                    placeholder="Ingrese ficha y presione Enter o Tab"
                     style={{ flex: 1 }}
                   />
                 </div>
@@ -1236,7 +1236,7 @@ function InvestigacionFormPage() {
                     value={investigadorActual.ficha}
                     onChange={(e) => setInvestigadorActual(prev => ({ ...prev, ficha: e.target.value }))}
                     onKeyDown={(e) => handleEnterBusqueda(e, investigadorActual.ficha, 'investigador')}
-                    placeholder="Ingrese ficha"
+                    placeholder="Ingrese ficha y presione Enter o Tab"
                   />
                   
                 </div>
@@ -1516,7 +1516,7 @@ function InvestigacionFormPage() {
                     value={involucradoActual.ficha}
                     onChange={(e) => setInvolucradoActual(prev => ({ ...prev, ficha: e.target.value }))}
                     onKeyDown={(e) => handleEnterBusqueda(e, involucradoActual.ficha, 'involucrado')}
-                    placeholder="Ingrese ficha"
+                    placeholder="Ingrese ficha y presione Enter o Tab"
                   />
                  
                 </div>
@@ -1774,7 +1774,7 @@ function InvestigacionFormPage() {
                     value={testigoActual.ficha}
                     onChange={(e) => setTestigoActual(prev => ({ ...prev, ficha: e.target.value }))}
                     onKeyDown={(e) => handleEnterBusqueda(e, testigoActual.ficha, 'testigo')}
-                    placeholder="Ingrese ficha"
+                    placeholder="Ingrese ficha y presione Enter o Tab"
                     style={{ flex: 1 }}
                   />
 
