@@ -2,12 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiEdit, FiSearch, FiDownload, FiAlertCircle, FiCheckCircle } from 'react-icons/fi';
+import { FiEdit, FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiFileText } from 'react-icons/fi'; // Importar FiFileText
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import Pagination from '../components/Pagination';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import '../styles/InvestigacionPage.css'; // Usamos los mismos estilos
+import '../styles/InvestigacionPage.css'; 
+
+// Importa el nuevo componente (ajusta la ruta según donde lo creaste)
+import DocumentosModals from '../components/Modals/DocumentosModals'; 
 
 function SeguimientoListPage() {
   const [investigaciones, setInvestigaciones] = useState<InvestigacionListado[]>([]);
@@ -18,6 +21,11 @@ function SeguimientoListPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   
+  // Estados para el Modal de Documentos
+  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+  const [selectedInvestigacionId, setSelectedInvestigacionId] = useState<number | null>(null);
+  const [selectedReporteNum, setSelectedReporteNum] = useState('');
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,7 +35,6 @@ function SeguimientoListPage() {
         const response = await apiClient.get('/api/investigaciones/investigaciones/');
         const filtered = response.data.filter((inv: any) => inv.estatus === 'Seguimiento' || inv.estatus === 'SEGUIMIENTO');
         setInvestigaciones(filtered);
-
       } catch (err) {
         setError('No se pudo cargar la lista de seguimiento.');
         console.error('Error fetching data:', err);
@@ -80,6 +87,13 @@ function SeguimientoListPage() {
     saveAs(blob, `Seguimiento_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
+  // Función para abrir el modal de documentos
+  const handleOpenDocs = (id: number, numeroReporte: string) => {
+    setSelectedInvestigacionId(id);
+    setSelectedReporteNum(numeroReporte);
+    setIsDocModalOpen(true);
+  };
+
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -115,6 +129,8 @@ function SeguimientoListPage() {
           <table className="investigacion-table">
             <thead>
               <tr>
+                {/* 1. Nueva columna al inicio para el botón de documentos */}
+                <th style={{width: '60px', textAlign: 'center'}}>Docs</th>
                 <th>No. Reporte</th>
                 <th>Documento</th>
                 <th>Dirección</th>
@@ -127,8 +143,29 @@ function SeguimientoListPage() {
             <tbody>
               {currentItems.map((inv) => (
                 <tr key={inv.id}>
-                  {/* Decoración visual para diferenciar la tabla */}
-                  <td className="col-reporte" style={{borderLeft: '4px solid #17a2b8'}}>
+                  {/* 2. Botón en la primera columna */}
+                  <td style={{textAlign: 'center', borderLeft: '4px solid #17a2b8'}}>
+                    <button 
+                      onClick={() => handleOpenDocs(inv.id, inv.numero_reporte)}
+                      className="btn-icon-only"
+                      title="Ver archivos adjuntos"
+                      style={{
+                        background: 'none', 
+                        border: 'none', 
+                        cursor: 'pointer', 
+                        color: '#840016', // Color guinda PEMEX
+                        fontSize: '1.2rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '5px'
+                      }}
+                    >
+                      <FiFileText />
+                    </button>
+                  </td>
+
+                  <td className="col-reporte">
                     {inv.numero_reporte}
                   </td>
                   
@@ -143,25 +180,20 @@ function SeguimientoListPage() {
                   
                   <td>{formatDate(inv.fecha_reporte)}</td>
                   
-                  {/* Cálculo simple de días transcurridos desde creación */}
                   <td style={{ textAlign: 'center', color: '#666' }}>
                      {Math.floor((new Date().getTime() - new Date(inv.created_at).getTime()) / (1000 * 3600 * 24))} días
                   </td>
 
                   <td>
                     <div className="action-buttons" style={{justifyContent: 'center'}}>
-                      
-                      {/* BOTÓN EDITAR / GESTIONAR EXPEDIENTE */}
-                      {/* Redirige a la página de SeguimientoPage */}
                       <ButtonIcon
                         variant="edit"
                         onClick={() => navigate(`/investigaciones/seguimiento/${inv.id}`)}
                         icon={<FiEdit />}
                         title="Gestionar Expediente"
                         size="medium"
-                        text="Gestionar" // Opcional: poner texto para que destaque
+                        text="Gestionar" 
                       />
-
                     </div>
                   </td>
                 </tr>
@@ -188,6 +220,14 @@ function SeguimientoListPage() {
           )}
         </div>
       )}
+
+      {/* 3. Renderizar el componente de Modals */}
+      <DocumentosModals 
+        isOpen={isDocModalOpen}
+        onClose={() => setIsDocModalOpen(false)}
+        investigacionId={selectedInvestigacionId}
+        numeroReporte={selectedReporteNum}
+      />
     </div>
   );
 }

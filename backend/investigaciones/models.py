@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from datetime import datetime
+import os
 
 class UppercaseMixin:
     def save(self, *args, **kwargs):
@@ -215,6 +217,25 @@ class Involucrado(UppercaseMixin, models.Model):
     direccion = models.CharField(max_length=200)
     tiene_antecedentes = models.BooleanField(default=False)
 
+def generar_ruta_archivo(instance, filename):
+    ext = filename.split('.')[-1]
+
+    if instance.investigacion and instance.investigacion.numero_reporte:
+        reporte_safe = instance.investigacion.numero_reporte.replace('/', '-')
+    else:
+        reporte_safe = "SIN_REPORTE"
+
+    cantidad = DocumentoInvestigacion.objects.filter(
+        investigacion=instance.investigacion,
+        tipo=instance.tipo
+    ).count() + 1
+    
+    nuevo_nombre = f"{reporte_safe}_{instance.tipo}_{cantidad}.{ext}"
+    
+    hoy = datetime.now()
+    return f"investigaciones/documentos/{hoy.year}/{hoy.month}/{nuevo_nombre}"
+
+
 class DocumentoInvestigacion(models.Model):
     investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='documentos')
     
@@ -227,7 +248,10 @@ class DocumentoInvestigacion(models.Model):
         ('Anexo', 'Anexo'),
     ]
     tipo = models.CharField(max_length=50, choices=TIPO_DOC_CHOICES)
-    archivo = models.FileField(upload_to='investigaciones/documentos/%Y/%m/')
+    
+    # 2. Actualiza el campo archivo usando la función
+    archivo = models.FileField(upload_to=generar_ruta_archivo)
+    
     descripcion = models.CharField(max_length=255, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
@@ -236,5 +260,7 @@ class DocumentoInvestigacion(models.Model):
 
     def delete(self, *args, **kwargs):
         # Borrar archivo físico al borrar registro
-        self.archivo.delete()
+        if self.archivo:
+            if os.path.isfile(self.archivo.path):
+                os.remove(self.archivo.path)
         super().delete(*args, **kwargs)

@@ -1,0 +1,231 @@
+/* DocumentosModals.css */
+
+/* Overlay: Fondo oscuro con desenfoque suave */
+.doc-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1050;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Contenedor del Modal */
+.doc-modal-container {
+  background: white;
+  width: 500px;
+  max-width: 90%;
+  max-height: 85vh;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Modal Grande (Vista Previa) */
+.doc-modal-container.large {
+  width: 90%;
+  height: 90vh;
+  max-width: 1200px;
+}
+
+/* Header */
+.doc-modal-header {
+  padding: 16px 24px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.doc-modal-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #343a40;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.doc-modal-subtitle {
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: 400;
+  margin-left: 8px;
+}
+
+.doc-btn-close {
+  background: transparent;
+  border: none;
+  font-size: 1.25rem;
+  color: #adb5bd;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.doc-btn-close:hover {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+/* Body */
+.doc-modal-body {
+  padding: 0;
+  overflow-y: auto;
+  flex: 1;
+  background-color: #fff;
+}
+
+.preview-body {
+  background-color: #212529; /* Fondo oscuro para previews */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+/* Lista de Documentos */
+.doc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.doc-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid #f1f3f5;
+  transition: background-color 0.2s;
+}
+
+.doc-item:last-child {
+  border-bottom: none;
+}
+
+.doc-item:hover {
+  background-color: #f8f9fa;
+}
+
+/* Icono y Texto del archivo */
+.doc-file-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 0; /* Para que el texto se corte con ellipsis */
+}
+
+.doc-type-icon {
+  font-size: 24px;
+  color: #6c757d;
+  flex-shrink: 0;
+}
+
+.doc-pdf-icon { color: #e83e8c; }
+.doc-img-icon { color: #0d6efd; }
+.doc-word-icon { color: #0062cc; }
+
+.doc-details {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.doc-filename {
+  font-weight: 500;
+  color: #343a40;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.95rem;
+}
+
+.doc-meta {
+  font-size: 0.75rem;
+  color: #868e96;
+  margin-top: 2px;
+}
+
+/* Acciones (Botones) */
+.doc-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: 16px;
+}
+
+.doc-btn-action {
+  background: white;
+  border: 1px solid #dee2e6;
+  color: #495057;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.doc-btn-action:hover {
+  border-color: #adb5bd;
+  background-color: #f1f3f5;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.doc-btn-action.primary:hover {
+  color: #0d6efd;
+  border-color: #0d6efd;
+  background-color: #e7f1ff;
+}
+
+.doc-btn-action.download:hover {
+  color: #198754;
+  border-color: #198754;
+  background-color: #e8f5e9;
+}
+
+/* Estados de Carga y Vacío */
+.doc-loading, .doc-empty {
+  padding: 40px;
+  text-align: center;
+  color: #6c757d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.doc-empty-icon {
+  font-size: 48px;
+  color: #dee2e6;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
