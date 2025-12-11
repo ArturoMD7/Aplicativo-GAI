@@ -2,17 +2,36 @@ from django.shortcuts import render
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, permission_classes, api_view
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from django.db import connections
 from django.utils import timezone
 from datetime import date
 from .permissions import IsAdminOrReadOnly
-from .models import Investigacion, Involucrado, InvestigacionHistorico
+from .models import Investigacion, Involucrado, InvestigacionHistorico, DocumentoInvestigacion
 from .serializers import (
     InvestigacionSerializer, InvestigacionListSerializer, 
     EmpleadoBusquedaSerializer, OpcionesSerializer,
-    EstadisticasSerializer
+    EstadisticasSerializer,
+    DocumentoInvestigacionSerializer
 )
+
+class DocumentoInvestigacionViewSet(viewsets.ModelViewSet):
+    queryset = DocumentoInvestigacion.objects.all()
+    serializer_class = DocumentoInvestigacionSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = (MultiPartParser, FormParser) 
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        investigacion_id = self.request.query_params.get('investigacion_id')
+        if investigacion_id:
+            queryset = queryset.filter(investigacion_id=investigacion_id)
+        return queryset
+
+    def perform_create(self, serializer):
+        # Asegurar que se guarde
+        serializer.save()
 
 class InvestigacionViewSet(viewsets.ModelViewSet):
     serializer_class = InvestigacionSerializer

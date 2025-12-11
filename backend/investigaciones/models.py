@@ -81,6 +81,13 @@ class Investigacion(UppercaseMixin,models.Model):
         ('Baja', 'Baja'),
     ]
     gravedad = models.CharField(max_length=10, choices=GRAVEDAD_CHOICES)
+
+    ESTATUS_CHOICES = [
+        ('Abierta', 'Abierta'),
+        ('Seguimiento', 'Seguimiento'),
+        ('Concluida', 'Concluida'),
+    ]
+    estatus = models.CharField(max_length=20, choices=ESTATUS_CHOICES, default='Abierta')
     
     # Sección 2: Conocimiento de Hechos
     numero_reporte = models.CharField(max_length=50, unique=True)
@@ -207,3 +214,27 @@ class Involucrado(UppercaseMixin, models.Model):
     curp = models.CharField(max_length=18)
     direccion = models.CharField(max_length=200)
     tiene_antecedentes = models.BooleanField(default=False)
+
+class DocumentoInvestigacion(models.Model):
+    investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='documentos')
+    
+    TIPO_DOC_CHOICES = [
+        ('Reporte', 'Reporte para investigación'),
+        ('Citatorio', 'Citatorio'),
+        ('Acta', 'Acta'),
+        ('Dictamen', 'Dictamen'),
+        ('Resultado', 'Resultado de la investigación'),
+        ('Anexo', 'Anexo'),
+    ]
+    tipo = models.CharField(max_length=50, choices=TIPO_DOC_CHOICES)
+    archivo = models.FileField(upload_to='investigaciones/documentos/%Y/%m/')
+    descripcion = models.CharField(max_length=255, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.tipo} - {self.investigacion.numero_reporte}"
+
+    def delete(self, *args, **kwargs):
+        # Borrar archivo físico al borrar registro
+        self.archivo.delete()
+        super().delete(*args, **kwargs)

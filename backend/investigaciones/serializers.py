@@ -2,10 +2,29 @@ from rest_framework import serializers
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
-from .models import Investigacion, Contacto, Investigador, Involucrado, Testigo, Reportante
+from .models import Investigacion, Contacto, Investigador, Involucrado, Testigo, Reportante, DocumentoInvestigacion
 
 
 # Serializers para modelos relacionados
+
+# En serializers.py, modifica DocumentoInvestigacionSerializer:
+class DocumentoInvestigacionSerializer(serializers.ModelSerializer):
+    nombre_archivo = serializers.SerializerMethodField()
+    investigacion_id = serializers.PrimaryKeyRelatedField(
+        queryset=Investigacion.objects.all(), 
+        source='investigacion',
+        write_only=True 
+    )
+    
+    class Meta:
+        model = DocumentoInvestigacion
+        fields = ['id', 'tipo', 'archivo', 'descripcion', 'uploaded_at', 
+                 'nombre_archivo', 'investigacion_id']
+        read_only_fields = ['id', 'uploaded_at']
+
+    def get_nombre_archivo(self, obj):
+        return obj.archivo.name.split('/')[-1] if obj.archivo else ''
+
 class ContactoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Contacto
@@ -99,6 +118,7 @@ class InvestigacionSerializer(serializers.ModelSerializer):
     involucrados = InvolucradoSerializer(many=True, required=False)
     testigos = TestigoSerializer(many=True, required=False)
     reportantes = ReportanteSerializer(many=True, required=False)
+    documentos = DocumentoInvestigacionSerializer(many=True, read_only=True)
     
     # Campos de solo lectura para mostrar información relacionada
     created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
@@ -134,7 +154,9 @@ class InvestigacionSerializer(serializers.ModelSerializer):
             
             # Auditoría y campos calculados
             'created_by', 'created_by_name', 'created_by_email',
-            'created_at', 'updated_at', 'dias_restantes', 'semaforo'
+            'created_at', 'updated_at', 'dias_restantes', 'semaforo',
+
+            'documentos', 'estatus',
         ]
         read_only_fields = [
             'id', 'created_by', 'created_at', 'updated_at', 
@@ -291,7 +313,6 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         for relation_data in relations_data:
             model_class.objects.create(investigacion=investigacion, **relation_data)
 
-# Serializer para listado (más ligero)
 class InvestigacionListSerializer(serializers.ModelSerializer):
     created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
     dias_restantes = serializers.SerializerMethodField()
@@ -323,7 +344,8 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
             'id', 'numero_reporte', 'nombre_corto', 'procedencia', 'descripcion_general',
             'direccion', 'gravedad', 'fecha_reporte', 'fecha_prescripcion',
             'gerencia_responsable', 'created_by_name', 'dias_restantes',
-            'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos', 'investigadores', 'involucrados', 'reportantes'
+            'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos', 'investigadores', 'involucrados', 'reportantes',
+            'estatus',
         ]
 
     def get_dias_restantes(self, obj):

@@ -15,6 +15,8 @@ import EditUserPage from './auth/EditUserPage';
 import Settings from './auth/Settings';
 import InvestigacionDetailsPage from './InvestigacionDetailsPage';
 import LogListPage from './LogsListPage';
+import SeguimientoListPage from './SeguimientoListPage';
+import SeguimientoPage from './SeguimientoPage';
 
 
 type HomePageProps = {
@@ -58,6 +60,8 @@ function HomePage({ onLogout }: HomePageProps) {
             
             <Route path="/investigaciones/editar/:id" element={<InvestigacionFormPage />} />
             <Route path="/investigaciones/detalles/:id" element={<InvestigacionDetailsPage />} />
+            <Route path="/investigaciones/seguimiento-lista" element={<SeguimientoListPage />} />
+            <Route path="/investigaciones/seguimiento/:id" element={<SeguimientoPage />} />
             
 
             {/* Ruta de 'no encontrado' (opcional) */}

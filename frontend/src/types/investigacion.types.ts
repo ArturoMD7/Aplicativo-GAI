@@ -8,6 +8,15 @@ export interface BasePersona {
   email?: string;
 }
 
+export interface DocumentoInvestigacion {
+  id: number;
+  tipo: string;
+  archivo: string;
+  descripcion: string;
+  uploaded_at: string;
+  nombre_archivo: string;
+}
+
 export interface Contacto extends BasePersona {
   tipo: 'contacto' | 'responsable';
 }
@@ -113,6 +122,7 @@ export interface InvestigacionListado {
   investigadores: string[];
   reportantes: string[];
   involucrados: string[];
+  estatus: 'Abierta' | 'Seguimiento' | 'Concluida';
 }
 
 export interface Antecedente {

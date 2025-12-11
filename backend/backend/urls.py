@@ -21,6 +21,8 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from login_register.views import RegisterView, UserListView, GroupListView, user_profile, change_password, user_detail
+from django.conf import settings            
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -38,3 +40,6 @@ urlpatterns = [
     path('api/investigaciones/', include('investigaciones.urls')),
     path('api/auditoria/', include('auditoria.urls')),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload, FiAlertCircle } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload, FiAlertCircle, FiTrendingUp } from 'react-icons/fi';
 import { MdDeleteForever } from "react-icons/md";
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import Pagination from '../components/Pagination';
@@ -25,7 +25,12 @@ function InvestigacionListPage() {
       try {
         const response = await apiClient.get('/api/investigaciones/investigaciones/');
         console.log("DATA REAL:", response.data);
-        setInvestigaciones(response.data);
+        
+        // --- FILTRO: SOLO ABIERTAS ---
+        // Mostramos las que no tienen estatus (legacy) o explícitamente "Abierta"
+        const abiertas = response.data.filter((inv: any) => !inv.estatus || inv.estatus === 'Abierta');
+        setInvestigaciones(abiertas);
+
       } catch (err) {
         setError('No se pudo cargar la lista de investigaciones.');
         console.error('Error fetching investigaciones:', err);
@@ -47,6 +52,31 @@ function InvestigacionListPage() {
     return colors[semaforo] || colors.gray;
   };
 
+  // --- FUNCIÓN PARA CAMBIAR ESTATUS ---
+  const handleSeguimiento = async (id: number) => {
+    const result = await Swal.fire({
+        title: '¿Pasar a Seguimiento?',
+        text: "La investigación pasará a la bandeja de Seguimiento y desaparecerá de esta lista.",
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, iniciar seguimiento',
+        cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            // 1. Actualizar en Backend
+            await apiClient.patch(`/api/investigaciones/investigaciones/${id}/`, { estatus: 'Seguimiento' });
+            
+            // 2. Actualizar en Frontend (Quitar de la lista)
+            setInvestigaciones(prev => prev.filter(item => item.id !== id));
+
+            Swal.fire('Listo', 'La investigación se movió a seguimiento.', 'success');
+        } catch (err) {
+            Swal.fire('Error', 'No se pudo cambiar el estatus', 'error');
+        }
+    }
+  };
 
   const handleDelete = async (id: number, numeroReporte: string) => {
     const result = await Swal.fire({
@@ -54,8 +84,8 @@ function InvestigacionListPage() {
       text: `Se eliminará el reporte ${numeroReporte}. Esta acción no se puede deshacer.`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#d33', // Rojo para peligro
-      cancelButtonColor: '#3085d6', // Azul para cancelar
+      confirmButtonColor: '#d33', 
+      cancelButtonColor: '#3085d6', 
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     });
@@ -187,7 +217,7 @@ function InvestigacionListPage() {
   return (
     <div className="admin-page">
       <div className="page-header">
-        <h1><FiFileText /> Módulo de Investigaciones</h1>
+        <h1><FiFileText /> Módulo de Investigaciones (Abiertas)</h1>
         <div className="header-actions">
           <div className="search-box">
             <FiSearch className="search-icon" />
@@ -211,7 +241,7 @@ function InvestigacionListPage() {
           />
 
           <ButtonIcon
-            variant="download" // Nota: Asegúrate que tu componente ButtonIcon maneje esta variante, o usa "primary"
+            variant="download" 
             to="/investigaciones/nuevo"
             icon={<FiPlus />}
             text="Nuevo"
@@ -230,7 +260,6 @@ function InvestigacionListPage() {
 
       {!loading && !error && (
         <div className="table-container">
-          {/* Cambié la clase a "investigacion-table" para aplicar los nuevos estilos */}
           <table className="investigacion-table">
             <thead>
               <tr>
@@ -261,7 +290,6 @@ function InvestigacionListPage() {
                     ></span>
                   </td>
 
-                  {/* Negritas y color vino para el número de reporte */}
                   <td className="col-reporte">
                     {inv.numero_reporte || <span className="text-muted">Sin asignar</span>}
                   </td>
@@ -297,6 +325,10 @@ function InvestigacionListPage() {
 
                   <td>
                     <div className="action-buttons">
+                      
+                     
+                      
+
                       <ButtonIcon
                         variant="view"
                         to={`/investigaciones/detalles/${inv.id}`}
@@ -311,6 +343,15 @@ function InvestigacionListPage() {
                         title="Editar"
                         size="medium"
                       />
+
+                      <ButtonIcon
+                        variant="view"
+                        onClick={() => handleSeguimiento(inv.id)}
+                        icon={<FiTrendingUp />}
+                        title="Pasar a Seguimiento"
+                        size="medium"
+                      />
+                      
                       <ButtonIcon
                         variant="delete"
                         onClick={() => handleDelete(inv.id, inv.numero_reporte)} 
