@@ -106,8 +106,14 @@ function SeguimientoPage() {
 
     try {
       setUploading(true);
+      
+      // CORRECCIÓN AQUÍ:
+      // Agregamos el tercer argumento para sobrescribir el Content-Type
+      // que tu apiClient tiene por defecto (JSON)
       await apiClient.post('/api/investigaciones/documentos/', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
       });
       
       const Toast = Swal.mixin({
@@ -124,6 +130,7 @@ function SeguimientoPage() {
       const resDocs = await apiClient.get(`/api/investigaciones/documentos/?investigacion_id=${id}`);
       setDocumentos(resDocs.data);
     } catch (error) {
+      console.error(error); 
       Swal.fire('Error', 'Error al subir el archivo', 'error');
     } finally {
       setUploading(false);

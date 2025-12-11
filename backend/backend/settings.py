@@ -32,6 +32,8 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 
+
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -77,6 +79,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'auditoria.middleware.ActivityLoggingMiddleware',
 ]
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173', 
