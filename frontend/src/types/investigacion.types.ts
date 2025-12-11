@@ -16,6 +16,13 @@ export interface Investigador extends BasePersona {
   no_constancia: string;
 }
 
+export interface Reportante extends BasePersona {
+  edad: number;
+  antiguedad: number;
+  nivel: string;
+  direccion: string;
+}
+
 export interface Involucrado extends BasePersona {
   nivel: string;
   edad: number;
@@ -70,6 +77,7 @@ export interface InvestigacionFormState {
   // Relaciones
   contactos: Contacto[];
   investigadores: Investigador[];
+  reportantes: Reportante[];
   involucrados: Involucrado[];
   testigos: Testigo[];
 }
@@ -103,6 +111,7 @@ export interface InvestigacionListado {
   created_at: string;
   fecha_conocimiento_hechos: string;
   investigadores: string[];
+  reportantes: string[];
   involucrados: string[];
 }
 

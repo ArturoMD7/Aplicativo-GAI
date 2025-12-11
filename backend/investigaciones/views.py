@@ -86,10 +86,8 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
         
         return queryset.order_by('-created_at')
 
-    # ELIMINA TODOS LOS @action DUPLICADOS DE AQUÍ
-    # Solo deja los métodos básicos del ModelViewSet (list, create, retrieve, update, destroy)
 
-# MANTÉN SOLO LAS FUNCIONES SEPARADAS
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def opciones_view(request):

@@ -93,7 +93,7 @@ class Investigacion(models.Model):
     
     # Sección 4: Evento
     lugar = models.CharField(max_length=50)
-    observaciones = models.CharField(max_length=140)
+    observaciones = models.CharField(max_length=300)
     fecha_evento = models.DateField()
     centro_trabajo = models.CharField(max_length=100)
     antecedentes = models.CharField(max_length=150)
@@ -143,6 +143,18 @@ class Investigador(models.Model):
     email = models.EmailField(blank=True)
     no_constancia = models.CharField(max_length=50, blank=True)
 
+class Reportante(models.Model):
+    investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='reportantes')
+    ficha = models.CharField(max_length=20)
+    nombre = models.CharField(max_length=100)
+    nivel = models.CharField(max_length=50)
+    categoria = models.CharField(max_length=50)
+    puesto = models.CharField(max_length=100)
+    edad = models.IntegerField()
+    antiguedad = models.IntegerField()
+    direccion = models.CharField(max_length=200)
+
+
 class Testigo(models.Model):
     investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='testigos')
     ficha = models.CharField(max_length=20)
@@ -164,7 +176,7 @@ class InvestigacionHistorico(models.Model):
     centro_trabajo = models.CharField(db_column='CentroTrabajo', max_length=50)
     
     motivo_investigacion = models.CharField(db_column='MotivoInvestigacion', max_length=100, null=True)
-    observaciones = models.CharField(db_column='Observaciones', max_length=200, null=True)
+    observaciones = models.CharField(db_column='Observaciones', max_length=300, null=True)
     sancion_aplicada = models.CharField(db_column='SancionAplicada', max_length=50, null=True)
 
     class Meta:

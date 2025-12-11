@@ -39,6 +39,7 @@ const initialState: InvestigacionFormState = {
   centro_trabajo: '',
   antecedentes: '',
   contactos: [],
+  reportantes: [],
   investigadores: [],
   involucrados: [],
   testigos: [],
@@ -64,6 +65,17 @@ interface InvestigadorForm {
   no_constancia: string;
 }
 
+interface ReportanteForm {
+  ficha: string;
+  nombre: string;
+  nivel: string;
+  categoria: string;
+  puesto: string;
+  edad: number;
+  antiguedad: number;
+  direccion: string;
+}
+
 interface InvolucradoForm {
   ficha: string;
   nombre: string;
@@ -87,7 +99,7 @@ interface TestigoForm {
   subordinacion: boolean;
 }
 
-type TipoPersona = 'contactos' | 'investigadores' | 'involucrados' | 'testigos';
+type TipoPersona = 'contactos' | 'investigadores' | 'involucrados' | 'testigos' | 'reportantes';
 
 function InvestigacionFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -103,15 +115,22 @@ function InvestigacionFormPage() {
   const [showMontoEconomico, setShowMontoEconomico] = useState(false);
 
   const [contactoActual, setContactoActual] = useState<ContactoForm>({
-    ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', tipo: 'contacto'
+    ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', tipo: 'responsable'
   });
   const [investigadorActual, setInvestigadorActual] = useState<InvestigadorForm>({
     ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', no_constancia: ''
   });
+
+  const [reportanteActual, setReportanteActual] = useState<ReportanteForm>({
+    ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
+    edad: 0, antiguedad: 0, direccion: ''
+  });
+
   const [involucradoActual, setInvolucradoActual] = useState<InvolucradoForm>({
     ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
     edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: ''
   });
+
   const [testigoActual, setTestigoActual] = useState<TestigoForm>({
     ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
     direccion: '', subordinacion: false
@@ -329,7 +348,7 @@ function InvestigacionFormPage() {
   const handleEnterBusqueda = (
     e: React.KeyboardEvent<HTMLInputElement>, 
     ficha: string, 
-    tipo: 'contacto' | 'investigador' | 'involucrado' | 'testigo'
+    tipo: 'contacto' | 'investigador' | 'involucrado' | 'testigo' | 'reportante'
   ) => {
     if (e.key === 'Enter') {
       e.preventDefault(); 
@@ -338,7 +357,7 @@ function InvestigacionFormPage() {
   };
 
  
-  const buscarEmpleado = async (ficha: string, tipo: 'contacto' | 'investigador' | 'involucrado' | 'testigo') => {
+  const buscarEmpleado = async (ficha: string, tipo: 'contacto' | 'investigador' | 'involucrado' | 'testigo' | 'reportante') => {
     if (!ficha.trim()) return;
 
     setAntecedentesEncontrados([]);
@@ -392,6 +411,18 @@ function InvestigacionFormPage() {
             direccion: empleado.direccion
           }));
           break;
+        case 'reportante':
+          setReportanteActual(prev => ({
+            ...prev,
+            nombre: empleado.nombre,
+            nivel: empleado.nivel,
+            categoria: empleado.categoria,
+            puesto: empleado.puesto,
+            edad: empleado.edad,
+            antiguedad: empleado.antiguedad,
+            direccion: empleado.direccion
+          }));
+          break;
       }
     } catch (err: any) {
       alert(`Error al buscar empleado: ${err.response?.data?.error || 'Empleado no encontrado'}`);
@@ -399,6 +430,9 @@ function InvestigacionFormPage() {
   };
 
   // --- Handlers para agregar personas ---
+
+  
+
   const agregarContacto = () => {
     if (!contactoActual.ficha || !contactoActual.nombre) {
       alert('Complete la ficha y busque el empleado antes de agregar');
@@ -412,6 +446,23 @@ function InvestigacionFormPage() {
 
     setContactoActual({
       ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', tipo: 'contacto'
+    });
+  };
+
+  const agregarReportante = () => {
+    if (!reportanteActual.ficha || !reportanteActual.nombre) {
+      alert('Complete la ficha y busque el empleado antes de agregar');
+      return;
+    }
+
+    setFormState(prev => ({
+      ...prev,
+      reportantes: [...(prev.reportantes || []), { ...reportanteActual }]
+    }));
+
+    setReportanteActual({
+      ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
+      edad: 0, antiguedad: 0, direccion: ''
     });
   };
 
@@ -578,7 +629,10 @@ function InvestigacionFormPage() {
           {success && <div className="admin-alert admin-alert-success">{success}</div>}
 
           {/* --- SECCIÓN 1: INFORMACIÓN GENERAL --- */}
-          <section className="admin-form-section">
+          <section 
+            className="admin-form-section" 
+            style={{ gridColumn: '1 / -1' }} 
+          >
             <h2 className="admin-section-title">
               <i className="fas fa-info-circle"></i>
               Información General
@@ -687,10 +741,122 @@ function InvestigacionFormPage() {
                 </small>
               </div>
             )}
+
+
+            {/* --- SUB-SECCIÓN REPORTANTES (Dentro de Info General) --- */}
+            <div className="admin-personas-section" style={{ marginTop: '30px', borderTop: '1px dashed #ccc', paddingTop: '20px' }}>
+              <h3 style={{ color: '#2c3e50', fontSize: '1.1rem', marginBottom: '15px' }}>
+                <i className="fas fa-bullhorn" style={{ marginRight: '8px' }}></i>
+                Reportantes
+              </h3>
+              
+              {/* Buscador de Reportante */}
+              <div className="admin-form-group">
+                <label>Ficha</label>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={reportanteActual.ficha}
+                    onChange={(e) => setReportanteActual(prev => ({ ...prev, ficha: e.target.value }))}
+                    onKeyDown={(e) => handleEnterBusqueda(e, reportanteActual.ficha, 'reportante')} // Asegúrate de pasar 'reportante'
+                    placeholder="Ingrese ficha y presione Enter"
+                    style={{ flex: 1 }}
+                  />
+                </div>
+              </div>
+
+              {/* Campos de lectura (Read Only) */}
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Nombre</label>
+                  <input type="text" value={reportanteActual.nombre} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Nivel</label>
+                  <input type="text" value={reportanteActual.nivel} readOnly className="admin-readonly-field" />
+                </div>
+              </div>
+
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Categoría</label>
+                  <input type="text" value={reportanteActual.categoria} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Puesto</label>
+                  <input type="text" value={reportanteActual.puesto} readOnly className="admin-readonly-field" />
+                </div>
+              </div>
+
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Edad</label>
+                  <input type="number" value={reportanteActual.edad || ''} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Antigüedad</label>
+                  <input type="number" value={reportanteActual.antiguedad || ''} readOnly className="admin-readonly-field" />
+                </div>
+              </div>
+
+              <button 
+                type="button" 
+                onClick={agregarReportante} 
+                className="admin-submit-button" 
+                style={{ maxWidth: '200px', marginBottom: '20px' }}
+              >
+                Agregar Reportante
+              </button>
+
+              {/* Lista de Reportantes Agregados */}
+              {formState.reportantes && formState.reportantes.length > 0 && (
+                <div style={{ width: '100%' }}>
+                  <h4 style={{ marginBottom: '10px', color: '#555', fontSize: '0.9rem' }}>Reportantes Agregados:</h4>
+                  
+                  <div className="admin-personas-grid" style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                    gap: '15px'
+                  }}>
+                    {formState.reportantes.map((rep, index) => (
+                      <div key={index} className="admin-persona-card" style={{ borderLeft: '4px solid #17a2b8' }}>
+                        <div className="admin-persona-header">
+                          <h4>{rep.nombre}</h4>
+                          <span className="admin-ficha">Ficha: {rep.ficha}</span>
+                        </div>
+                        <div className="admin-persona-details">
+                          <div className="admin-detail-row">
+                            <span className="admin-label">Puesto:</span>
+                            <span className="admin-value">{rep.puesto}</span>
+                          </div>
+                          <div className="admin-detail-row">
+                            <span className="admin-label">Nivel:</span>
+                            <span className="admin-value">{rep.nivel}</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => eliminarPersona('reportantes', index)}
+                          className="admin-back-button"
+                          style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
           </section>
 
           {/* --- SECCIÓN 2: FECHAS IMPORTANTES --- */}
-          <section className="admin-form-section">
+          <section 
+            className="admin-form-section" 
+            style={{ gridColumn: '1 / -1' }} 
+          >
             <h2 className="admin-section-title">
               <i className="fas fa-calendar-alt"></i>
               Tiempo
@@ -816,8 +982,8 @@ function InvestigacionFormPage() {
                   name="observaciones"
                   value={formState.observaciones}
                   onChange={handleChange}
-                  maxLength={140}
-                  placeholder="Observaciones generales (máximo 140 caracteres)"
+                  maxLength={300}
+                  placeholder="Observaciones generales (máximo 300 caracteres)"
                 />
               </div>
             </div>
@@ -999,16 +1165,13 @@ function InvestigacionFormPage() {
               </div>
 
               <div className="admin-form-group">
-                <label>Tipo</label>
-                <select
-                  value={contactoActual.tipo}
-                  className="admin-input"
-                  onChange={(e) => setContactoActual(prev => ({ ...prev, tipo: e.target.value as 'contacto' | 'responsable' }))}
-                >
-                  <option value="contacto">Contacto</option>
-                  <option value="responsable">Responsable</option>
-                </select>
+                <input
+                  type="hidden"
+                  name="tipo"
+                  value="responsable"
+                />
               </div>
+
 
               <button type="button" onClick={agregarContacto} className="admin-submit-button" style={{ maxWidth: '200px' }}>
                 Agregar Contacto
@@ -1284,6 +1447,9 @@ function InvestigacionFormPage() {
                   placeholder="Correo electrónico"
                 />
               </div>
+              <button type="button" onClick={agregarInvestigador} className="admin-submit-button" style={{ maxWidth: '200px' }}>
+                Agregar Investigador
+              </button>
 
               {/* Lista de investigadores agregados */}
               {formState.investigadores.length > 0 && (

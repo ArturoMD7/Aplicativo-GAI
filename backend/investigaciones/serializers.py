@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
-from .models import Investigacion, Contacto, Investigador, Involucrado, Testigo
+from .models import Investigacion, Contacto, Investigador, Involucrado, Testigo, Reportante
 
 
 # Serializers para modelos relacionados
@@ -31,6 +31,20 @@ class InvestigadorSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'ficha', 'nombre', 'categoria', 'puesto', 
             'extension', 'email', 'no_constancia',
+        ]
+        read_only_fields = ['id']
+
+    def validate_ficha(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("La ficha es requerida")
+        return value
+    
+class ReportanteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reportante
+        fields = [
+            'id', 'ficha', 'nombre', 'nivel', 'categoria', 'puesto',
+            'edad', 'antiguedad', 'direccion'
         ]
         read_only_fields = ['id']
 
@@ -84,6 +98,7 @@ class InvestigacionSerializer(serializers.ModelSerializer):
     investigadores = InvestigadorSerializer(many=True, required=False)
     involucrados = InvolucradoSerializer(many=True, required=False)
     testigos = TestigoSerializer(many=True, required=False)
+    reportantes = ReportanteSerializer(many=True, required=False)
     
     # Campos de solo lectura para mostrar información relacionada
     created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
@@ -115,7 +130,7 @@ class InvestigacionSerializer(serializers.ModelSerializer):
             'antecedentes',
             
             # Relaciones
-            'contactos', 'investigadores', 'involucrados', 'testigos',
+            'contactos', 'investigadores', 'involucrados', 'testigos', 'reportantes',
             
             # Auditoría y campos calculados
             'created_by', 'created_by_name', 'created_by_email',
@@ -182,6 +197,7 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         # Extraer datos de relaciones
         contactos_data = validated_data.pop('contactos', [])
         investigadores_data = validated_data.pop('investigadores', [])
+        reportantes_data = validated_data.pop('reportantes', [])
         involucrados_data = validated_data.pop('involucrados', [])
         testigos_data = validated_data.pop('testigos', [])
         
@@ -196,6 +212,7 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         # Crear relaciones
         self._create_relations(investigacion, contactos_data, Contacto)
         self._create_relations(investigacion, investigadores_data, Investigador)
+        self._create_relations(investigacion, reportantes_data, Reportante)
         self._create_relations(investigacion, involucrados_data, Involucrado)
         self._create_relations(investigacion, testigos_data, Testigo)
         
@@ -237,6 +254,7 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         # Extraer datos de relaciones
         contactos_data = validated_data.pop('contactos', None)
         investigadores_data = validated_data.pop('investigadores', None)
+        reportantes_data = validated_data.pop('reportantes', None)
         involucrados_data = validated_data.pop('involucrados', None)
         testigos_data = validated_data.pop('testigos', None)
         
@@ -253,6 +271,10 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         if investigadores_data is not None:
             instance.investigadores.all().delete()
             self._create_relations(instance, investigadores_data, Investigador)
+
+        if reportantes_data is not None:
+            instance.reportantes.all().delete()
+            self._create_relations(instance, reportantes_data, Reportante)
         
         if involucrados_data is not None:
             instance.involucrados.all().delete()
@@ -283,6 +305,12 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
         slug_field='nombre'
     )
 
+    reportantes = serializers.SlugRelatedField(
+        many=True,
+        read_only=True,
+        slug_field='nombre'
+    )
+
     involucrados = serializers.SlugRelatedField(
         many=True,
         read_only=True,
@@ -295,7 +323,7 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
             'id', 'numero_reporte', 'nombre_corto', 'procedencia', 'descripcion_general',
             'direccion', 'gravedad', 'fecha_reporte', 'fecha_prescripcion',
             'gerencia_responsable', 'created_by_name', 'dias_restantes',
-            'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos', 'investigadores', 'involucrados'
+            'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos', 'investigadores', 'involucrados', 'reportantes'
         ]
 
     def get_dias_restantes(self, obj):
