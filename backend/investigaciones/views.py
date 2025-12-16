@@ -86,7 +86,8 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
         gravedad = self.request.query_params.get('gravedad')
         direccion = self.request.query_params.get('direccion')
         gerencia = self.request.query_params.get('gerencia')
-        estado = self.request.query_params.get('estado')  # activo, por_vencer, vencido
+        estado = self.request.query_params.get('estado') 
+        sanciones = self.request.query_params.get('sanciones')
         
         if gravedad:
             queryset = queryset.filter(gravedad=gravedad)
@@ -102,6 +103,8 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(fecha_prescripcion__lt=hoy)
             elif estado == 'activo':
                 queryset = queryset.filter(fecha_prescripcion__gte=hoy)
+        if sanciones:
+            queryset = queryset.filter(sanciones=sanciones)
         
         return queryset.order_by('-created_at')
 
@@ -258,6 +261,15 @@ def estadisticas_view(request):
     por_gravedad = {}
     for gravedad in ['Alta', 'Media', 'Baja']:
         por_gravedad[gravedad] = queryset.filter(gravedad=gravedad).count()
+
+    por_sanciones = {}
+    for sancion in ['SUSPENCION DE LABORES', 'SUSTRACCION DE EQUIPO MOBILIARIO', 'FALTA DE PROBIDAD Y HONRADEZ',
+    'ALTERACION DEL ORDEN', 'PRESENTACION DE DOCUMENTACION IRREGULAR', 'ACTITUD INDEBIDA', 'FALTAS INJUSTIFICADAS',
+    'NEGLIGENCIA EN EL DESARROLLO DE FUNCIONES', 'DISCRIMINACION', 'ACOSO LABORAL O MOBBING', 'ACOSO Y/O HOSTIGAMIENTO SEXUAL',
+    'CONCURRIR CON EFECTOS DE ESTUPEFACIENTES Y/O EDO DE EBRIEDAD', 'INCUMPLIMIENTO DE NORMAS DE TRABAJO Y/O PROCEDIMIENTOS DE TRABAJO',
+    'USO INDEBIDO DE UTILES Y/O HERRAMIENTAS DE TRABAJO', 'CLAUSULA 253 CCT', 'ACTOS DE CORRUPCION', 'MERCADO ILICITO DE COMBUSTIBLES',
+    'OTRAS FALTAS']:
+        por_sanciones[sancion] = queryset.filter(sanciones=sancion).count()
     
     # Estadísticas por dirección
     por_direccion = {}

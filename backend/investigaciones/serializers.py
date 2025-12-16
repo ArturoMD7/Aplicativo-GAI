@@ -345,7 +345,7 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
             'direccion', 'gravedad', 'fecha_reporte', 'fecha_prescripcion',
             'gerencia_responsable', 'created_by_name', 'dias_restantes',
             'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos', 'investigadores', 'involucrados', 'reportantes',
-            'estatus',
+            'estatus', 'sanciones'
         ]
 
     def get_dias_restantes(self, obj):

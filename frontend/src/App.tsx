@@ -28,13 +28,10 @@ function App() {
     return <HomePage onLogout={handleLogout} />;
   }
 
-  // 3. Si no está autenticado, solo muestra el Login
   return (
     <div className="auth-layout">
       <LoginPage 
         onSwitchToRegister={() => {
-          // Esta prop ya no hace nada,
-          // podrías quitarla de LoginPage
         }}
         onLoginSuccess={handleLoginSuccess}
       />

@@ -7,19 +7,78 @@ import {
   FiCheckCircle,
   FiClock,
   FiFilter,
-  FiChevronUp,    
-  FiChevronDown   
+  FiChevronUp,
+  FiChevronDown,
+  FiMap,
+  FiCompass,
+  FiTarget,
+  FiGlobe,
+  FiArrowLeft
 } from 'react-icons/fi';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Legend
+} from 'recharts';
 import '../styles/WelcomePage.css';
 import type { InvestigacionListado } from '../types/investigacion.types';
+
+// --- CONFIGURACIÓN ---
+
+const REGIONES_CONFIG = [
+  { key: 'Norte', label: 'NORTE', icon: <FiCompass /> },
+  { key: 'Altiplano', label: 'ALTIPLANO', icon: <FiTarget /> },
+  { key: 'Sur', label: 'SUR', icon: <FiCompass style={{ transform: 'rotate(180deg)' }} /> },
+  { key: 'Sureste', label: 'SURESTE', icon: <FiMap /> },
+  { key: 'GAI', label: 'GAI', icon: <FiGlobe /> },
+];
 
 const GERENCIA_CHOICES = [
   'Norte', 'Sur', 'Sureste', 'Altiplano', 'Oficinas Centrales', 'GAI',
 ];
 
+const SANCIONES_POSIBLES = [
+  'SUSPENSION DE LABORES', 'SUSTRACCION DE EQUIPO MOBILIARIO', 'FALTA DE PROBIDAD Y HONRADEZ',
+  'ALTERACION DEL ORDEN', 'PRESENTACION DE DOCUMENTACION IRREGULAR', 'ACTITUD INDEBIDA', 'FALTAS INJUSTIFICADAS',
+  'NEGLIGENCIA EN EL DESARROLLO DE FUNCIONES', 'DISCRIMINACION', 'ACOSO LABORAL O MOBBING', 'ACOSO Y/O HOSTIGAMIENTO SEXUAL',
+  'CONCURRIR CON EFECTOS DE ESTUPEFACIENTES Y/O EDO DE EBRIEDAD', 'INCUMPLIMIENTO DE NORMAS DE TRABAJO Y/O PROCEDIMIENTOS DE TRABAJO',
+  'USO INDEBIDO DE UTILES Y/O HERRAMIENTAS DE TRABAJO', 'CLAUSULA 253 CCT', 'ACTOS DE CORRUPCION', 'MERCADO ILICITO DE COMBUSTIBLES',
+  'OTRAS FALTAS'
+];
+
 type SortConfig = {
-  key: keyof InvestigacionListado | 'estado_texto' | null; 
+  key: keyof InvestigacionListado | 'estado_texto' | null;
   direction: 'ascending' | 'descending';
+};
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="custom-tooltip" style={{
+        backgroundColor: '#fff',
+        padding: '10px',
+        border: '1px solid #ccc',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        borderRadius: '5px'
+      }}>
+        <p className="label" style={{ fontWeight: 'bold', color: '#840016', marginBottom: '5px' }}>
+          {label}
+        </p>
+        <p className="intro" style={{ margin: 0, color: '#333' }}>
+          {`Cantidad: ${payload[0].value} casos`}
+        </p>
+        <p className="desc" style={{ fontSize: '0.8em', color: '#666', marginTop: '5px' }}>
+          Detalle por tipo de falta.
+        </p>
+      </div>
+    );
+  }
+  return null;
 };
 
 function WelcomePage() {
@@ -27,8 +86,7 @@ function WelcomePage() {
   const [selectedGerencia, setSelectedGerencia] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'recent' | 'expiring'>('recent');
   const [loading, setLoading] = useState(true);
-
-  // ESTADO NUEVO: Configuración del ordenamiento
+  const [showMenu, setShowMenu] = useState(true);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'ascending' });
 
   useEffect(() => {
@@ -45,13 +103,31 @@ function WelcomePage() {
     fetchDashboardData();
   }, []);
 
-  // 1. Filtrado por Gerencia
+  // --- LÓGICA DE DATOS ---
+
+  const countsByRegion = useMemo(() => {
+    const counts: Record<string, number> = {};
+    REGIONES_CONFIG.forEach(reg => {
+      counts[reg.key] = allInvestigaciones.filter(inv => inv.gerencia_responsable === reg.key).length;
+    });
+    return counts;
+  }, [allInvestigaciones]);
+
+  const handleRegionSelect = (regionKey: string) => {
+    setSelectedGerencia(regionKey);
+    setShowMenu(false);
+  };
+
+  const handleBackToMenu = () => {
+    setSelectedGerencia('');
+    setShowMenu(true);
+  };
+
   const filteredByGerencia = useMemo(() => {
     if (!selectedGerencia) return allInvestigaciones;
     return allInvestigaciones.filter(inv => inv.gerencia_responsable === selectedGerencia);
   }, [allInvestigaciones, selectedGerencia]);
 
-  // 2. Cálculo de estadísticas
   const stats = useMemo(() => {
     return {
       total: filteredByGerencia.length,
@@ -61,11 +137,8 @@ function WelcomePage() {
     };
   }, [filteredByGerencia]);
 
-  // 3. Preparación de datos base (Recientes o Por Vencer)
   const baseDataList = useMemo(() => {
     if (activeTab === 'recent') {
-      // Por defecto ordenamos por fecha creación descendente si no hay sort manual,
-      // pero aquí tomamos los 5 más recientes para mostrarlos.
       return [...filteredByGerencia]
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .slice(0, 5);
@@ -74,61 +147,63 @@ function WelcomePage() {
     }
   }, [filteredByGerencia, activeTab]);
 
-  // 4. LÓGICA DE ORDENAMIENTO (SORTING)
   const sortedData = useMemo(() => {
     let sortableItems = [...baseDataList];
-    
     if (sortConfig.key !== null) {
       sortableItems.sort((a, b) => {
-        // Preparar valores A y B
         let valA: any = a[sortConfig.key as keyof InvestigacionListado];
         let valB: any = b[sortConfig.key as keyof InvestigacionListado];
 
-        // Caso especial: Columna "Estado" (Calculado visualmente)
         if (sortConfig.key === 'estado_texto') {
-            valA = a.semaforo === 'green' ? 'Completado' : 'En Proceso';
-            valB = b.semaforo === 'green' ? 'Completado' : 'En Proceso';
+          valA = a.semaforo === 'green' ? 'Completado' : 'En Proceso';
+          valB = b.semaforo === 'green' ? 'Completado' : 'En Proceso';
         }
-
-        // Caso especial: Fechas (si la key es created_at)
         if (sortConfig.key === 'created_at') {
-             valA = new Date(valA).getTime();
-             valB = new Date(valB).getTime();
+          valA = new Date(valA).getTime();
+          valB = new Date(valB).getTime();
         }
-
-        // Comparación Genérica
-        if (valA < valB) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
-        }
-        if (valA > valB) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
-        }
+        if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1;
         return 0;
       });
     }
     return sortableItems;
   }, [baseDataList, sortConfig]);
 
-  // Función para solicitar el ordenamiento al hacer click
+  // --- PREPARACIÓN DE DATOS PARA GRÁFICA ---
+  const chartData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    SANCIONES_POSIBLES.forEach(s => counts[s] = 0);
+
+    filteredByGerencia.forEach((inv: any) => {
+      const sancion = inv.sanciones;
+      if (counts[sancion] !== undefined) {
+        counts[sancion]++;
+      }
+    });
+
+    return Object.keys(counts)
+      .map(key => ({
+        name: key,
+        shortName: key.length > 10 ? key.substring(0, 10) + '...' : key,
+        value: counts[key]
+      }))
+      .filter(item => item.value > 0)
+      .sort((a, b) => b.value - a.value);
+  }, [filteredByGerencia]);
+
+
   const requestSort = (key: keyof InvestigacionListado | 'estado_texto') => {
     let direction: 'ascending' | 'descending' = 'ascending';
-    
-    // Si ya estamos ordenando por esta columna y es ascendente, cambiamos a descendente
-    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
-    }
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') direction = 'descending';
     setSortConfig({ key, direction });
   };
 
-  // Función auxiliar para mostrar la flechita
   const getSortIcon = (columnKey: string) => {
-    if (sortConfig.key !== columnKey) return <span style={{opacity: 0.3, marginLeft: '5px'}}>↕</span>; // Icono neutro
+    if (sortConfig.key !== columnKey) return <span style={{ opacity: 0.3, marginLeft: '5px' }}>↕</span>;
     return sortConfig.direction === 'ascending' ? <FiChevronUp /> : <FiChevronDown />;
   };
 
-  if (loading) return <div className="loading-message">Cargando...</div>;
-
-  // --- Estilos ---
   const thStyle = { cursor: 'pointer', userSelect: 'none' as const };
   const buttonStyle = (isActive: boolean) => ({
     padding: '8px 16px', border: '1px solid #ddd', backgroundColor: isActive ? '#840016' : '#f5f5f5',
@@ -136,16 +211,43 @@ function WelcomePage() {
     fontWeight: 600 as const, fontSize: '0.9rem'
   });
 
+  if (loading) return <div className="loading-message">Cargando datos...</div>;
+
+  // --- RENDER ---
+  if (showMenu) {
+    return (
+      <div className="welcome-page">
+        <div className="hex-menu-container">
+          <h1 className="hex-title">Seleccione una Región</h1>
+          <div className="hex-grid">
+            {REGIONES_CONFIG.map((region) => (
+              <div key={region.key} className="hex-wrapper" onClick={() => handleRegionSelect(region.key)}>
+                <div className="hexagon">
+                  <div className="hex-icon">{region.icon}</div>
+                  <div className="hex-region-name">{region.label}</div>
+                  <div className="hex-stat">{countsByRegion[region.key] || 0}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="welcome-page">
+      <button onClick={handleBackToMenu} className="back-button">
+        <FiArrowLeft /> Regresar al Mapa de Regiones
+      </button>
+
       <div className="dashboard-header">
-        <h1>Panel de Control</h1>
-        <p>Bienvenido al Sistema de Gestión de Investigaciones</p>
+        <h1>Panel de Control - {selectedGerencia || 'Vista General'}</h1>
+        <p>Resumen ejecutivo de investigaciones</p>
       </div>
 
       <div className="stats-grid">
-         {/* ... (Las tarjetas de estadísticas se mantienen igual que en la respuesta anterior) ... */}
-         <div className="stat-card stat-blue">
+        <div className="stat-card stat-blue">
           <div className="stat-icon-wrapper"><FiFileText /></div>
           <div className="stat-content"><h3>{stats.total}</h3><p>Total</p></div>
         </div>
@@ -164,30 +266,21 @@ function WelcomePage() {
       </div>
 
       <div className="dashboard-content">
+        {/* SECCIÓN 1: TABLA */}
         <div className="dashboard-section">
           <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <h2>
-                {activeTab === 'recent' ? <FiClock /> : <FiAlertTriangle />} 
-                {' '}
-                {activeTab === 'recent' ? 'Actividad Reciente' : 'Próximos a Vencer'}
-              </h2>
-              
+              <h2>{activeTab === 'recent' ? <FiClock /> : <FiAlertTriangle />} {activeTab === 'recent' ? 'Actividad Reciente' : 'Próximos a Vencer'}</h2>
               <div style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
                 <FiFilter style={{ color: '#666', marginRight: '5px' }} />
-                <select 
-                  value={selectedGerencia} 
-                  onChange={(e) => setSelectedGerencia(e.target.value)}
-                  style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
-                >
+                <select value={selectedGerencia} onChange={(e) => setSelectedGerencia(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}>
                   <option value="">Todas las Gerencias</option>
                   {GERENCIA_CHOICES.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
               </div>
             </div>
-            
             <div className="toggle-buttons">
-              <button style={buttonStyle(activeTab === 'recent')} onClick={() => setActiveTab('recent')}>Recientes</button>
+              <button style={buttonStyle(activeTab === 'recent')} onClick={() => setActiveTab('recent')}>Recientes (5)</button>
               <button style={buttonStyle(activeTab === 'expiring')} onClick={() => setActiveTab('expiring')}>Por Vencer</button>
             </div>
           </div>
@@ -195,25 +288,12 @@ function WelcomePage() {
           <table className="recent-table">
             <thead>
               <tr>
-                <th onClick={() => requestSort('numero_reporte')} style={thStyle}>
-                  Reporte {getSortIcon('numero_reporte')}
-                </th>
-                <th onClick={() => requestSort('nombre_corto')} style={thStyle}>
-                  Documento {getSortIcon('nombre_corto')}
-                </th>
-                <th onClick={() => requestSort('gerencia_responsable')} style={thStyle}>
-                  Gerencia {getSortIcon('gerencia')}
-                </th>
-                <th onClick={() => requestSort('created_at')} style={thStyle}>
-                  Fecha {getSortIcon('created_at')}
-                </th>
-                {/* COLUMNA NUEVA: Días Restantes */}
-                <th onClick={() => requestSort('dias_restantes')} style={thStyle}>
-                  Días Rest. {getSortIcon('dias_restantes')}
-                </th>
-                <th onClick={() => requestSort('estado_texto')} style={thStyle}>
-                  Estado {getSortIcon('estado_texto')}
-                </th>
+                <th onClick={() => requestSort('numero_reporte')} style={thStyle}>Reporte {getSortIcon('numero_reporte')}</th>
+                <th onClick={() => requestSort('nombre_corto')} style={thStyle}>Documento {getSortIcon('nombre_corto')}</th>
+                <th onClick={() => requestSort('gerencia_responsable')} style={thStyle}>Gerencia {getSortIcon('gerencia_responsable')}</th>
+                <th onClick={() => requestSort('created_at')} style={thStyle}>Fecha {getSortIcon('created_at')}</th>
+                <th onClick={() => requestSort('dias_restantes')} style={thStyle}>Días Rest. {getSortIcon('dias_restantes')}</th>
+                <th onClick={() => requestSort('estado_texto')} style={thStyle}>Estado {getSortIcon('estado_texto')}</th>
               </tr>
             </thead>
             <tbody>
@@ -223,29 +303,51 @@ function WelcomePage() {
                   <td>{inv.nombre_corto}</td>
                   <td style={{ fontSize: '0.85em', color: '#666' }}>{inv.gerencia_responsable || 'N/A'}</td>
                   <td>{new Date(inv.created_at).toLocaleDateString()}</td>
-                  
-                  {/* Celda Días Restantes con color dinámico */}
-                  <td style={{ fontWeight: 'bold', color: inv.dias_restantes < 5 ? '#d32f2f' : '#333' }}>
-                    {inv.dias_restantes} días
-                  </td>
-
-                  <td>
-                    <span className={`status-badge ${inv.gravedad?.toLowerCase().includes('alta') ? 'alta' : 'baja'}`}>
-                      {inv.semaforo === 'green' ? 'Completado' : 'En Proceso'}
-                    </span>
-                  </td>
+                  <td style={{ fontWeight: 'bold', color: inv.dias_restantes < 5 ? '#d32f2f' : '#333' }}>{inv.dias_restantes} días</td>
+                  <td><span className={`status-badge ${inv.gravedad?.toLowerCase().includes('alta') ? 'alta' : 'baja'}`}>{inv.semaforo === 'green' ? 'Completado' : 'En Proceso'}</span></td>
                 </tr>
               ))}
-              {sortedData.length === 0 && (
-                <tr>
-                  <td colSpan={6} style={{ textAlign: 'center', color: '#999', padding: '20px' }}>
-                    No hay datos disponibles.
-                  </td>
-                </tr>
-              )}
+              {sortedData.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: '#999', padding: '20px' }}>No hay datos disponibles.</td></tr>}
             </tbody>
           </table>
         </div>
+
+        {/* SECCIÓN 2: GRÁFICA DE SANCIONES (Estilo solicitado) */}
+        <div className="dashboard-section chart-section">
+          <div className="section-header">
+            <h2><FiActivity /> Estadísticas por Sanción ({selectedGerencia || 'General'})</h2>
+          </div>
+
+          <div style={{ width: '100%', height: 400 }}>
+            {chartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={chartData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="shortName" tick={{ fontSize: 12 }} />
+                  <YAxis allowDecimals={false} />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
+                  <Legend />
+                  <Bar
+                    dataKey="value"
+                    name="Incidencias"
+                    fill="#840016"
+                    barSize={40}
+                    radius={[4, 4, 0, 0]}
+                    animationDuration={1500}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#999' }}>
+                No hay sanciones registradas para esta selección.
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );

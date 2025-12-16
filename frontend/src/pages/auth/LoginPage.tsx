@@ -3,15 +3,17 @@ import React, { useState, type FormEvent } from 'react';
 import apiClient from '../../api/apliClient.ts';
 import '../../styles/Auth/AuthForms.css';
 import '../../assets/pemexlogo.png';
-import pemexLogo from '../../assets/pemexlogo.png'; 
+import pemexLogo from '../../assets/pemexlogo.png';
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import { useNavigate } from 'react-router-dom';
 
 type LoginPageProps = {
   onSwitchToRegister: () => void;
-  onLoginSuccess: () => void; 
+  onLoginSuccess: () => void;
 };
 
 function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -21,20 +23,22 @@ function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(''); 
+    setError('');
 
     try {
       const response = await apiClient.post('/api/token/', {
         username: email,
         password: password
       });
-      
+
       console.log('Login exitoso:', response.data);
       localStorage.setItem('access_token', response.data.access);
       localStorage.setItem('refresh_token', response.data.refresh);
-      
+
       onLoginSuccess();
-      
+
+      navigate('/', { replace: true });
+
     } catch (err) {
       console.error('Error en el login:', err);
       setError('Error: Email o contraseña incorrectos');
@@ -91,20 +95,20 @@ function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
             </div>
 
             <div style={{ textAlign: 'center', marginTop: 14 }}>
-                <a
-                  href="#"
-                  className="auth-link"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowHelp(true);
-                  }}
-                >
-                  <i className="fas fa-info-circle" aria-hidden="true" style={{ marginRight: 6 }}></i>
-                  ¿Necesitas Ayuda?
-                </a>
+              <a
+                href="#"
+                className="auth-link"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowHelp(true);
+                }}
+              >
+                <i className="fas fa-info-circle" aria-hidden="true" style={{ marginRight: 6 }}></i>
+                ¿Necesitas Ayuda?
+              </a>
             </div>
 
-             <div style={{ textAlign: 'center', marginTop: 14 }}>
+            <div style={{ textAlign: 'center', marginTop: 14 }}>
               <a className="auth-derechos">
                 <i aria-hidden="true" style={{ marginRight: 6 }}></i>
                 Copyright © {year} Petróleos Mexicanos. Derechos reservados.
@@ -113,33 +117,33 @@ function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
 
           </form>
 
-             {showHelp && (
-                <div className="modal-help-overlay">
-                  <div className="modal-help">
-                    <h3><i className="fas fa-info-circle"></i> Contactanos:</h3>
+          {showHelp && (
+            <div className="modal-help-overlay">
+              <div className="modal-help">
+                <h3><i className="fas fa-info-circle"></i> Contactanos:</h3>
 
-                    <h3><i></i> Gerencia de Asuntos Internos</h3>
+                <h3><i></i> Gerencia de Asuntos Internos</h3>
 
-                    <ul>
-                      <li><b>Coordinación GAI:</b></li>
-                      <p>Alejandra Gayosso Cabello
-                        alejandra.gayosso@pemex.com</p>
-                      
-                      <li><b>Administrador del Sitema:</b></li>
-                      <p>Ing. Jaime Morales García
-                        jaime.morales@pemex.com</p>
-                      
-                    </ul>
+                <ul>
+                  <li><b>Coordinación GAI:</b></li>
+                  <p>Alejandra Gayosso Cabello
+                    alejandra.gayosso@pemex.com</p>
 
-                    <button
-                      className="modal-help-close"
-                      onClick={() => setShowHelp(false)}
-                    >
-                      Cerrar
-                    </button>
-                  </div>
-                </div>
-              )}
+                  <li><b>Administrador del Sitema:</b></li>
+                  <p>Ing. Jaime Morales García
+                    jaime.morales@pemex.com</p>
+
+                </ul>
+
+                <button
+                  className="modal-help-close"
+                  onClick={() => setShowHelp(false)}
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          )}
 
         </div>
       </div>
