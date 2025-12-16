@@ -21,7 +21,7 @@ export interface Contacto extends BasePersona {
   tipo: 'contacto' | 'responsable';
 }
 
-export interface Investigador extends BasePersona { 
+export interface Investigador extends BasePersona {
   no_constancia: string;
 }
 
@@ -40,7 +40,7 @@ export interface Involucrado extends BasePersona {
   curp: string;
   direccion: string;
   tiene_antecedentes: boolean;
-  antecedentes_detalles?: Antecedente[]; 
+  antecedentes_detalles?: Antecedente[];
 }
 
 export interface Testigo extends BasePersona {
@@ -67,7 +67,7 @@ export interface InvestigacionFormState {
   gravedad: string;
 
   // Sección 2
-  numero_reporte: string; 
+  numero_reporte: string;
   fecha_reporte: string;
   fecha_conocimiento_hechos: string;
   fecha_prescripcion: string;
@@ -123,6 +123,7 @@ export interface InvestigacionListado {
   reportantes: string[];
   involucrados: string[];
   estatus: 'Abierta' | 'Seguimiento' | 'Concluida';
+  sanciones: string;
 }
 
 export interface Antecedente {
@@ -157,6 +158,6 @@ export interface InvolucradoForm {
   rfc: string;
   curp: string;
   direccion: string;
-  tiene_antecedentes?: boolean; 
-  antecedentes_detalles?: Antecedente[]; 
+  tiene_antecedentes?: boolean;
+  antecedentes_detalles?: Antecedente[];
 }

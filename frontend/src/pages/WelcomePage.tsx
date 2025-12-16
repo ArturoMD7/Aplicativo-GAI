@@ -32,14 +32,14 @@ import type { InvestigacionListado } from '../types/investigacion.types';
 
 const REGIONES_CONFIG = [
   { key: 'Norte', label: 'NORTE', icon: <FiCompass /> },
+  { key: 'GAI', label: 'GAI', icon: <FiGlobe /> },
   { key: 'Altiplano', label: 'ALTIPLANO', icon: <FiTarget /> },
   { key: 'Sur', label: 'SUR', icon: <FiCompass style={{ transform: 'rotate(180deg)' }} /> },
   { key: 'Sureste', label: 'SURESTE', icon: <FiMap /> },
-  { key: 'GAI', label: 'GAI', icon: <FiGlobe /> },
 ];
 
 const GERENCIA_CHOICES = [
-  'Norte', 'Sur', 'Sureste', 'Altiplano', 'Oficinas Centrales', 'GAI',
+  'Norte', 'Sur', 'Sureste', 'Altiplano', 'GAI',
 ];
 
 const SANCIONES_POSIBLES = [

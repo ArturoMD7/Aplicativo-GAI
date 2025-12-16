@@ -57,7 +57,6 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
             'Sur': 'GRRLRH-SUR', 
             'Sureste': 'GRRLRH-SURE',
             'Altiplano': 'GRRLRH-ALT',
-            'Oficinas Centrales': 'OCC',
             'GAI': 'GAI',
         }
         

@@ -105,7 +105,6 @@ class Investigacion(UppercaseMixin,models.Model):
         ('Sur', 'Sur'),
         ('Sureste', 'Sureste'),
         ('Altiplano', 'Altiplano'),
-        ('Oficinas Centrales', 'Oficinas Centrales'),
         ('GAI', 'GAI'),
     ]
     gerencia_responsable = models.CharField(max_length=20, choices=GERENCIA_CHOICES)

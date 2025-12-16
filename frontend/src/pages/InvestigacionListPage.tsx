@@ -1,14 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload, FiAlertCircle, FiTrendingUp } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload, FiAlertCircle, FiTrendingUp, FiFilter } from 'react-icons/fi';
 import { MdDeleteForever } from "react-icons/md";
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import Pagination from '../components/Pagination';
 import * as XLSX from 'xlsx';
-import Swal  from 'sweetalert2';
+import Swal from 'sweetalert2';
 import { saveAs } from 'file-saver';
 import '../styles/InvestigacionPage.css';
+
+const GERENCIA_CHOICES = [
+  'Norte', 'Sur', 'Sureste', 'Altiplano', 'GAI',
+];
+
+const SANCIONES_POSIBLES = [
+  'SUSPENSION DE LABORES', 'SUSTRACCION DE EQUIPO MOBILIARIO', 'FALTA DE PROBIDAD Y HONRADEZ',
+  'ALTERACION DEL ORDEN', 'PRESENTACION DE DOCUMENTACION IRREGULAR', 'ACTITUD INDEBIDA', 'FALTAS INJUSTIFICADAS',
+  'NEGLIGENCIA EN EL DESARROLLO DE FUNCIONES', 'DISCRIMINACION', 'ACOSO LABORAL O MOBBING', 'ACOSO Y/O HOSTIGAMIENTO SEXUAL',
+  'CONCURRIR CON EFECTOS DE ESTUPEFACIENTES Y/O EDO DE EBRIEDAD', 'INCUMPLIMIENTO DE NORMAS DE TRABAJO Y/O PROCEDIMIENTOS DE TRABAJO',
+  'USO INDEBIDO DE UTILES Y/O HERRAMIENTAS DE TRABAJO', 'CLAUSULA 253 CCT', 'ACTOS DE CORRUPCION', 'MERCADO ILICITO DE COMBUSTIBLES',
+  'OTRAS FALTAS'
+];
 
 function InvestigacionListPage() {
   const [investigaciones, setInvestigaciones] = useState<InvestigacionListado[]>([]);
@@ -18,6 +31,9 @@ function InvestigacionListPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [selectedGerencia, setSelectedGerencia] = useState('');
+  const [selectedSancion, setSelectedSancion] = useState('');
+  const [showMenu, setShowMenu] = useState(false);
 
   useEffect(() => {
     const fetchInvestigaciones = async () => {
@@ -25,9 +41,7 @@ function InvestigacionListPage() {
       try {
         const response = await apiClient.get('/api/investigaciones/investigaciones/');
         console.log("DATA REAL:", response.data);
-        
-        // --- FILTRO: SOLO ABIERTAS ---
-        // Mostramos las que no tienen estatus (legacy) o explícitamente "Abierta"
+
         const abiertas = response.data.filter((inv: any) => !inv.estatus || inv.estatus === 'Abierta');
         setInvestigaciones(abiertas);
 
@@ -55,27 +69,33 @@ function InvestigacionListPage() {
   // --- FUNCIÓN PARA CAMBIAR ESTATUS ---
   const handleSeguimiento = async (id: number) => {
     const result = await Swal.fire({
-        title: '¿Pasar a Seguimiento?',
-        text: "La investigación pasará a la bandeja de Seguimiento y desaparecerá de esta lista.",
-        icon: 'info',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, iniciar seguimiento',
-        cancelButtonText: 'Cancelar'
+      title: '¿Pasar a Seguimiento?',
+      text: "La investigación pasará a la bandeja de Seguimiento y desaparecerá de esta lista.",
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, iniciar seguimiento',
+      cancelButtonText: 'Cancelar'
     });
 
     if (result.isConfirmed) {
-        try {
-            // 1. Actualizar en Backend
-            await apiClient.patch(`/api/investigaciones/investigaciones/${id}/`, { estatus: 'Seguimiento' });
-            
-            // 2. Actualizar en Frontend (Quitar de la lista)
-            setInvestigaciones(prev => prev.filter(item => item.id !== id));
-
-            Swal.fire('Listo', 'La investigación se movió a seguimiento.', 'success');
-        } catch (err) {
-            Swal.fire('Error', 'No se pudo cambiar el estatus', 'error');
-        }
+      try {
+        await apiClient.patch(`/api/investigaciones/investigaciones/${id}/`, { estatus: 'Seguimiento' });
+        setInvestigaciones(prev => prev.filter(item => item.id !== id));
+        Swal.fire('Listo', 'La investigación se movió a seguimiento.', 'success');
+      } catch (err) {
+        Swal.fire('Error', 'No se pudo cambiar el estatus', 'error');
+      }
     }
+  };
+
+  const handleRegionSelect = (regionKey: string) => {
+    setSelectedGerencia(regionKey);
+    setShowMenu(false);
+  };
+
+  const handleSancionSelect = (sancionKey: string) => {
+    setSelectedGerencia(sancionKey);
+    setShowMenu(false);
   };
 
   const handleDelete = async (id: number, numeroReporte: string) => {
@@ -84,8 +104,8 @@ function InvestigacionListPage() {
       text: `Se eliminará el reporte ${numeroReporte}. Esta acción no se puede deshacer.`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#d33', 
-      cancelButtonColor: '#3085d6', 
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     });
@@ -93,7 +113,7 @@ function InvestigacionListPage() {
     if (result.isConfirmed) {
       try {
         await apiClient.delete(`/api/investigaciones/investigaciones/${id}/`);
-        
+
         setInvestigaciones(prev => prev.filter(item => item.id !== id));
 
         Swal.fire(
@@ -128,9 +148,13 @@ function InvestigacionListPage() {
 
   const filteredInvestigaciones = investigaciones.filter((inv) => {
     const texto = searchTerm.toLowerCase();
-    return Object.values(inv).some(value =>
+    const matchesSearch = Object.values(inv).some(value =>
       String(value).toLowerCase().includes(texto)
     );
+    const matchesGerencia = selectedGerencia ? inv.gerencia_responsable === selectedGerencia : true;
+    const matchesSancion = selectedSancion ? inv.sanciones === selectedSancion : true;
+
+    return matchesSearch && matchesGerencia && matchesSancion;
   });
 
   const formatDate = (str: string) => {
@@ -165,7 +189,7 @@ function InvestigacionListPage() {
 
   const renderInvestigadores = (investigadores: string[] | string) => {
     if (!investigadores || (Array.isArray(investigadores) && investigadores.length === 0)) {
-        return <span className="text-muted" style={{ fontSize: '0.85rem' }}>Sin asignar</span>;
+      return <span className="text-muted" style={{ fontSize: '0.85rem' }}>Sin asignar</span>;
     }
 
     const lista = Array.isArray(investigadores) ? investigadores : [investigadores];
@@ -183,7 +207,7 @@ function InvestigacionListPage() {
 
   const renderInvolucrados = (involucrados: string[] | string) => {
     if (!involucrados || (Array.isArray(involucrados) && involucrados.length === 0)) {
-        return <span className="text-muted" style={{ fontSize: '0.85rem' }}>Sin asignar</span>;
+      return <span className="text-muted" style={{ fontSize: '0.85rem' }}>Sin asignar</span>;
     }
 
     const lista = Array.isArray(involucrados) ? involucrados : [involucrados];
@@ -241,7 +265,7 @@ function InvestigacionListPage() {
           />
 
           <ButtonIcon
-            variant="download" 
+            variant="download"
             to="/investigaciones/nuevo"
             icon={<FiPlus />}
             text="Nuevo"
@@ -249,6 +273,24 @@ function InvestigacionListPage() {
           />
         </div>
       </div>
+      <div style={{ display: 'flex', alignItems: 'center', marginLeft: '1px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
+          <FiFilter style={{ color: '#666', marginRight: '5px' }} />
+          <select value={selectedGerencia} onChange={(e) => setSelectedGerencia(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}>
+            <option value="">Todas las Gerencias</option>
+            {GERENCIA_CHOICES.map(g => <option key={g} value={g}>{g}</option>)}
+          </select>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
+          <FiFilter style={{ color: '#666', marginRight: '5px' }} />
+          <select value={selectedSancion} onChange={(e) => setSelectedSancion(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}>
+            <option value="">Todas las Sanciones</option>
+            {SANCIONES_POSIBLES.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+      </div>
+
 
       {loading && <div className="loading-message">Cargando investigaciones...</div>}
       {error && (
@@ -270,6 +312,7 @@ function InvestigacionListPage() {
                 <th>Investigadores</th>
                 <th>Personal Reportado</th>
                 <th>Procedencia</th>
+                <th>Conducta</th>
                 <th>Gravedad</th>
                 <th>Región</th>
                 <th>Fecha Reporte</th>
@@ -293,7 +336,7 @@ function InvestigacionListPage() {
                   <td className="col-reporte">
                     {inv.numero_reporte || <span className="text-muted">Sin asignar</span>}
                   </td>
-                
+
                   <td style={{ fontWeight: 500 }}>{inv.nombre_corto}</td>
                   <td className="text-muted">{inv.direccion}</td>
                   <td>
@@ -305,6 +348,8 @@ function InvestigacionListPage() {
                   </td>
 
                   <td className="text-muted">{inv.procedencia}</td>
+
+                  <td className="text-muted">{inv.sanciones}</td>
 
                   <td>
                     <span className={`gravedad-badge ${getGravedadClass(inv.gravedad)}`}>
@@ -325,9 +370,9 @@ function InvestigacionListPage() {
 
                   <td>
                     <div className="action-buttons">
-                      
-                     
-                      
+
+
+
 
                       <ButtonIcon
                         variant="view"
@@ -351,10 +396,10 @@ function InvestigacionListPage() {
                         title="Pasar a Seguimiento"
                         size="medium"
                       />
-                      
+
                       <ButtonIcon
                         variant="delete"
-                        onClick={() => handleDelete(inv.id, inv.numero_reporte)} 
+                        onClick={() => handleDelete(inv.id, inv.numero_reporte)}
                         icon={<MdDeleteForever />}
                         title="Eliminar"
                         size="medium"

@@ -251,7 +251,6 @@ class InvestigacionSerializer(serializers.ModelSerializer):
             'Sur': 'GRRL-SUR', 
             'Sureste': 'GRRL-SURE',
             'Altiplano': 'GRRL-ALT',
-            'Oficinas Centrales': 'OCC',
             'GAI': 'GAI',
         }
         
