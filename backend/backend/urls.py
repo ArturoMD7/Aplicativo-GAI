@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from login_register.views import RegisterView, UserListView, GroupListView, user_profile, change_password, user_detail
+from login_register.views import RegisterView, UserListView, GroupListView, user_profile, change_password, user_detail, admin_reset_password
 from django.conf import settings            
 from django.conf.urls.static import static
 
@@ -23,6 +23,7 @@ urlpatterns = [
     path('api/user/<int:user_id>/', user_detail, name='user_detail'),
     path('api/user/profile/', user_profile, name='user_profile'),
     path('api/user/change-password/', change_password, name='change_password'),
+    path('api/users/<int:user_id>/reset-password/', admin_reset_password),
 
     path('api/investigaciones/', include('investigaciones.urls')),
     path('api/auditoria/', include('auditoria.urls')),

@@ -13,8 +13,10 @@
 .admin-register-wrapper {
   min-height: 100vh;
   display: flex;
-  align-items: center; /* Centrado Vertical */
-  justify-content: center; /* Centrado Horizontal */
+  align-items: center;
+  /* Centrado Vertical */
+  justify-content: center;
+  /* Centrado Horizontal */
   background-color: var(--bg-color);
   padding: 20px;
   box-sizing: border-box;
@@ -22,7 +24,8 @@
 
 .admin-register-container {
   width: 100%;
-  max-width: 600px; /* Un poco más ancho para las 3 columnas */
+  max-width: 600px;
+  /* Un poco más ancho para las 3 columnas */
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -95,7 +98,8 @@
 .admin-input-with-icon input,
 .admin-input-with-icon select {
   width: 100%;
-  padding: 12px 16px 12px 42px; /* Padding izquierdo para el icono */
+  padding: 12px 16px 12px 42px;
+  /* Padding izquierdo para el icono */
   border: 1px solid var(--border-color);
   border-radius: 8px;
   font-size: 0.95rem;
@@ -110,7 +114,7 @@
   box-shadow: 0 0 0 4px var(--input-focus-shadow);
 }
 
-.admin-input-with-icon input:focus + i {
+.admin-input-with-icon input:focus+i {
   color: var(--primary-color);
 }
 
@@ -277,13 +281,37 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .admin-form-row, 
+
+  .admin-form-row,
   .admin-form-row.three-cols {
-    grid-template-columns: 1fr; /* Todo a 1 columna en móvil */
+    grid-template-columns: 1fr;
+    /* Todo a 1 columna en móvil */
     gap: 0;
   }
-  
+
   .admin-register-card {
     padding: 20px;
   }
+}
+
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.admin-modal {
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 420px;
+}
+
+.admin-submit-button.danger {
+  background-color: #c0392b;
 }

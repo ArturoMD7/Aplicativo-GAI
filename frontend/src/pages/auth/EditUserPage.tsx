@@ -1,7 +1,7 @@
 import React, { useEffect, useState, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import apiClient from '../../api/apliClient';
-import '../../styles/Auth/AdminRegister.css'; // reutilizamos estilos de registro
+import '../../styles/Auth/AdminRegister.css'; 
 
 type Group = { id: number; name: string };
 type UserData = {
@@ -10,6 +10,7 @@ type UserData = {
   first_name: string;
   last_name: string;
   groups: string[];
+  ficha: string;
 };
 
 function EditUserPage() {
@@ -21,6 +22,12 @@ function EditUserPage() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState('');
+  const [resetSuccess, setResetSuccess] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -48,6 +55,41 @@ function EditUserPage() {
         : [...prev, groupName]
     );
   };
+
+  const handleResetPassword = async () => {
+    if (newPassword !== confirmPassword) {
+      setResetError('Las contraseñas no coinciden');
+      return;
+    }
+
+    setResetError('');
+    setResetSuccess('');
+    setResetLoading(true);
+
+    try {
+      await apiClient.post(`/api/users/${user?.id}/reset-password/`, {
+        new_password: newPassword,
+        confirm_password: confirmPassword,
+      });
+
+      setResetSuccess('Contraseña reestablecida correctamente');
+      setNewPassword('');
+      setConfirmPassword('');
+
+      setTimeout(() => {
+        setShowResetModal(false);
+        setResetSuccess('');
+      }, 1500);
+    } catch (err: any) {
+      setResetError(
+        err.response?.data?.new_password ||
+        'Error al reestablecer la contraseña'
+      );
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -90,17 +132,33 @@ function EditUserPage() {
       {success && <div className="admin-alert admin-alert-success">{success}</div>}
 
       <form className="admin-register-form" onSubmit={handleSubmit}>
-        <div className="admin-form-group">
-          <label htmlFor="email">Correo electrónico *</label>
-          <div className="admin-input-with-icon">
-            <i className="fas fa-envelope"></i>
-            <input
-              type="email"
-              id="email"
-              value={user.email}
-              onChange={(e) => setUser({ ...user, email: e.target.value })}
-              required
-            />
+        <div className="admin-form-row">
+          <div className="admin-form-group">
+            <label htmlFor="email">Correo electrónico *</label>
+            <div className="admin-input-with-icon">
+              <i className="fas fa-envelope"></i>
+              <input
+                type="email"
+                id="email"
+                value={user.email}
+                onChange={(e) => setUser({ ...user, email: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="admin-form-group">
+            <label htmlFor="email">Ficha *</label>
+            <div className="admin-input-with-icon">
+              <i className="fas fa-envelope"></i>
+              <input
+                type="number"
+                id="ficha"
+                value={user.ficha}
+                onChange={(e) => setUser({ ...user, ficha: e.target.value })}
+                required
+              />
+            </div>
           </div>
         </div>
 
@@ -138,9 +196,8 @@ function EditUserPage() {
             {availableGroups.map((group) => (
               <div
                 key={group.id}
-                className={`admin-role-option ${
-                  selectedGroups.includes(group.name) ? 'selected' : ''
-                }`}
+                className={`admin-role-option ${selectedGroups.includes(group.name) ? 'selected' : ''
+                  }`}
                 onClick={() => handleRoleToggle(group.name)}
               >
                 <div className="admin-role-checkbox"></div>
@@ -155,11 +212,80 @@ function EditUserPage() {
           {loading ? 'Guardando...' : 'Guardar Cambios'}
         </button>
 
+        <button
+          type="button"
+          className="admin-submit-button danger"
+          onClick={() => setShowResetModal(true)}
+        >
+          <i className="fas fa-key"></i>
+          Reestablecer Contraseña
+        </button>
+
+
         <Link to="/users" className="admin-back-button">
           <i className="fas fa-arrow-left"></i>
           Volver a Usuarios
         </Link>
       </form>
+
+
+      {showResetModal && (
+        <div className="admin-modal-overlay">
+          <div className="admin-modal">
+            <h2>Reestablecer contraseña</h2>
+            <p>
+              Se asignará una nueva contraseña al usuario <b>{user.email}</b>
+            </p>
+
+            {resetError && (
+              <div className="admin-alert admin-alert-error">
+                {resetError}
+              </div>
+            )}
+
+            {resetSuccess && (
+              <div className="admin-alert admin-alert-success">
+                {resetSuccess}
+              </div>
+            )}
+
+            <div className="admin-form-group">
+              <label>Nueva contraseña</label>
+              <input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+
+            <div className="admin-form-group">
+              <label>Confirmar contraseña</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+
+            <div className="admin-modal-actions">
+              <button
+                className="admin-submit-button"
+                onClick={handleResetPassword}
+                disabled={resetLoading}
+              >
+                {resetLoading ? 'Reestableciendo...' : 'Confirmar'}
+              </button>
+
+              <button
+                className="admin-back-button"
+                onClick={() => setShowResetModal(false)}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -6,7 +6,7 @@ from django.shortcuts import render
 from rest_framework.permissions import IsAdminUser
 from rest_framework import generics, permissions
 from rest_framework.permissions import AllowAny
-from .serializers import RegisterSerializer, UserSerializer, GroupSerializer, UserUpdateSerializer, ChangePasswordSerializer
+from .serializers import RegisterSerializer, UserSerializer, GroupSerializer, UserUpdateSerializer, ChangePasswordSerializer, AdminResetPasswordSerializer
 from django.contrib.auth.models import User, Group
 
 class IsAdminGroup(permissions.BasePermission):
@@ -117,4 +117,27 @@ def user_detail(request, user_id):
             {"message": f"Usuario {user_email} eliminado correctamente."},
             status=status.HTTP_200_OK
         )
+
+
+@api_view(['POST'])
+@permission_classes([IsAdminGroup])
+
+def admin_reset_password(request, user_id):
+    try:
+        user= User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return Response(
+            {"error": "Usuario no encontrado."}, 
+            status=status.HTTP_404_NOT_FOUND
+        )
+    
+    serializer = AdminResetPasswordSerializer(data=request.data)
+    if serializer.is_valid():
+        user.set_password(serializer.validated_data['new_password'])
+        user.save()
+        return Response(
+            {"message": "Contraseña restablecida correctamente."},
+            status=status.HTTP_200_OK
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
