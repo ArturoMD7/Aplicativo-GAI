@@ -4,6 +4,7 @@ import './Layout.css';
 import { Link, useLocation } from 'react-router-dom';
 import pemexLogo from '../../assets/logo_min.png';
 import { GrDocumentTime } from "react-icons/gr";
+import { LuLogs } from "react-icons/lu";
 
 import {
   FiHome,
@@ -16,10 +17,10 @@ import {
 const navItems = [
   { label: "Inicio", icon: <FiHome />, href: "/" },
   { label: "Investigaciones", icon: <FiFileText />, href: "/investigaciones" },
-  { label: "Seguimiento", icon: <FiFileText />, href: "/investigaciones/seguimiento-lista" },
+  { label: "Seguimiento", icon: <GrDocumentTime />, href: "/investigaciones/seguimiento-lista" },
   { label: "Usuarios", icon: <FiUsers />, href: "/users" },
-  { label: "Logs", icon: <GrDocumentTime />, href: "/logs" },
-  
+  { label: "Logs", icon: <LuLogs />, href: "/logs" },
+
 ];
 
 type SidebarProps = {
