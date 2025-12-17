@@ -1,5 +1,7 @@
 import React, { useEffect, useState, type FormEvent } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 import apiClient from '../../api/apliClient';
 import '../../styles/Auth/AdminRegister.css'; 
 
@@ -22,12 +24,7 @@ function EditUserPage() {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const [showResetModal, setShowResetModal] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [resetLoading, setResetLoading] = useState(false);
-  const [resetError, setResetError] = useState('');
-  const [resetSuccess, setResetSuccess] = useState('');
+  const MySwal = withReactContent(Swal);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -56,40 +53,89 @@ function EditUserPage() {
     );
   };
 
-  const handleResetPassword = async () => {
-    if (newPassword !== confirmPassword) {
-      setResetError('Las contraseñas no coinciden');
-      return;
-    }
+  const handleResetPassword = () => {
+    MySwal.fire({
+      title: <strong>Reestablecer contraseña</strong>,
+      html: (
+        <div style={{ textAlign: 'left' }}>
+          <p style={{ marginBottom: '20px' }}>
+            Se asignará una nueva contraseña al usuario <b>{user?.email}</b>
+          </p>
+          <div className="admin-form-group" style={{ marginBottom: '15px' }}>
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+              Nueva contraseña
+            </label>
+            <input
+              type="password"
+              id="swal-input1"
+              className="swal2-input"
+              placeholder="Nueva contraseña"
+              style={{ width: '100%', margin: '0' }}
+            />
+          </div>
+          <div className="admin-form-group">
+            <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>
+              Confirmar contraseña
+            </label>
+            <input
+              type="password"
+              id="swal-input2"
+              className="swal2-input"
+              placeholder="Confirmar contraseña"
+              style={{ width: '100%', margin: '0' }}
+            />
+          </div>
+        </div>
+      ),
+      showCancelButton: true,
+      confirmButtonText: 'Confirmar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      reverseButtons: true,
+      showLoaderOnConfirm: true,
+      preConfirm: async () => {
+        const password1 = (document.getElementById('swal-input1') as HTMLInputElement).value;
+        const password2 = (document.getElementById('swal-input2') as HTMLInputElement).value;
 
-    setResetError('');
-    setResetSuccess('');
-    setResetLoading(true);
+        if (password1 !== password2) {
+          Swal.showValidationMessage('Las contraseñas no coinciden');
+          return false;
+        }
 
-    try {
-      await apiClient.post(`/api/users/${user?.id}/reset-password/`, {
-        new_password: newPassword,
-        confirm_password: confirmPassword,
-      });
+        if (!password1 || !password2) {
+          Swal.showValidationMessage('Por favor completa ambos campos');
+          return false;
+        }
 
-      setResetSuccess('Contraseña reestablecida correctamente');
-      setNewPassword('');
-      setConfirmPassword('');
-
-      setTimeout(() => {
-        setShowResetModal(false);
-        setResetSuccess('');
-      }, 1500);
-    } catch (err: any) {
-      setResetError(
-        err.response?.data?.new_password ||
-        'Error al reestablecer la contraseña'
-      );
-    } finally {
-      setResetLoading(false);
-    }
+        try {
+          await apiClient.post(`/api/users/${user?.id}/reset-password/`, {
+            new_password: password1,
+            confirm_password: password2,
+          });
+          return true;
+        } catch (err: any) {
+          Swal.showValidationMessage(
+            err.response?.data?.new_password || 
+            'Error al reestablecer la contraseña'
+          );
+          return false;
+        }
+      },
+      allowOutsideClick: () => !Swal.isLoading()
+    }).then((result) => {
+      if (result.isConfirmed) {
+        MySwal.fire({
+          title: '¡Éxito!',
+          text: 'Contraseña reestablecida correctamente',
+          icon: 'success',
+          confirmButtonColor: '#3085d6',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
+    });
   };
-
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -215,77 +261,17 @@ function EditUserPage() {
         <button
           type="button"
           className="admin-submit-button danger"
-          onClick={() => setShowResetModal(true)}
+          onClick={handleResetPassword}
         >
           <i className="fas fa-key"></i>
           Reestablecer Contraseña
         </button>
-
 
         <Link to="/users" className="admin-back-button">
           <i className="fas fa-arrow-left"></i>
           Volver a Usuarios
         </Link>
       </form>
-
-
-      {showResetModal && (
-        <div className="admin-modal-overlay">
-          <div className="admin-modal">
-            <h2>Reestablecer contraseña</h2>
-            <p>
-              Se asignará una nueva contraseña al usuario <b>{user.email}</b>
-            </p>
-
-            {resetError && (
-              <div className="admin-alert admin-alert-error">
-                {resetError}
-              </div>
-            )}
-
-            {resetSuccess && (
-              <div className="admin-alert admin-alert-success">
-                {resetSuccess}
-              </div>
-            )}
-
-            <div className="admin-form-group">
-              <label>Nueva contraseña</label>
-              <input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-              />
-            </div>
-
-            <div className="admin-form-group">
-              <label>Confirmar contraseña</label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-              />
-            </div>
-
-            <div className="admin-modal-actions">
-              <button
-                className="admin-submit-button"
-                onClick={handleResetPassword}
-                disabled={resetLoading}
-              >
-                {resetLoading ? 'Reestableciendo...' : 'Confirmar'}
-              </button>
-
-              <button
-                className="admin-back-button"
-                onClick={() => setShowResetModal(false)}
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
