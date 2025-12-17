@@ -315,3 +315,76 @@
 .admin-submit-button.danger {
   background-color: #c0392b;
 }
+
+
+/* ===== Layout General ===== */
+.admin-layout-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .admin-layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Cards ===== */
+.admin-card {
+  background: var(--card-bg);
+  padding: 28px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+.admin-actions-card {
+  margin-top: 24px;
+}
+
+
+.admin-section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 20px;
+}
+
+
+.admin-roles-grid.compact {
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+}
+
+.admin-role-option {
+  padding: 8px;
+  font-size: 0.85rem;
+}
+
+.admin-submit-button.danger {
+  background: #c0392b;
+}
+
+.admin-submit-button.outline {
+  background: transparent;
+  border: 2px solid #c0392b;
+  color: #c0392b;
+}
+
+.admin-submit-button.outline:hover {
+  background: #c0392b;
+  color: #fff;
+}
+
+.admin-actions-row {
+  display: flex;
+  gap: 14px;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 700px) {
+  .admin-actions-row {
+    justify-content: center;
+  }
+}

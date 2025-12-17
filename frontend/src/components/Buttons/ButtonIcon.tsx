@@ -1,38 +1,39 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './ButtonIcon.css';
+import { FiEdit, FiTrash, FiPlus, FiDownload, FiEye } from 'react-icons/fi';
 
 // Tipos de botón disponibles
 const BUTTON_VARIANTS = {
   view: {
     color: '#1e5b4f',
     hoverColor: '#154238',
-    defaultIcon: '👁️'
+    defaultIcon: <FiEye />
   },
   edit: {
     color: '#840016',
     hoverColor: '#a50121',
-    defaultIcon: '✏️'
+    defaultIcon: <FiEdit />
   },
   delete: {
     color: '#dc3545',
     hoverColor: '#c82333',
-    defaultIcon: '🗑️'
+    defaultIcon: <FiTrash />
   },
   add: {
     color: '#28a745',
     hoverColor: '#218838',
-    defaultIcon: '➕'
+    defaultIcon: <FiPlus />
   },
   download: {
     color: '#17a2b8',
     hoverColor: '#138496',
-    defaultIcon: '📥'
+    defaultIcon: <FiDownload />
   },
   custom: {
     color: '#6c757d',
     hoverColor: '#545b62',
-    defaultIcon: '⚡'
+    defaultIcon: <FiDownload />
   }
 };
 
