@@ -43,6 +43,12 @@ const initialState: InvestigacionFormState = {
   investigadores: [],
   involucrados: [],
   testigos: [],
+  responsable_ficha: '',
+  responsable_nombre: '',
+  responsable_categoria: '',
+  responsable_puesto: '',
+  responsable_extension: '',
+  responsable_email: '',
 };
 
 interface ContactoForm {
@@ -148,26 +154,26 @@ function InvestigacionFormPage() {
   const [pdfUrl, setPdfUrl] = useState<string>('');
 
   useEffect(() => {
-  if (investigadorActual.no_constancia === '001') {
-    const pdfPath = '.'; 
-    setPdfUrl('/629429_001.pdf');
-    setMostrarPDF(true);
-  } else {
-    setMostrarPDF(false);
-  }
+    if (investigadorActual.no_constancia === '001') {
+      const pdfPath = '.';
+      setPdfUrl('/629429_001.pdf');
+      setMostrarPDF(true);
+    } else {
+      setMostrarPDF(false);
+    }
 
   }, [investigadorActual.no_constancia]);
 
   const handleDescargarPDF = () => {
-  if (pdfUrl) {
-    const link = document.createElement('a');
-    link.href = pdfUrl;
-    link.download = '629429_001.pdf';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-};
+    if (pdfUrl) {
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = '629429_001.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
   useEffect(() => {
     let timer: ReturnType<typeof setInterval>;
 
@@ -272,7 +278,7 @@ function InvestigacionFormPage() {
     }
   }, [formState.fecha_conocimiento_hechos]);
  */
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
 
     // Prevenir edición manual de fecha_prescripcion
@@ -280,20 +286,46 @@ function InvestigacionFormPage() {
       return;
     }
 
+
+    if (name === 'gerencia_responsable') {
+      // Actualizar la gerencia
+      setFormState(prev => ({ ...prev, gerencia_responsable: value }));
+
+      if (value) {
+        try {
+          const response = await apiClient.get(`/api/investigaciones/buscar-gerente-responsable/?gerencia=${value}`);
+          const gerente = response.data;
+
+          // Llenar los campos del responsable directamente en formState
+          setFormState(prev => ({
+            ...prev,
+            responsable_ficha: gerente.ficha,
+            responsable_nombre: gerente.nombre,
+            responsable_categoria: gerente.categoria,
+            responsable_puesto: gerente.puesto,
+          }));
+        } catch (err) {
+          console.error("Gerente no encontrado");
+        }
+      }
+    } else {
+      setFormState(prev => ({ ...prev, [name]: value }));
+    }
+
     let processedValue: any = value;
 
     if (type === 'checkbox' && e.target instanceof HTMLInputElement) {
-    processedValue = e.target.checked;
-    
-    if (name === 'economica') {
-      setFormState(prev => ({
-        ...prev,
-        economica: processedValue,
-        montoeconomico: !processedValue ? null : prev.montoeconomico
-      }));
-      return; 
+      processedValue = e.target.checked;
+
+      if (name === 'economica') {
+        setFormState(prev => ({
+          ...prev,
+          economica: processedValue,
+          montoeconomico: !processedValue ? null : prev.montoeconomico
+        }));
+        return;
+      }
     }
-  }
 
     // LÓGICA MODIFICADA
     if (name === 'regimen') {
@@ -346,17 +378,17 @@ function InvestigacionFormPage() {
   };
 
   const handleEnterBusqueda = (
-    e: React.KeyboardEvent<HTMLInputElement>, 
-    ficha: string, 
+    e: React.KeyboardEvent<HTMLInputElement>,
+    ficha: string,
     tipo: 'contacto' | 'investigador' | 'involucrado' | 'testigo' | 'reportante'
   ) => {
     if (e.key === 'Enter' || e.key === 'Tab') {
-      e.preventDefault(); 
+      e.preventDefault();
       buscarEmpleado(ficha, tipo);
     }
   };
 
- 
+
   const buscarEmpleado = async (ficha: string, tipo: 'contacto' | 'investigador' | 'involucrado' | 'testigo' | 'reportante') => {
     if (!ficha.trim()) return;
 
@@ -431,7 +463,7 @@ function InvestigacionFormPage() {
 
   // --- Handlers para agregar personas ---
 
-  
+
 
   const agregarContacto = () => {
     if (!contactoActual.ficha || !contactoActual.nombre) {
@@ -629,9 +661,9 @@ function InvestigacionFormPage() {
           {success && <div className="admin-alert admin-alert-success">{success}</div>}
 
           {/* --- SECCIÓN 1: INFORMACIÓN GENERAL --- */}
-          <section 
-            className="admin-form-section" 
-            style={{ gridColumn: '1 / -1' }} 
+          <section
+            className="admin-form-section"
+            style={{ gridColumn: '1 / -1' }}
           >
             <h2 className="admin-section-title">
               <i className="fas fa-info-circle"></i>
@@ -668,19 +700,19 @@ function InvestigacionFormPage() {
                 </div>
               </div>
             </div>
-          
-          
+
+
             <div className="admin-form-group">
-                <label>Sanciones *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-exclamation-triangle"></i>
-                  <select name="sanciones" value={formState.sanciones} onChange={handleChange} required>
-                    <option value="">Seleccione...</option>
-                    {opciones?.sanciones?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
-                </div>
+              <label>Sanciones *</label>
+              <div className="admin-input-with-icon">
+                <i className="fas fa-exclamation-triangle"></i>
+                <select name="sanciones" value={formState.sanciones} onChange={handleChange} required>
+                  <option value="">Seleccione...</option>
+                  {opciones?.sanciones?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
               </div>
-          
+            </div>
+
 
             <div className="admin-form-row">
               <div className="admin-form-group">
@@ -749,7 +781,7 @@ function InvestigacionFormPage() {
                 <i className="fas fa-bullhorn" style={{ marginRight: '8px' }}></i>
                 Reportantes
               </h3>
-              
+
               {/* Buscador de Reportante */}
               <div className="admin-form-group">
                 <label>Ficha</label>
@@ -800,10 +832,10 @@ function InvestigacionFormPage() {
                 </div>
               </div>
 
-              <button 
-                type="button" 
-                onClick={agregarReportante} 
-                className="admin-submit-button" 
+              <button
+                type="button"
+                onClick={agregarReportante}
+                className="admin-submit-button"
                 style={{ maxWidth: '200px', marginBottom: '20px' }}
               >
                 Agregar Reportante
@@ -813,7 +845,7 @@ function InvestigacionFormPage() {
               {formState.reportantes && formState.reportantes.length > 0 && (
                 <div style={{ width: '100%' }}>
                   <h4 style={{ marginBottom: '10px', color: '#555', fontSize: '0.9rem' }}>Reportantes Agregados:</h4>
-                  
+
                   <div className="admin-personas-grid" style={{
                     display: 'grid',
                     gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
@@ -853,9 +885,9 @@ function InvestigacionFormPage() {
           </section>
 
           {/* --- SECCIÓN 2: FECHAS IMPORTANTES --- */}
-          <section 
-            className="admin-form-section" 
-            style={{ gridColumn: '1 / -1' }} 
+          <section
+            className="admin-form-section"
+            style={{ gridColumn: '1 / -1' }}
           >
             <h2 className="admin-section-title">
               <i className="fas fa-calendar-alt"></i>
@@ -924,7 +956,7 @@ function InvestigacionFormPage() {
               </div>
             </div>
 
-            
+
           </section>
 
           {/* --- SECCIÓN 5: INFORMACIÓN DEL EVENTO --- */}
@@ -1094,9 +1126,52 @@ function InvestigacionFormPage() {
                 </select>
               </div>
             </div>
+
+            {formState.responsable_ficha && (
+              <div className="gerente-info-container" style={{ gridColumn: '1 / -1', background: '#f0f4f8', padding: '15px', borderRadius: '8px', marginTop: '10px' }}>
+                <h4 style={{ marginBottom: '10px', fontSize: '0.9rem' }}>Datos del Responsable (Nivel 44)</h4>
+                <div className="admin-form-row">
+                  <div className="admin-form-group">
+                    <label>Nombre del Responsable</label>
+                    <input type="text" value={formState.responsable_nombre} readOnly className="admin-readonly-field" />
+                  </div>
+
+                </div>
+                <div className="admin-form-row">
+                  <div className="admin-form-group">
+                    <label>Ficha</label>
+                    <input type="text" value={formState.responsable_ficha} readOnly className="admin-readonly-field" />
+                  </div>
+                  <div className="admin-form-group">
+
+                    <label>Extensión Responsable *</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={formState.responsable_extension}
+                      onChange={handleChange}
+                      placeholder="Extensión"
+                    />
+                  </div>
+
+
+                </div>
+
+                <div className="admin-form-group">
+                  <label>Email Responsable *</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={formState.responsable_email}
+                    onChange={handleChange}
+                    placeholder="Ingrese email"
+                  />
+                </div>
+
+              </div>
+            )}
+
           </section>
-
-
 
           {/* --- SECCIÓN 4: GERENCIA RESPONSABLE --- */}
           <section className="admin-form-section">
@@ -1104,8 +1179,6 @@ function InvestigacionFormPage() {
               <i className="fas fa-user-tie"></i>
               Gerencia Responsable
             </h2>
-
-
 
             {/* Contactos */}
             <div className="admin-personas-section">
@@ -1238,7 +1311,7 @@ function InvestigacionFormPage() {
                     onKeyDown={(e) => handleEnterBusqueda(e, investigadorActual.ficha, 'investigador')}
                     placeholder="Ingrese ficha y presione Enter o Tab"
                   />
-                  
+
                 </div>
 
               </div>
@@ -1300,16 +1373,16 @@ function InvestigacionFormPage() {
                       boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                     }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <i className="fas fa-file-pdf" style={{ 
-                          color: '#e74c3c', 
-                          fontSize: '20px' 
+                        <i className="fas fa-file-pdf" style={{
+                          color: '#e74c3c',
+                          fontSize: '20px'
                         }}></i>
                         <div>
                           <div style={{ fontWeight: '600', color: '#333' }}>
                             Constancia de Habilitación #{investigadorActual.no_constancia}
                           </div>
-                          <div style={{ 
-                            fontSize: '12px', 
+                          <div style={{
+                            fontSize: '12px',
                             color: '#6c757d',
                             marginTop: '2px'
                           }}>
@@ -1317,7 +1390,7 @@ function InvestigacionFormPage() {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div style={{ display: 'flex', gap: '10px' }}>
                         {/* BOTÓN PREVISUALIZAR */}
                         <button
@@ -1328,7 +1401,7 @@ function InvestigacionFormPage() {
                             alignItems: 'center',
                             gap: '5px',
                             padding: '6px 12px',
-                            backgroundColor: '#17a2b8', 
+                            backgroundColor: '#17a2b8',
                             color: 'white',
                             border: 'none',
                             borderRadius: '4px',
@@ -1404,7 +1477,7 @@ function InvestigacionFormPage() {
                           backgroundColor: '#f8f9fa'
                         }}>
                           <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#333' }}>
-                            Previsualización 
+                            Previsualización
                           </h3>
                           <button
                             type="button"
@@ -1420,7 +1493,7 @@ function InvestigacionFormPage() {
                             &times;
                           </button>
                         </div>
-                        
+
                         {/* Cuerpo del Modal (Iframe) */}
                         <div style={{ flex: 1, padding: 0, backgroundColor: '#525659' }}>
                           <iframe
@@ -1518,7 +1591,7 @@ function InvestigacionFormPage() {
                     onKeyDown={(e) => handleEnterBusqueda(e, involucradoActual.ficha, 'involucrado')}
                     placeholder="Ingrese ficha y presione Enter o Tab"
                   />
-                 
+
                 </div>
 
               </div>
@@ -1778,7 +1851,7 @@ function InvestigacionFormPage() {
                     style={{ flex: 1 }}
                   />
 
-    
+
                 </div>
               </div>
 

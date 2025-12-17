@@ -108,6 +108,13 @@ class Investigacion(UppercaseMixin,models.Model):
         ('GAI', 'GAI'),
     ]
     gerencia_responsable = models.CharField(max_length=20, choices=GERENCIA_CHOICES)
+
+    responsable_ficha = models.CharField(max_length=20, null=True, blank=True)
+    responsable_nombre = models.CharField(max_length=100, null=True, blank=True)
+    responsable_categoria = models.CharField(max_length=50, null=True, blank=True)
+    responsable_puesto = models.CharField(max_length=100, null=True, blank=True)
+    responsable_extension = models.CharField(max_length=10, null=True, blank=True)
+    responsable_email = models.EmailField(null=True, blank=True)
     
     # Sección 4: Evento
     lugar = models.CharField(max_length=50)

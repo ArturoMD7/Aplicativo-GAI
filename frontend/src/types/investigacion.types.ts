@@ -75,6 +75,12 @@ export interface InvestigacionFormState {
 
   // Sección 3
   gerencia_responsable: string;
+  responsable_ficha: string;
+  responsable_nombre: string;
+  responsable_categoria: string;
+  responsable_puesto: string;
+  responsable_extension: string;
+  responsable_email: string;
 
   // Sección 4
   lugar: string;
@@ -124,10 +130,11 @@ export interface InvestigacionListado {
   involucrados: string[];
   estatus: 'Abierta' | 'Seguimiento' | 'Concluida';
   sanciones: string;
+
 }
 
 export interface Antecedente {
-  origen: string;
+  procedencia: string;
   fecha: string;
   descripcion: string;
   referencia: string;

@@ -143,7 +143,8 @@ class InvestigacionSerializer(serializers.ModelSerializer):
             'economica',
             
             # Sección 3: Gerencia Responsable
-            'gerencia_responsable',
+            'gerencia_responsable', 'responsable_ficha', 'responsable_nombre', 'responsable_categoria',
+            'responsable_puesto', 'responsable_extension', 'responsable_email',
             
             # Sección 4: Evento
             'lugar', 'observaciones', 'fecha_evento', 'centro_trabajo',

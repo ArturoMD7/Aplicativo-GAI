@@ -236,6 +236,40 @@ def areas_por_centro_view(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def buscar_gerente_responsable_view(request):
+    """Busca el gerente nivel 44 basado en la gerencia seleccionada"""
+    gerencia_nombre = request.query_params.get('gerencia', '')
+    
+    if not gerencia_nombre:
+        return Response({'error': 'Gerencia requerida'}, status=400)
+
+    try:
+        query_gerencia = f'GERENCIA REGIONAL DE RELACIONES LABORALES {gerencia_nombre}'
+        
+        with connections['pemex'].cursor() as cursor:
+            cursor.execute("""
+                SELECT FICHA, NOMBRES, CATEGO, MC_STEXT, GERENCIA_CODUNI, NIVEL_PLAZA 
+                FROM [00_tablero_dg]
+                WHERE nivel_plaza = 44  
+                AND gerencia_coduni LIKE %s
+            """, [f'%{gerencia_nombre}%'])
+            
+            row = cursor.fetchone()
+            
+            if row:
+                return Response({
+                    'ficha': row[0],
+                    'nombre': row[1],
+                    'categoria': row[2],
+                    'puesto': row[3],
+                })
+            return Response({'error': 'No se encontró gerente nivel 44'}, status=404)
+            
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def estadisticas_view(request):
     """Obtener estadísticas de investigaciones"""
     user = request.user

@@ -15,4 +15,5 @@ urlpatterns = [
     path('centros-coduni/', views.centros_coduni_view, name='centros-coduni'),
     path('areas-por-centro/', views.areas_por_centro_view, name='areas-por-centro'),
     path('estadisticas/', views.estadisticas_view, name='estadisticas'),
+    path('buscar-gerente-responsable/', views.buscar_gerente_responsable_view, name='buscar-gerente-responsable'),
 ]

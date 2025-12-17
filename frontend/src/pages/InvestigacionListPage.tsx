@@ -11,7 +11,7 @@ import { saveAs } from 'file-saver';
 import '../styles/InvestigacionPage.css';
 
 const GERENCIA_CHOICES = [
-  'Norte', 'Sur', 'Sureste', 'Altiplano', 'GAI',
+  'NORTE', 'SUR', 'SURESTE', 'ALTIPLANO', 'GAI',
 ];
 
 const SANCIONES_POSIBLES = [
@@ -42,7 +42,7 @@ function InvestigacionListPage() {
         const response = await apiClient.get('/api/investigaciones/investigaciones/');
         console.log("DATA REAL:", response.data);
 
-        const abiertas = response.data.filter((inv: any) => !inv.estatus || inv.estatus === 'Abierta');
+        const abiertas = response.data.filter((inv: any) => !inv.estatus || inv.estatus === 'Abierta' || inv.estatus === 'ABIERTA');
         setInvestigaciones(abiertas);
 
       } catch (err) {
