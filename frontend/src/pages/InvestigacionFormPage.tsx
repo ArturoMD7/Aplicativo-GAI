@@ -219,6 +219,8 @@ function InvestigacionFormPage() {
 
   // --- Cargar datos ---
   useEffect(() => {
+    let isMounted = true;
+
     const fetchDatosIniciales = async () => {
       try {
         const [opcionesRes, centrosTrabajoRes, centrosCoduniRes] = await Promise.all([
@@ -227,31 +229,53 @@ function InvestigacionFormPage() {
           apiClient.get('/api/investigaciones/centros-coduni/')
         ]);
 
+        if (!isMounted) return;
+
         setOpciones(opcionesRes.data);
         setCentrosTrabajo(centrosTrabajoRes.data);
         setCentrosCoduni(centrosCoduniRes.data);
       } catch (err) {
+        console.error('Error cargando datos iniciales:', err);
         setError('No se pudieron cargar los datos iniciales.');
       }
     };
 
     const fetchInvestigacion = async (investigacionId: string) => {
       try {
-        setLoading(true);
         const response = await apiClient.get(`/api/investigaciones/investigaciones/${investigacionId}/`);
-        setFormState(response.data);
+
+        if (!isMounted) return;
+
+        const investigacionData = response.data;
+        setFormState(investigacionData);
+        setIsEditMode(true);
+
+        // Cargar áreas para el centro si existe
+        if (investigacionData.centro) {
+          await cargarAreasPorCentro(investigacionData.centro);
+        }
       } catch (err) {
+        console.error('Error cargando investigación:', err);
         setError('No se pudo cargar la investigación.');
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     };
 
+    setLoading(true);
     fetchDatosIniciales();
+
     if (id) {
-      setIsEditMode(true);
       fetchInvestigacion(id);
+    } else {
+      setLoading(false);
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   useEffect(() => {
@@ -281,22 +305,19 @@ function InvestigacionFormPage() {
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
 
-    // Prevenir edición manual de fecha_prescripcion
-    if (name === 'fecha_prescripcion') {
-      return;
+    if (name === 'fecha_prescripcion') return;
+
+    let processedValue: any = value;
+    if (type === 'checkbox' && e.target instanceof HTMLInputElement) {
+      processedValue = e.target.checked;
     }
 
-
     if (name === 'gerencia_responsable') {
-      // Actualizar la gerencia
       setFormState(prev => ({ ...prev, gerencia_responsable: value }));
-
       if (value) {
         try {
           const response = await apiClient.get(`/api/investigaciones/buscar-gerente-responsable/?gerencia=${value}`);
           const gerente = response.data;
-
-          // Llenar los campos del responsable directamente en formState
           setFormState(prev => ({
             ...prev,
             responsable_ficha: gerente.ficha,
@@ -308,27 +329,8 @@ function InvestigacionFormPage() {
           console.error("Gerente no encontrado");
         }
       }
-    } else {
-      setFormState(prev => ({ ...prev, [name]: value }));
     }
-
-    let processedValue: any = value;
-
-    if (type === 'checkbox' && e.target instanceof HTMLInputElement) {
-      processedValue = e.target.checked;
-
-      if (name === 'economica') {
-        setFormState(prev => ({
-          ...prev,
-          economica: processedValue,
-          montoeconomico: !processedValue ? null : prev.montoeconomico
-        }));
-        return;
-      }
-    }
-
-    // LÓGICA MODIFICADA
-    if (name === 'regimen') {
+    else if (name === 'regimen') {
       setFormState(prev => ({
         ...prev,
         regimen: value,
@@ -341,20 +343,23 @@ function InvestigacionFormPage() {
     }
     else if (name === 'fecha_conocimiento_hechos') {
       let nuevaFechaPrescripcion = formState.fecha_prescripcion;
-
       if (value) {
         const fechaConocimiento = new Date(value + 'T12:00:00');
         const fechaCalc = new Date(fechaConocimiento);
-
         fechaCalc.setDate(fechaCalc.getDate() + 30);
-
         nuevaFechaPrescripcion = fechaCalc.toISOString().split('T')[0];
       }
-
       setFormState(prev => ({
         ...prev,
-        [name]: processedValue,
+        fecha_conocimiento_hechos: value,
         fecha_prescripcion: nuevaFechaPrescripcion
+      }));
+    }
+    else if (name === 'economica') {
+      setFormState(prev => ({
+        ...prev,
+        economica: processedValue,
+        montoeconomico: !processedValue ? null : prev.montoeconomico
       }));
     }
     else {
@@ -584,6 +589,7 @@ function InvestigacionFormPage() {
     try {
       const dataToSubmit = {
         ...formState,
+        descripcion_general: formState.descripcion_general || 'Sin descripción general',
         lugar: formState.lugar || 'Por definir',
         centro_trabajo: formState.centro_trabajo || 'Por definir',
         fecha_evento: formState.fecha_evento || formState.fecha_conocimiento_hechos,
@@ -703,7 +709,7 @@ function InvestigacionFormPage() {
 
 
             <div className="admin-form-group">
-              <label>Sanciones *</label>
+              <label>Conducta *</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-exclamation-triangle"></i>
                 <select name="sanciones" value={formState.sanciones} onChange={handleChange} required>
@@ -727,7 +733,7 @@ function InvestigacionFormPage() {
               </div>
 
               <div className="admin-form-group">
-                <label>Procedencia *</label>
+                <label>Origen *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-source"></i>
                   <select name="procedencia" value={formState.procedencia} onChange={handleChange} required>

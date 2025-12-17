@@ -33,15 +33,19 @@ class Investigacion(UppercaseMixin,models.Model):
     direccion = models.CharField(max_length=100, choices=DIRECCION_CHOICES)
     
     PROCEDENCIA_CHOICES = [
-        ('Línea de Ética', 'Línea de Ética'),
-        ('Línea de Negocio', 'Línea de Negocio'),
+        ('ANONIMO', 'ANONIMO'),
+        ('LÍNEA DE NEGOCIO', 'LÍNEA DE NEGOCIO'),
+        ('LÍNEA DE ÉTICA', 'LÍNEA DE ÉTICA'),
+        ('ESCRITO LIBRE INTERNO', 'ESCRITO LIBRE INTERNO'),
+        ('ESCRITO LIBRE EXTERNO', 'ESCRITO LIBRE EXTERNO'),
+        ('CORREO ELECTRONICO', 'CORREO ELECTRONICO'),
     ]
-    procedencia = models.CharField(max_length=20, choices=PROCEDENCIA_CHOICES)
+    procedencia = models.CharField(max_length=30, choices=PROCEDENCIA_CHOICES)
     
     REGIMEN_CHOICES = [
-        ('Confianza', 'Confianza'),
-        ('Sindicalizado', 'Sindicalizado'),
-        ('Ambos', 'Ambos'),
+        ('CONFIANZA', 'CONFIANZA'),
+        ('SINDICALIZADO', 'SINDICALIZADO'),
+        ('AMBOS', 'AMBOS'),
     ]
     regimen = models.CharField(max_length=15, choices=REGIMEN_CHOICES)
 
@@ -70,7 +74,7 @@ class Investigacion(UppercaseMixin,models.Model):
     SINDICATO_CHOICES = [
         ('STPRM', 'STPRM'),
         ('UNTYPP', 'UNTYPP'),
-        ('Petromex', 'Petromex'),
+        ('PETROMEX', 'PETROMEX'),
     ]
     sindicato = models.CharField(max_length=10, choices=SINDICATO_CHOICES, null=True, blank=True)
     
@@ -78,18 +82,18 @@ class Investigacion(UppercaseMixin,models.Model):
     area_depto = models.CharField(max_length=100)  
     
     GRAVEDAD_CHOICES = [
-        ('Alta', 'Alta'),
-        ('Media', 'Media'),
-        ('Baja', 'Baja'),
+        ('ALTA', 'ALTA'),
+        ('MEDIA', 'MEDIA'),
+        ('BAJA', 'BAJA'),
     ]
     gravedad = models.CharField(max_length=10, choices=GRAVEDAD_CHOICES)
 
     ESTATUS_CHOICES = [
-        ('Abierta', 'Abierta'),
-        ('Seguimiento', 'Seguimiento'),
-        ('Concluida', 'Concluida'),
+        ('ABIERTA', 'ABIERTA'),
+        ('SEGUIMIENTO', 'SEGUIMIENTO'),
+        ('CONCLUIDA', 'CONCLUIDA'),
     ]
-    estatus = models.CharField(max_length=20, choices=ESTATUS_CHOICES, default='Abierta')
+    estatus = models.CharField(max_length=20, choices=ESTATUS_CHOICES, default='ABIERTA')
     
     # Sección 2: Conocimiento de Hechos
     numero_reporte = models.CharField(max_length=50, unique=True)
@@ -101,10 +105,10 @@ class Investigacion(UppercaseMixin,models.Model):
     
     # Sección 3: Gerencia Responsable
     GERENCIA_CHOICES = [
-        ('Norte', 'Norte'),
-        ('Sur', 'Sur'),
-        ('Sureste', 'Sureste'),
-        ('Altiplano', 'Altiplano'),
+        ('NORTE', 'NORTE'),
+        ('SUR', 'SUR'),
+        ('SURESTE', 'SURESTE'),
+        ('ALTIPLANO', 'ALTIPLANO'),
         ('GAI', 'GAI'),
     ]
     gerencia_responsable = models.CharField(max_length=20, choices=GERENCIA_CHOICES)
@@ -153,8 +157,8 @@ class Contacto(UppercaseMixin,models.Model):
     extension = models.CharField(max_length=10, blank=True)
     email = models.EmailField(blank=True)
     TIPO_CHOICES = [
-        ('contacto', 'Contacto'),
-        ('responsable', 'Responsable'),
+        ('CONTACTO', 'CONTACTO'),
+        ('RESPONSABLE', 'RESPONSABLE'),
     ]
     tipo = models.CharField(max_length=15, choices=TIPO_CHOICES)
 
