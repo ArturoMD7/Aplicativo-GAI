@@ -362,6 +362,22 @@ function InvestigacionFormPage() {
         montoeconomico: !processedValue ? null : prev.montoeconomico
       }));
     }
+    else if (name === 'montoeconomico') {
+      const montoValue = value === '' ? null : parseFloat(value);
+
+      setFormState(prev => {
+        let nuevaGravedad = prev.gravedad;
+
+        if (montoValue !== null && montoValue >= 100000) {
+          nuevaGravedad = 'ALTA';
+        }
+        return {
+          ...prev,
+          montoeconomico: montoValue,
+          gravedad: nuevaGravedad
+        };
+      });
+    }
     else {
       setFormState(prev => ({ ...prev, [name]: processedValue }));
     }
@@ -525,14 +541,23 @@ function InvestigacionFormPage() {
       return;
     }
 
-    setFormState(prev => ({
-      ...prev,
-      involucrados: [...prev.involucrados, {
-        ...involucradoActual,
-        tiene_antecedentes: antecedentesEncontrados.length > 0,
-        antecedentes_detalles: [...antecedentesEncontrados]
-      }]
-    }));
+    const nuevoInvolucrado = {
+      ...involucradoActual,
+      tiene_antecedentes: antecedentesEncontrados.length > 0,
+      antecedentes_detalles: [...antecedentesEncontrados]
+    };
+
+    setFormState(prev => {
+      const nivelNumero = parseInt(nuevoInvolucrado.nivel, 10);
+    
+      const implicaGravedadAlta = !isNaN(nivelNumero) && nivelNumero >= 41;
+      const nuevaGravedad = implicaGravedadAlta ? 'ALTA' : prev.gravedad;
+      return {
+        ...prev,
+        involucrados: [...prev.involucrados, nuevoInvolucrado],
+        gravedad: nuevaGravedad
+      };
+    });
 
     setInvolucradoActual({
       ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
