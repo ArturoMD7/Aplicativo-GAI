@@ -456,10 +456,10 @@ function InvestigacionFormPage() {
             rfc: empleado.rfc,
             curp: empleado.curp,
             direccion: empleado.direccion,
-            regimen: empleado.regimen,
-            jornada: empleado.jornada,
-            sindicato: empleado.sindicato,
-            seccion_sindical: empleado.seccion_sindical
+            regimen: empleado.regimen || '',
+            jornada: empleado.jornada || '',
+            sindicato: empleado.sindicato || '',
+            seccion_sindical: empleado.seccion_sindical || ''
           }));
           break;
         case 'testigo':
@@ -1698,11 +1698,11 @@ function InvestigacionFormPage() {
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label>Sindicato</label>
-                  <input type="text" value={involucradoActual.sindicato} readOnly className="admin-readonly-field" />
+                  <input type="text" value={involucradoActual.sindicato} className="admin-input" />
                 </div>
                 <div className="admin-form-group">
                   <label>Sección sindical</label>
-                  <input type="text" value={involucradoActual.seccion_sindical} readOnly className="admin-readonly-field" />
+                  <input type="text" value={involucradoActual.seccion_sindical} className="admin-input" />
                 </div>
               </div>
 
