@@ -41,6 +41,10 @@ export interface Involucrado extends BasePersona {
   direccion: string;
   tiene_antecedentes: boolean;
   antecedentes_detalles?: Antecedente[];
+  regimen: string;
+  jornada: string;
+  sindicato: string;
+  seccion_sindical: string;
 }
 
 export interface Testigo extends BasePersona {
@@ -152,6 +156,10 @@ export interface EmpleadoBuscado {
   curp: string;
   direccion: string;
   antecedentes?: Antecedente[];
+  regimen: string;
+  jornada: string;
+  sindicato: string;
+  seccion_sindical: string;
 }
 
 export interface InvolucradoForm {

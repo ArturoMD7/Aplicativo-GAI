@@ -141,7 +141,7 @@ def buscar_empleado_view(request):
         
         with connections['pemex'].cursor() as cursor:
             cursor.execute(
-                "SELECT ficha, nombres, nivel_plaza, catego, mc_stext, edad, antig, rfc + homoclave as rfc, curp, direccion_coduni FROM [00_tablero_dg] WHERE ficha = %s", 
+                "SELECT ficha, nombres, nivel_plaza, catego, mc_stext, edad, antig, rfc + homoclave as rfc, curp, direccion_coduni, grupo, jorna, sec_sin FROM [00_tablero_dg] WHERE ficha = %s", 
                 [ficha_buscada]
             )
             row = cursor.fetchone()
@@ -157,8 +157,15 @@ def buscar_empleado_view(request):
                     'antiguedad': row[6],
                     'rfc': row[7],
                     'curp': row[8],
-                    'direccion': row[9]
+                    'direccion': row[9],
+                    'regimen': row[10],
+                    'jornada': row[11],
+                    'seccion_sindical': row[12],
                 }
+                if row[12] is not None:
+                    empleado_data['sindicato'] = "STPRM"
+                else:
+                    empleado_data['sindicato'] = ""
             else:
                 return Response({'error': 'Empleado no encontrado'}, status=404)
         

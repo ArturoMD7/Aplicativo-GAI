@@ -93,6 +93,10 @@ interface InvolucradoForm {
   rfc: string;
   curp: string;
   direccion: string;
+  regimen: string;
+  jornada: string;
+  sindicato: string;
+  seccion_sindical: string;
 }
 
 interface TestigoForm {
@@ -134,7 +138,7 @@ function InvestigacionFormPage() {
 
   const [involucradoActual, setInvolucradoActual] = useState<InvolucradoForm>({
     ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
-    edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: ''
+    edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: '', regimen: '', jornada: '', sindicato: '', seccion_sindical: ''
   });
 
   const [testigoActual, setTestigoActual] = useState<TestigoForm>({
@@ -451,7 +455,11 @@ function InvestigacionFormPage() {
             antiguedad: empleado.antiguedad,
             rfc: empleado.rfc,
             curp: empleado.curp,
-            direccion: empleado.direccion
+            direccion: empleado.direccion,
+            regimen: empleado.regimen,
+            jornada: empleado.jornada,
+            sindicato: empleado.sindicato,
+            seccion_sindical: empleado.seccion_sindical
           }));
           break;
         case 'testigo':
@@ -549,7 +557,7 @@ function InvestigacionFormPage() {
 
     setFormState(prev => {
       const nivelNumero = parseInt(nuevoInvolucrado.nivel, 10);
-    
+
       const implicaGravedadAlta = !isNaN(nivelNumero) && nivelNumero >= 41;
       const nuevaGravedad = implicaGravedadAlta ? 'ALTA' : prev.gravedad;
       return {
@@ -561,7 +569,7 @@ function InvestigacionFormPage() {
 
     setInvolucradoActual({
       ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
-      edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: '',
+      edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: '', regimen: '', jornada: '', sindicato: '', seccion_sindical: ''
     });
     setAntecedentesEncontrados([]);
   };
@@ -1674,6 +1682,28 @@ function InvestigacionFormPage() {
               <div className="admin-form-group">
                 <label>Dirección</label>
                 <input type="text" value={involucradoActual.direccion} readOnly className="admin-readonly-field" />
+              </div>
+
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Regimen</label>
+                  <input type="text" value={involucradoActual.regimen} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Jornada</label>
+                  <input type="text" value={involucradoActual.jornada} readOnly className="admin-readonly-field" />
+                </div>
+              </div>
+
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Sindicato</label>
+                  <input type="text" value={involucradoActual.sindicato} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Sección sindical</label>
+                  <input type="text" value={involucradoActual.seccion_sindical} readOnly className="admin-readonly-field" />
+                </div>
               </div>
 
               {antecedentesEncontrados.length > 0 && involucradoActual.ficha && (

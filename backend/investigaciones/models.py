@@ -227,6 +227,11 @@ class Involucrado(UppercaseMixin, models.Model):
     direccion = models.CharField(max_length=200)
     tiene_antecedentes = models.BooleanField(default=False)
 
+    regimen = models.CharField(null=True, max_length=10)
+    jornada = models.CharField(null=True, max_length=10)
+    sindicato = models.CharField(null=True, max_length=50)
+    seccion_sindical = models.CharField(null=True, max_length=10)
+
 def generar_ruta_archivo(instance, filename):
     ext = filename.split('.')[-1]
 
