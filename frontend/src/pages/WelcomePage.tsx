@@ -31,7 +31,7 @@ import type { InvestigacionListado } from '../types/investigacion.types';
 // --- CONFIGURACIÓN ---
 
 const REGIONES_CONFIG = [
-  { key: 'Norte', label: 'NORTE', icon: <FiCompass /> },
+  { key: 'NORTE', label: 'NORTE', icon: <FiCompass /> },
   { key: 'GAI', label: 'GAI', icon: <FiGlobe /> },
   { key: 'ALTIPLANO', label: 'ALTIPLANO', icon: <FiTarget /> },
   { key: 'SUR', label: 'SUR', icon: <FiCompass style={{ transform: 'rotate(180deg)' }} /> },

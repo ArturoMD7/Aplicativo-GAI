@@ -244,7 +244,10 @@ def buscar_gerente_responsable_view(request):
         return Response({'error': 'Gerencia requerida'}, status=400)
 
     try:
-        query_gerencia = f'GERENCIA REGIONAL DE RELACIONES LABORALES {gerencia_nombre}'
+        if gerencia_nombre == 'GAI':
+            query_gerencia = f'GERENCIA DE ASUNTOS INTERNOS'
+        else:
+            query_gerencia = f'GERENCIA REGIONAL DE RELACIONES LABORALES {gerencia_nombre}'
         
         with connections['pemex'].cursor() as cursor:
             cursor.execute("""
@@ -252,7 +255,7 @@ def buscar_gerente_responsable_view(request):
                 FROM [00_tablero_dg]
                 WHERE nivel_plaza = 44  
                 AND gerencia_coduni LIKE %s
-            """, [f'%{gerencia_nombre}%'])
+            """, [f'%{query_gerencia}%'])
             
             row = cursor.fetchone()
             
