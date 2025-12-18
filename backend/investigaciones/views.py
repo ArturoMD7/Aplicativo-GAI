@@ -51,18 +51,16 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
         hoy = timezone.now()
         año = hoy.year
         
-        # Determinar prefijo basado en gerencia
         prefijos = {
-            'Norte': 'GRRLRH-NTE',
-            'Sur': 'GRRLRH-SUR', 
-            'Sureste': 'GRRLRH-SURE',
-            'Altiplano': 'GRRLRH-ALT',
+            'NORTE': 'NTE',
+            'SUR': 'SUR', 
+            'SURESTE': 'SURE',
+            'ALTIPLANO': 'ALT',
             'GAI': 'GAI',
         }
         
-        prefijo = prefijos.get(gerencia_responsable, 'GAI')
-        
-        # Contar investigaciones existentes este año para esta gerencia
+        prefijo = prefijos.get(gerencia_responsable)
+ 
         conteo = Investigacion.objects.filter(
             gerencia_responsable=gerencia_responsable,
             created_at__year=año
@@ -70,7 +68,7 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
         
         numero = str(conteo + 1).zfill(3)
         
-        return f"{prefijo}/{numero}/{año}"
+        return f"SCH-{numero}/{año}/{prefijo}"
     
     def get_queryset(self):
         user = self.request.user

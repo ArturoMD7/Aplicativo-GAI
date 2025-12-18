@@ -246,18 +246,16 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         hoy = timezone.now()
         año = hoy.year
         
-        # Determinar prefijo basado en gerencia
         prefijos = {
-            'Norte': 'GRRL-NTE',
-            'Sur': 'GRRL-SUR', 
-            'Sureste': 'GRRL-SURE',
-            'Altiplano': 'GRRL-ALT',
+            'NORTE': 'NTE',
+            'SUR': 'SUR', 
+            'SURESTE': 'SURE',
+            'ALTIPLANO': 'ALT',
             'GAI': 'GAI',
         }
         
-        prefijo = prefijos.get(gerencia_responsable, 'GAI')
+        prefijo = prefijos.get(gerencia_responsable.upper(), 'GAI')
         
-        # Contar investigaciones existentes este año (global, no por gerencia)
         from .models import Investigacion
         conteo = Investigacion.objects.filter(
             created_at__year=año
@@ -265,7 +263,7 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         
         numero = str(conteo + 1).zfill(3)
         
-        return f"{prefijo}/{numero}/{año}"
+        return f"SCH-{numero}/{año}/{prefijo}"
 
     def update(self, instance, validated_data):
 
