@@ -6,8 +6,6 @@ from .models import Investigacion, Contacto, Investigador, Involucrado, Testigo,
 
 
 # Serializers para modelos relacionados
-
-# En serializers.py, modifica DocumentoInvestigacionSerializer:
 class DocumentoInvestigacionSerializer(serializers.ModelSerializer):
     nombre_archivo = serializers.SerializerMethodField()
     investigacion_id = serializers.PrimaryKeyRelatedField(

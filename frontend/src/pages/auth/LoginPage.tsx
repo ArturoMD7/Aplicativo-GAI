@@ -87,12 +87,13 @@ function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
               Acceder
             </button>
 
+            {/* Botón de olvidaste tu contraseña 
             <div style={{ textAlign: 'center', marginTop: 14 }}>
               <a href="#" className="auth-link">
                 <i className="fas fa-key" aria-hidden="true" style={{ marginRight: 6 }}></i>
                 ¿Olvidaste tu contraseña?
               </a>
-            </div>
+            </div> */}
 
             <div style={{ textAlign: 'center', marginTop: 14 }}>
               <a
@@ -109,7 +110,7 @@ function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
             </div>
 
             <div style={{ textAlign: 'center', marginTop: 14 }}>
-              <a className="auth-derechos">
+              <a className="auth-subtitle">
                 <i aria-hidden="true" style={{ marginRight: 6 }}></i>
                 Copyright © {year} Petróleos Mexicanos. Derechos reservados.
               </a>
