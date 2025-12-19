@@ -11,13 +11,15 @@ import {
   FiUsers,
   FiSettings,
   FiLogOut,
-  FiFileText
+  FiFileText,
+  FiSearch
 } from 'react-icons/fi';
 
 const navItems = [
   { label: "Inicio", icon: <FiHome />, href: "/" },
   { label: "Investigaciones", icon: <FiFileText />, href: "/investigaciones" },
   { label: "Seguimiento", icon: <GrDocumentTime />, href: "/investigaciones/seguimiento-lista" },
+  { label: "Buscar Empleado", icon: <FiSearch />, href: "/buscar-empleado" },
   { label: "Usuarios", icon: <FiUsers />, href: "/users" },
   { label: "Logs", icon: <LuLogs />, href: "/logs" },
 
