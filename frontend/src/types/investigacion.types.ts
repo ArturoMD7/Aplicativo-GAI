@@ -132,7 +132,7 @@ export interface InvestigacionListado {
   investigadores: string[];
   reportantes: string[];
   involucrados: string[];
-  estatus: 'Abierta' | 'Seguimiento' | 'Concluida';
+  estatus: 'Abierta' | 'Seguimiento' | 'Concluida' | 'ABIERTA' | 'SEGUIMIENTO' | 'CONCLUIDA';
   sanciones: string;
 
 }

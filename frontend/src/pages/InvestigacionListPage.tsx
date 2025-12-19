@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload, FiAlertCircle, FiTrendingUp, FiFilter } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload, FiAlertCircle, FiTrendingUp, FiFilter, FiChevronUp, FiChevronDown } from 'react-icons/fi';
 import { MdDeleteForever } from "react-icons/md";
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import Pagination from '../components/Pagination';
@@ -23,6 +23,11 @@ const SANCIONES_POSIBLES = [
   'OTRAS FALTAS'
 ];
 
+type SortConfig = {
+  key: keyof InvestigacionListado | null;
+  direction: 'ascending' | 'descending';
+};
+
 function InvestigacionListPage() {
   const [investigaciones, setInvestigaciones] = useState<InvestigacionListado[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +39,7 @@ function InvestigacionListPage() {
   const [selectedGerencia, setSelectedGerencia] = useState('');
   const [selectedSancion, setSelectedSancion] = useState('');
   const [showMenu, setShowMenu] = useState(false);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'ascending' });
 
   useEffect(() => {
     const fetchInvestigaciones = async () => {
@@ -79,10 +85,11 @@ function InvestigacionListPage() {
 
     if (result.isConfirmed) {
       try {
-        await apiClient.patch(`/api/investigaciones/investigaciones/${id}/`, { estatus: 'Seguimiento' });
+        await apiClient.patch(`/api/investigaciones/investigaciones/${id}/`, { estatus: 'SEGUIMIENTO' });
         setInvestigaciones(prev => prev.filter(item => item.id !== id));
         Swal.fire('Listo', 'La investigación se movió a seguimiento.', 'success');
-      } catch (err) {
+      } catch (err: any) {
+        console.error("Error al cambiar estatus:", err.response?.data || err);
         Swal.fire('Error', 'No se pudo cambiar el estatus', 'error');
       }
     }
@@ -227,16 +234,53 @@ function InvestigacionListPage() {
     setCurrentPage(pageNumber);
   };
 
+
+
   const handleItemsPerPageChange = (items: number) => {
     setItemsPerPage(items);
     setCurrentPage(1);
   };
 
+  // Sorting Logic
+  const sortedInvestigaciones = useMemo(() => {
+    let sortableItems = [...filteredInvestigaciones];
+    if (sortConfig.key !== null) {
+      sortableItems.sort((a, b) => {
+        let valA: any = a[sortConfig.key as keyof InvestigacionListado];
+        let valB: any = b[sortConfig.key as keyof InvestigacionListado];
+
+        // Handle specific types if necessary (e.g., dates converted to numbers)
+        if (sortConfig.key === 'created_at' || sortConfig.key === 'fecha_reporte' || sortConfig.key === 'fecha_prescripcion') {
+          valA = new Date(valA).getTime();
+          valB = new Date(valB).getTime();
+        }
+
+        if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredInvestigaciones, sortConfig]);
+
+  const requestSort = (key: keyof InvestigacionListado) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (columnKey: keyof InvestigacionListado) => {
+    if (sortConfig.key !== columnKey) return <span style={{ opacity: 0.3, marginLeft: '5px' }}>↕</span>;
+    return sortConfig.direction === 'ascending' ? <FiChevronUp /> : <FiChevronDown />;
+  };
+
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredInvestigaciones.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredInvestigaciones.length / itemsPerPage);
+  const currentItems = sortedInvestigaciones.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(sortedInvestigaciones.length / itemsPerPage);
 
   return (
     <div className="admin-page">
@@ -306,19 +350,19 @@ function InvestigacionListPage() {
             <thead>
               <tr>
                 <th style={{ textAlign: 'center' }}>Semáforo</th>
-                <th>No. Reporte</th>
-                <th>Documento de Origen</th>
-                <th>Dirección</th>
+                <th onClick={() => requestSort('numero_reporte')} style={{ cursor: 'pointer' }}>No. Reporte {getSortIcon('numero_reporte')}</th>
+                <th onClick={() => requestSort('nombre_corto')} style={{ cursor: 'pointer' }}>Documento de Origen {getSortIcon('nombre_corto')}</th>
+                <th onClick={() => requestSort('direccion')} style={{ cursor: 'pointer' }}>Dirección {getSortIcon('direccion')}</th>
                 <th>Investigadores</th>
                 <th>Personal Reportado</th>
-                <th>Procedencia</th>
-                <th>Conducta</th>
-                <th>Gravedad</th>
-                <th>Región</th>
-                <th>Fecha Reporte</th>
-                <th>Prescripción</th>
-                <th style={{ textAlign: 'center' }}>Días Rest.</th>
-                <th>Creado Por</th>
+                <th onClick={() => requestSort('procedencia')} style={{ cursor: 'pointer' }}>Procedencia {getSortIcon('procedencia')}</th>
+                <th onClick={() => requestSort('sanciones')} style={{ cursor: 'pointer' }}>Conducta {getSortIcon('sanciones')}</th>
+                <th onClick={() => requestSort('gravedad')} style={{ cursor: 'pointer' }}>Gravedad {getSortIcon('gravedad')}</th>
+                <th onClick={() => requestSort('gerencia_responsable')} style={{ cursor: 'pointer' }}>Región {getSortIcon('gerencia_responsable')}</th>
+                <th onClick={() => requestSort('fecha_reporte')} style={{ cursor: 'pointer' }}>Fecha Reporte {getSortIcon('fecha_reporte')}</th>
+                <th onClick={() => requestSort('fecha_prescripcion')} style={{ cursor: 'pointer' }}>Prescripción {getSortIcon('fecha_prescripcion')}</th>
+                <th style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => requestSort('dias_restantes')}>Días Rest. {getSortIcon('dias_restantes')}</th>
+                <th onClick={() => requestSort('created_by_name')} style={{ cursor: 'pointer' }}>Creado Por {getSortIcon('created_by_name')}</th>
                 <th style={{ textAlign: 'center' }}>Acciones</th>
               </tr>
             </thead>
