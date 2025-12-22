@@ -251,8 +251,9 @@ def generar_ruta_archivo(instance, filename):
         ).count() + 1
         nuevo_nombre = f"{reporte_safe}_{instance.tipo}_{cantidad}.{ext}"
     
-    hoy = datetime.now()
-    return f"investigaciones/documentos/{hoy.year}/{hoy.month}/{nuevo_nombre}"
+    # hoy = datetime.now()
+    # return f"investigaciones/documentos/{hoy.year}/{hoy.month}/{nuevo_nombre}"
+    return f"investigaciones/documentos/{reporte_safe}/{nuevo_nombre}"
 
 
 class DocumentoInvestigacion(models.Model):
