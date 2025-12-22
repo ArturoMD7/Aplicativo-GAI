@@ -49,26 +49,81 @@ function FinalizacionListPage() {
   }, []);
 
   const handleFinalizar = async (id: number) => {
-    const result = await Swal.fire({
-      title: '¿Concluir investigación?',
-      text: "La investigación se concluirá ",
-      icon: 'info',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, concluir',
-      cancelButtonText: 'Cancelar'
-    });
+    // 1. Obtener detalles para tener numero_reporte y docs (o hacer fetch de docs)
+    // Para simplificar, asumimos que debemos verificar los docs.
+    // Como la tabla no tiene docs cargados, haremos una consulta rápida.
+    try {
+      const docsRes = await apiClient.get(`/api/investigaciones/documentos/?investigacion_id=${id}`);
+      const docs = docsRes.data;
+      const notificacion = docs.find((d: any) => d.tipo === 'NotificacionConclusion');
 
-    if (result.isConfirmed) {
-      try {
+      if (!notificacion) {
+        // Si no existe, pedir adjuntarlo
+        const { value: file } = await Swal.fire({
+          title: 'Notificación Requerida',
+          text: 'Para concluir la investigación, debes adjuntar el archivo de Notificación de Conclusión.',
+          input: 'file',
+          inputAttributes: {
+            'accept': 'application/pdf',
+            'aria-label': 'Sube la Notificación de Conclusión'
+          },
+          showCancelButton: true,
+          confirmButtonText: 'Subir y Concluir',
+          cancelButtonText: 'Cancelar',
+          inputValidator: (result) => {
+            return !result && 'Debes seleccionar un archivo PDF'
+          }
+        });
+
+        if (file) {
+          // Subir archivo
+          const formData = new FormData();
+          formData.append('archivo', file);
+          formData.append('tipo', 'NotificacionConclusion');
+          formData.append('investigacion_id', id.toString());
+          formData.append('descripcion', 'Notificación adjuntada al concluir');
+
+          try {
+            await apiClient.post('/api/investigaciones/documentos/', formData, {
+              headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            // Si funciona, proceder a concluir
+          } catch (uploadError) {
+            console.error("Error subiendo archivo:", uploadError);
+            Swal.fire('Error', 'No se pudo subir el archivo. La investigación no se concluyó.', 'error');
+            return;
+          }
+        } else {
+          // Canceló la subida
+          return;
+        }
+      }
+
+      // 2. Proceder a concluir (Si existía o si se acaba de subir)
+      const result = await Swal.fire({
+        title: '¿Concluir investigación?',
+        text: "La investigación se marcará como CONCLUIDA.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, concluir',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (result.isConfirmed) {
         await apiClient.patch(`/api/investigaciones/investigaciones/${id}/`, { estatus: 'CONCLUIDA' });
+
         setInvestigaciones(prev => prev.map(item =>
           item.id === id ? { ...item, estatus: 'CONCLUIDA' } : item
         ));
-        Swal.fire('Listo', 'La investigación se concluirá.', 'success');
-      } catch (err: any) {
-        console.error("Error al concluir investigación:", err.response?.data || err);
-        Swal.fire('Error', 'No se pudo concluir la investigación', 'error');
+
+        Swal.fire('¡Concluida!', 'La investigación ha sido concluida exitosamente.', 'success');
       }
+
+    } catch (err: any) {
+      console.error("Error en proceso de conclusión:", err);
+      Swal.fire('Error', 'Ocurrió un error al procesar la solicitud.', 'error');
     }
   };
 

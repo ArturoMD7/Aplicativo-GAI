@@ -241,12 +241,15 @@ def generar_ruta_archivo(instance, filename):
     else:
         reporte_safe = "SIN_REPORTE"
 
-    cantidad = DocumentoInvestigacion.objects.filter(
-        investigacion=instance.investigacion,
-        tipo=instance.tipo
-    ).count() + 1
-    
-    nuevo_nombre = f"{reporte_safe}_{instance.tipo}_{cantidad}.{ext}"
+    # Lógica especial para NotificacionConclusion: Nombre exacto sin consecutivo
+    if instance.tipo == 'NotificacionConclusion':
+        nuevo_nombre = f"{reporte_safe}_NotificacionConclusion.{ext}"
+    else:
+        cantidad = DocumentoInvestigacion.objects.filter(
+            investigacion=instance.investigacion,
+            tipo=instance.tipo
+        ).count() + 1
+        nuevo_nombre = f"{reporte_safe}_{instance.tipo}_{cantidad}.{ext}"
     
     hoy = datetime.now()
     return f"investigaciones/documentos/{hoy.year}/{hoy.month}/{nuevo_nombre}"
@@ -262,6 +265,7 @@ class DocumentoInvestigacion(models.Model):
         ('Dictamen', 'Dictamen'),
         ('Resultado', 'Resultado de la investigación'),
         ('Anexo', 'Anexo'),
+        ('NotificacionConclusion', 'Notificación de Conclusión'),
     ]
     tipo = models.CharField(max_length=50, choices=TIPO_DOC_CHOICES)
     
