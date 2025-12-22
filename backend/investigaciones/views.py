@@ -75,28 +75,40 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
         queryset = Investigacion.objects.all()
         
         if user.is_authenticated:
-            # Si es superusuario o Admin/AdminCentral, ve todo
+            # 1. Admin / Superuser
             if user.is_superuser or user.groups.filter(name__in=['Admin', 'AdminCentral']).exists():
-                pass # No filtrar, retornar todo
+                pass # Retornar todo
+
             else:
-                # Filtrar por región según el grupo
-                groups = user.groups.values_list('name', flat=True)
+                groups = list(user.groups.values_list('name', flat=True))
                 
-                # Mapeo de grupos a gerencias
-                if 'SupervisorNTE' in groups or 'OperadorNTE' in groups:
-                    queryset = queryset.filter(gerencia_responsable='NORTE')
-                elif 'SupervisorSUR' in groups or 'OperadorSUR' in groups:
-                    queryset = queryset.filter(gerencia_responsable='SUR')
-                elif 'SupervisorSTE' in groups or 'OperadorSTE' in groups:
-                    queryset = queryset.filter(gerencia_responsable='SURESTE')
-                elif 'SupervisorALT' in groups or 'OperadorALT' in groups:
-                    queryset = queryset.filter(gerencia_responsable='ALTIPLANO')
-                elif 'SupervisorGAI' in groups or 'OperadorGAI' in groups:
-                    queryset = queryset.filter(gerencia_responsable='GAI')
+                # Identificar roles
+                is_supervisor = any(g.startswith('Supervisor') for g in groups)
+                is_operador = any(g.startswith('Operador') for g in groups)
+
+                if is_supervisor:
+                    # Supervisor: Ve toda su región
+                    if 'SupervisorNTE' in groups:
+                        queryset = queryset.filter(gerencia_responsable='NORTE')
+                    elif 'SupervisorSUR' in groups:
+                        queryset = queryset.filter(gerencia_responsable='SUR')
+                    elif 'SupervisorSTE' in groups:
+                        queryset = queryset.filter(gerencia_responsable='SURESTE')
+                    elif 'SupervisorALT' in groups:
+                        queryset = queryset.filter(gerencia_responsable='ALTIPLANO')
+                    elif 'SupervisorGAI' in groups:
+                        queryset = queryset.filter(gerencia_responsable='GAI')
+                
+                elif is_operador:
+                    # Operador: Solo ve donde es investigador asignado
+                    if hasattr(user, 'profile') and user.profile.ficha:
+                        queryset = queryset.filter(investigadores__ficha=user.profile.ficha)
+                    else:
+                        queryset = queryset.none()
+                
                 else:
-                    # Si no tiene grupo válido, solo ve lo que creó (fallback)
-                    queryset = queryset.filter(created_by=user)
-        
+                    queryset = queryset.filter(created_by=user) 
+                
         # Filtros adicionales
         gravedad = self.request.query_params.get('gravedad')
         direccion = self.request.query_params.get('direccion')
