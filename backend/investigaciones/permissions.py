@@ -16,7 +16,8 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         return True
     
     def has_object_permission(self, request, view, obj):
-        if request.user.groups.filter(name='Admin').exists() or request.user.is_superuser:
-            return True
-        
-            return obj.created_by == request.user
+        if not request.user.is_authenticated:
+            return False
+            
+        # El filtrado se hace en get_queryset, así que si llegan aquí es porque pueden verlo/editarlo
+        return True
