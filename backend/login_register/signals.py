@@ -28,8 +28,8 @@ def create_default_admin_and_group(sender, **kwargs):
         'OperadorSTE',
         'SupervisorALT',
         'OperadorALT',
-        'SupervisorOFC',
-        'OperadorOFC',
+        'SupervisorGAI',
+        'OperadorGAI',
     ]
 
     for name in group_names:

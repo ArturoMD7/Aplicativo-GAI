@@ -2,16 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiEdit, FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiFileText, FiTrendingUp } from 'react-icons/fi'; // Importar FiFileText
+import { FiEdit, FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiFileText, FiTrendingUp, FiClock } from 'react-icons/fi'; // Importar FiFileText y FiClock
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import Pagination from '../components/Pagination';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import '../styles/InvestigacionPage.css'; 
-import DocumentosModals from '../components/Modals/DocumentosModals'; 
+import '../styles/InvestigacionPage.css';
+
+import DocumentosModals from '../components/Modals/DocumentosModals';
 import Swal from 'sweetalert2';
 
-function SeguimientoListPage() {
+function FinalizacionListPage() {
   const [investigaciones, setInvestigaciones] = useState<InvestigacionListado[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -19,12 +20,13 @@ function SeguimientoListPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  
+
   // Estados para el Modal de Documentos
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
   const [selectedInvestigacionId, setSelectedInvestigacionId] = useState<number | null>(null);
   const [selectedReporteNum, setSelectedReporteNum] = useState('');
-  
+  const [statusFilter, setStatusFilter] = useState<'PENDING' | 'COMPLETED'>('PENDING');
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,7 +34,9 @@ function SeguimientoListPage() {
       setLoading(true);
       try {
         const response = await apiClient.get('/api/investigaciones/investigaciones/');
-        const filtered = response.data.filter((inv: any) => inv.estatus === 'Seguimiento' || inv.estatus === 'SEGUIMIENTO');
+        const filtered = response.data.filter((inv: any) =>
+          ['ENVIADA_A_CONCLUIR', 'Enviada a Concluir', 'CONCLUIDA', 'Concluida'].includes(inv.estatus)
+        );
         setInvestigaciones(filtered);
       } catch (err) {
         setError('No se pudo cargar la lista de seguimiento.');
@@ -44,24 +48,26 @@ function SeguimientoListPage() {
     fetchInvestigaciones();
   }, []);
 
-  const handleFinalizacion = async (id: number) => {
+  const handleFinalizar = async (id: number) => {
     const result = await Swal.fire({
-      title: '¿Pasar a Finalización?',
-      text: "La investigación pasará a la bandeja de Finalización y desaparecerá de esta lista.",
+      title: '¿Concluir investigación?',
+      text: "La investigación se concluirá ",
       icon: 'info',
       showCancelButton: true,
-      confirmButtonText: 'Sí, iniciar finalización',
+      confirmButtonText: 'Sí, concluir',
       cancelButtonText: 'Cancelar'
     });
 
     if (result.isConfirmed) {
       try {
-        await apiClient.patch(`/api/investigaciones/investigaciones/${id}/`, { estatus: 'ENVIADA_A_CONCLUIR' });
-        setInvestigaciones(prev => prev.filter(item => item.id !== id));
-        Swal.fire('Listo', 'La investigación se movió a finalización.', 'success');
+        await apiClient.patch(`/api/investigaciones/investigaciones/${id}/`, { estatus: 'CONCLUIDA' });
+        setInvestigaciones(prev => prev.map(item =>
+          item.id === id ? { ...item, estatus: 'CONCLUIDA' } : item
+        ));
+        Swal.fire('Listo', 'La investigación se concluirá.', 'success');
       } catch (err: any) {
-        console.error("Error al cambiar estatus:", err.response?.data || err);
-        Swal.fire('Error', 'No se pudo cambiar el estatus', 'error');
+        console.error("Error al concluir investigación:", err.response?.data || err);
+        Swal.fire('Error', 'No se pudo concluir la investigación', 'error');
       }
     }
   };
@@ -76,9 +82,18 @@ function SeguimientoListPage() {
 
   const filteredInvestigaciones = investigaciones.filter((inv) => {
     const texto = searchTerm.toLowerCase();
-    return Object.values(inv).some(value =>
+    const searchMatch = Object.values(inv).some(value =>
       String(value).toLowerCase().includes(texto)
     );
+
+    let statusMatch = false;
+    if (statusFilter === 'PENDING') {
+      statusMatch = ['ENVIADA_A_CONCLUIR', 'Enviada a Concluir'].includes(inv.estatus);
+    } else {
+      statusMatch = ['CONCLUIDA', 'Concluida'].includes(inv.estatus);
+    }
+
+    return searchMatch && statusMatch;
   });
 
   const formatDate = (str: string) => {
@@ -127,7 +142,7 @@ function SeguimientoListPage() {
   return (
     <div className="admin-page">
       <div className="page-header">
-        <h1><FiCheckCircle /> Bandeja de Seguimiento</h1>
+        <h1><FiCheckCircle /> Bandeja de Finalización</h1>
         <div className="header-actions">
           <div className="search-box">
             <FiSearch className="search-icon" />
@@ -142,8 +157,27 @@ function SeguimientoListPage() {
         </div>
       </div>
 
+      <div style={{ display: 'flex', gap: '15px', margin: '20px 0 10px 0', paddingLeft: '20px' }}>
+        <ButtonIcon
+          variant={statusFilter === 'PENDING' ? 'view' : 'custom'}
+          icon={<FiClock />}
+          text="Por Concluir"
+          onClick={() => { setStatusFilter('PENDING'); setCurrentPage(1); }}
+          title="Ver investigaciones enviadas a concluir"
+          size="medium"
+        />
+        <ButtonIcon
+          variant={statusFilter === 'COMPLETED' ? 'view' : 'custom'}
+          icon={<FiCheckCircle />}
+          text="Concluidas"
+          onClick={() => { setStatusFilter('COMPLETED'); setCurrentPage(1); }}
+          title="Ver investigaciones concluidas"
+          size="medium"
+        />
+      </div>
+
       {loading && <div className="loading-message">Cargando...</div>}
-      {error && <div className="error-message"><FiAlertCircle style={{marginRight:8}}/> {error}</div>}
+      {error && <div className="error-message"><FiAlertCircle style={{ marginRight: 8 }} /> {error}</div>}
 
       {!loading && !error && (
         <div className="table-container">
@@ -151,13 +185,13 @@ function SeguimientoListPage() {
             <thead>
               <tr>
                 {/* 1. Nueva columna al inicio para el botón de documentos */}
-                <th style={{width: '60px', textAlign: 'center'}}>Docs</th>
+                <th style={{ width: '60px', textAlign: 'center' }}>Docs</th>
                 <th>No. Reporte</th>
                 <th>Documento</th>
                 <th>Dirección</th>
                 <th>Gravedad</th>
                 <th>Fecha Reporte</th>
-                <th style={{textAlign: 'center'}}>Días en Proceso</th>
+                <th style={{ textAlign: 'center' }}>Días en Proceso</th>
                 <th style={{ textAlign: 'center' }}>Acciones</th>
               </tr>
             </thead>
@@ -165,15 +199,15 @@ function SeguimientoListPage() {
               {currentItems.map((inv) => (
                 <tr key={inv.id}>
                   {/* 2. Botón en la primera columna */}
-                  <td style={{textAlign: 'center', borderLeft: '4px solid #17a2b8'}}>
-                    <button 
+                  <td style={{ textAlign: 'center', borderLeft: '4px solid #17a2b8' }}>
+                    <button
                       onClick={() => handleOpenDocs(inv.id, inv.numero_reporte)}
                       className="btn-icon-only"
                       title="Ver archivos adjuntos"
                       style={{
-                        background: 'none', 
-                        border: 'none', 
-                        cursor: 'pointer', 
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
                         color: '#840016', // Color guinda PEMEX
                         fontSize: '1.2rem',
                         display: 'flex',
@@ -189,24 +223,24 @@ function SeguimientoListPage() {
                   <td className="col-reporte">
                     {inv.numero_reporte}
                   </td>
-                  
+
                   <td style={{ fontWeight: 500 }}>{inv.nombre_corto}</td>
                   <td className="text-muted">{inv.direccion}</td>
-                  
+
                   <td>
                     <span className={`gravedad-badge ${getGravedadClass(inv.gravedad)}`}>
                       {inv.gravedad}
                     </span>
                   </td>
-                  
+
                   <td>{formatDate(inv.fecha_reporte)}</td>
-                  
+
                   <td style={{ textAlign: 'center', color: '#666' }}>
-                     {Math.floor((new Date().getTime() - new Date(inv.created_at).getTime()) / (1000 * 3600 * 24))} días
+                    {Math.floor((new Date().getTime() - new Date(inv.created_at).getTime()) / (1000 * 3600 * 24))} días
                   </td>
 
                   <td>
-                    <div className="action-buttons" style={{justifyContent: 'center'}}>
+                    <div className="action-buttons" style={{ justifyContent: 'center' }}>
                       <ButtonIcon
                         variant="edit"
                         onClick={() => navigate(`/investigaciones/seguimiento/${inv.id}`)}
@@ -215,15 +249,17 @@ function SeguimientoListPage() {
                         size="medium"
                       />
 
-                      <ButtonIcon
-                        variant="view"
-                        onClick={() => handleFinalizacion(inv.id)}
-                        icon={<FiTrendingUp />}
-                        title="Pasar a Finalizar"
-                        size="medium"
-                      />
+                      {statusFilter === 'PENDING' && (
+                        <ButtonIcon
+                          variant="view"
+                          onClick={() => handleFinalizar(inv.id)}
+                          icon={<FiTrendingUp />}
+                          title="Concluir investigación"
+                          size="medium"
+                        />
+                      )}
                     </div>
-                    
+
                   </td>
                 </tr>
               ))}
@@ -251,7 +287,7 @@ function SeguimientoListPage() {
       )}
 
       {/* 3. Renderizar el componente de Modals */}
-      <DocumentosModals 
+      <DocumentosModals
         isOpen={isDocModalOpen}
         onClose={() => setIsDocModalOpen(false)}
         investigacionId={selectedInvestigacionId}
@@ -261,4 +297,4 @@ function SeguimientoListPage() {
   );
 }
 
-export default SeguimientoListPage;
+export default FinalizacionListPage;

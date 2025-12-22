@@ -12,16 +12,19 @@ import {
   FiSettings,
   FiLogOut,
   FiFileText,
-  FiSearch
+  FiSearch,
 } from 'react-icons/fi';
+import { GrDocumentVerified } from "react-icons/gr";
 
 const navItems = [
   { label: "Inicio", icon: <FiHome />, href: "/" },
   { label: "Investigaciones", icon: <FiFileText />, href: "/investigaciones" },
   { label: "Seguimiento", icon: <GrDocumentTime />, href: "/investigaciones/seguimiento-lista" },
+  { label: "Finalización", icon: <GrDocumentVerified />, href: "/investigaciones/finalizacion-lista" },
   { label: "Buscar Empleado", icon: <FiSearch />, href: "/buscar-empleado" },
   { label: "Usuarios", icon: <FiUsers />, href: "/users" },
   { label: "Logs", icon: <LuLogs />, href: "/logs" },
+
 
 ];
 

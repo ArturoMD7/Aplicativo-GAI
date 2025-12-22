@@ -18,6 +18,7 @@ import LogListPage from './LogsListPage';
 import SeguimientoListPage from './SeguimientoListPage';
 import SeguimientoPage from './SeguimientoPage';
 import BuscarEmpleadoPage from './BuscarEmpleadoPage';
+import FinalizacionListPage from './FinalizacionListPage';
 
 
 type HomePageProps = {
@@ -62,6 +63,7 @@ function HomePage({ onLogout }: HomePageProps) {
             <Route path="/investigaciones/editar/:id" element={<InvestigacionFormPage />} />
             <Route path="/investigaciones/detalles/:id" element={<InvestigacionDetailsPage />} />
             <Route path="/investigaciones/seguimiento-lista" element={<SeguimientoListPage />} />
+            <Route path="/investigaciones/finalizacion-lista" element={<FinalizacionListPage />} />
             <Route path="/investigaciones/seguimiento/:id" element={<SeguimientoPage />} />
             <Route path="/buscar-empleado" element={<BuscarEmpleadoPage />} />
 

@@ -105,6 +105,18 @@ function WelcomePage() {
 
   // --- LÓGICA DE DATOS ---
 
+  const getStatusCategory = (status: string | undefined): 'En Proceso' | 'Completado' => {
+    if (!status) return 'En Proceso';
+    const s = status.toLowerCase();
+    if (['abierta', 'seguimiento', 'enviada_a_concluir', 'enviada a concluir', 'enviada_a_finalizar'].includes(s)) {
+      return 'En Proceso';
+    }
+    if (['concluida'].includes(s)) {
+      return 'Completado';
+    }
+    return 'En Proceso';
+  };
+
   const countsByRegion = useMemo(() => {
     const counts: Record<string, number> = {};
     REGIONES_CONFIG.forEach(reg => {
@@ -131,9 +143,9 @@ function WelcomePage() {
   const stats = useMemo(() => {
     return {
       total: filteredByGerencia.length,
-      active: filteredByGerencia.filter(i => i.semaforo !== 'green' && i.semaforo !== 'gray').length,
+      active: filteredByGerencia.filter(i => getStatusCategory(i.estatus) === 'En Proceso').length,
       highPriority: filteredByGerencia.filter(i => i.gravedad?.toLowerCase().includes('alta')).length,
-      completed: filteredByGerencia.filter(i => i.semaforo === 'green').length
+      completed: filteredByGerencia.filter(i => getStatusCategory(i.estatus) === 'Completado').length
     };
   }, [filteredByGerencia]);
 
@@ -155,8 +167,8 @@ function WelcomePage() {
         let valB: any = b[sortConfig.key as keyof InvestigacionListado];
 
         if (sortConfig.key === 'estado_texto') {
-          valA = a.semaforo === 'green' ? 'Completado' : 'En Proceso';
-          valB = b.semaforo === 'green' ? 'Completado' : 'En Proceso';
+          valA = getStatusCategory(a.estatus);
+          valB = getStatusCategory(b.estatus);
         }
         if (sortConfig.key === 'created_at') {
           valA = new Date(valA).getTime();
@@ -304,7 +316,7 @@ function WelcomePage() {
                   <td style={{ fontSize: '0.85em', color: '#666' }}>{inv.gerencia_responsable || 'N/A'}</td>
                   <td>{new Date(inv.created_at).toLocaleDateString()}</td>
                   <td style={{ fontWeight: 'bold', color: inv.dias_restantes < 5 ? '#d32f2f' : '#333' }}>{inv.dias_restantes} días</td>
-                  <td><span className={`status-badge ${inv.gravedad?.toLowerCase().includes('alta') ? 'alta' : 'baja'}`}>{inv.semaforo === 'green' ? 'Completado' : 'En Proceso'}</span></td>
+                  <td><span className={`status-badge ${inv.gravedad?.toLowerCase().includes('alta') ? 'alta' : 'baja'}`}>{getStatusCategory(inv.estatus)}</span></td>
                 </tr>
               ))}
               {sortedData.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: '#999', padding: '20px' }}>No hay datos disponibles.</td></tr>}

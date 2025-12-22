@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/apliClient';
-import { 
-    FiArrowLeft, FiUploadCloud, FiFileText, FiTrash2, 
-    FiCheckCircle, FiDownload, FiX, FiCalendar, 
-    FiMapPin, FiHash, FiUser, FiUsers, FiBriefcase,
-    FiHome, FiAlertTriangle, FiInfo, FiClock, FiEye
+import { saveAs } from 'file-saver';
+import {
+  FiArrowLeft, FiUploadCloud, FiFileText, FiTrash2,
+  FiCheckCircle, FiDownload, FiX, FiCalendar,
+  FiMapPin, FiHash, FiUsers, FiBriefcase,
+  FiHome, FiAlertTriangle, FiInfo, FiClock, FiEye
 } from 'react-icons/fi';
 import Swal from 'sweetalert2';
 import '../styles/InvestigacionPage.css';
-import '../styles/InvestigacionPage.css';
+import DocumentPreviewModal from '../components/Modals/DocumentPreviewModal';
 
 const TIPOS_DOCUMENTOS = [
   'Reporte',
@@ -20,15 +21,25 @@ const TIPOS_DOCUMENTOS = [
   'Anexo'
 ];
 
+interface Documento {
+  id: number;
+  tipo: string;
+  nombre_archivo: string;
+  archivo: string;
+  uploaded_at: string;
+  descripcion: string;
+}
+
 function SeguimientoPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  
+  const [previewFile, setPreviewFile] = useState<Documento | null>(null);
+
   const [investigacion, setInvestigacion] = useState<any>(null);
   const [documentos, setDocumentos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'documentos' | 'detalles'>('documentos');
-  
+
   // Estado para subida de archivo
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [tipoDoc, setTipoDoc] = useState('Reporte');
@@ -46,7 +57,7 @@ function SeguimientoPage() {
       setLoading(true);
       const resInv = await apiClient.get(`/api/investigaciones/investigaciones/${id}/`);
       setInvestigacion(resInv.data);
-      
+
       const resDocs = await apiClient.get(`/api/investigaciones/documentos/?investigacion_id=${id}`);
       setDocumentos(resDocs.data);
     } catch (error) {
@@ -106,7 +117,7 @@ function SeguimientoPage() {
 
     try {
       setUploading(true);
-      
+
       // CORRECCIÓN AQUÍ:
       // Agregamos el tercer argumento para sobrescribir el Content-Type
       // que tu apiClient tiene por defecto (JSON)
@@ -115,7 +126,7 @@ function SeguimientoPage() {
           'Content-Type': 'multipart/form-data',
         }
       });
-      
+
       const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -130,11 +141,29 @@ function SeguimientoPage() {
       const resDocs = await apiClient.get(`/api/investigaciones/documentos/?investigacion_id=${id}`);
       setDocumentos(resDocs.data);
     } catch (error) {
-      console.error(error); 
+      console.error(error);
       Swal.fire('Error', 'Error al subir el archivo', 'error');
     } finally {
       setUploading(false);
     }
+  };
+
+  const handlePreview = (doc: Documento) => {
+    const ext = doc.nombre_archivo.split('.').pop()?.toLowerCase();
+    if (ext === 'pdf' || ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) {
+      setPreviewFile(doc);
+    } else {
+      Swal.fire({
+        icon: 'info',
+        title: 'Vista previa no disponible',
+        text: 'Este formato debe ser descargado para visualizarse.',
+        confirmButtonColor: '#840016'
+      });
+    }
+  };
+
+  const handleDownload = (doc: Documento) => {
+    saveAs(doc.archivo, doc.nombre_archivo);
   };
 
   const handleDeleteDoc = async (docId: number) => {
@@ -171,7 +200,7 @@ function SeguimientoPage() {
     if (result.isConfirmed) {
       try {
         await apiClient.patch(`/api/investigaciones/investigaciones/${id}/`, { estatus: 'Concluida' });
-        setInvestigacion({...investigacion, estatus: 'Concluida'});
+        setInvestigacion({ ...investigacion, estatus: 'Concluida' });
         Swal.fire('Concluida', 'Investigación cerrada.', 'success');
       } catch (err) {
         Swal.fire('Error', 'No se pudo actualizar el estatus', 'error');
@@ -200,7 +229,7 @@ function SeguimientoPage() {
                   <span className="admin-value">{persona.categoria}</span>
                 </div>
               )}
-              
+
               {persona.puesto && (
                 <div className="admin-detail-row">
                   <span className="admin-label">Puesto:</span>
@@ -241,13 +270,13 @@ function SeguimientoPage() {
     <div className="admin-register-container">
       {/* HEADER Y NAVEGACIÓN */}
       <div className="admin-register-header">
-        <div style={{display:'flex', justifyContent:'space-between', width:'100%', alignItems:'center', marginBottom: '20px'}}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center', marginBottom: '20px' }}>
           <button onClick={() => navigate('/investigaciones/seguimiento-lista')} className="admin-back-button">
             <FiArrowLeft /> Volver a la lista
           </button>
           <div style={{
-            backgroundColor: investigacion?.estatus === 'Concluida' ? '#28a745' : 
-                           investigacion?.estatus === 'Seguimiento' ? '#ffc107' : '#17a2b8',
+            backgroundColor: investigacion?.estatus === 'Concluida' ? '#28a745' :
+              investigacion?.estatus === 'Seguimiento' ? '#ffc107' : '#17a2b8',
             color: 'white',
             padding: '8px 16px',
             borderRadius: '20px',
@@ -257,7 +286,7 @@ function SeguimientoPage() {
             {investigacion?.estatus}
           </div>
         </div>
-        
+
         {/* RESUMEN PRINCIPAL */}
         <div style={{
           display: 'grid',
@@ -269,43 +298,43 @@ function SeguimientoPage() {
           marginBottom: '30px',
           border: '1px solid #ecf0f1'
         }}>
-          <div style={{textAlign: 'center'}}>
-            <div style={{color: '#840016', fontWeight: '600', marginBottom: '5px', fontSize: '14px'}}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ color: '#840016', fontWeight: '600', marginBottom: '5px', fontSize: '14px' }}>
               <FiHash /> No. Reporte
             </div>
-            <div style={{fontSize: '18px', fontWeight: '700', color: '#333'}}>
+            <div style={{ fontSize: '18px', fontWeight: '700', color: '#333' }}>
               {investigacion?.numero_reporte || 'No asignado'}
             </div>
           </div>
-          <div style={{textAlign: 'center'}}>
-            <div style={{color: '#840016', fontWeight: '600', marginBottom: '5px', fontSize: '14px'}}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ color: '#840016', fontWeight: '600', marginBottom: '5px', fontSize: '14px' }}>
               <FiFileText /> Documento Origen
             </div>
-            <div style={{fontSize: '16px', fontWeight: '600', color: '#333'}}>
+            <div style={{ fontSize: '16px', fontWeight: '600', color: '#333' }}>
               {investigacion?.nombre_corto}
             </div>
           </div>
-          <div style={{textAlign: 'center'}}>
-            <div style={{color: '#840016', fontWeight: '600', marginBottom: '5px', fontSize: '14px'}}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ color: '#840016', fontWeight: '600', marginBottom: '5px', fontSize: '14px' }}>
               <FiCalendar /> Fecha Reporte
             </div>
-            <div style={{fontSize: '16px', fontWeight: '600', color: '#333'}}>
+            <div style={{ fontSize: '16px', fontWeight: '600', color: '#333' }}>
               {formatDate(investigacion?.fecha_reporte)}
             </div>
           </div>
-          <div style={{textAlign: 'center'}}>
-            <div style={{color: '#840016', fontWeight: '600', marginBottom: '5px', fontSize: '14px'}}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ color: '#840016', fontWeight: '600', marginBottom: '5px', fontSize: '14px' }}>
               <FiMapPin /> Centro
             </div>
-            <div style={{fontSize: '16px', fontWeight: '600', color: '#333'}}>
+            <div style={{ fontSize: '16px', fontWeight: '600', color: '#333' }}>
               {investigacion?.centro}
             </div>
           </div>
-          <div style={{textAlign: 'center'}}>
-            <div style={{color: '#840016', fontWeight: '600', marginBottom: '5px', fontSize: '14px'}}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ color: '#840016', fontWeight: '600', marginBottom: '5px', fontSize: '14px' }}>
               <FiBriefcase /> Regional
             </div>
-            <div style={{fontSize: '16px', fontWeight: '600', color: '#333'}}>
+            <div style={{ fontSize: '16px', fontWeight: '600', color: '#333' }}>
               {investigacion?.gerencia_responsable}
             </div>
           </div>
@@ -319,7 +348,7 @@ function SeguimientoPage() {
           borderBottom: '2px solid #e2e8f0',
           paddingBottom: '10px'
         }}>
-          <button 
+          <button
             style={{
               padding: '12px 24px',
               background: activeTab === 'documentos' ? '#840016' : 'transparent',
@@ -337,7 +366,7 @@ function SeguimientoPage() {
           >
             <FiFileText /> Expediente Digital
           </button>
-          <button 
+          <button
             style={{
               padding: '12px 24px',
               background: activeTab === 'detalles' ? '#840016' : 'transparent',
@@ -371,7 +400,7 @@ function SeguimientoPage() {
               <h2 className="admin-section-title">
                 <FiUploadCloud /> Subir Documento
               </h2>
-              
+
               {investigacion?.estatus === 'Concluida' ? (
                 <div style={{
                   background: '#d4edda',
@@ -391,11 +420,11 @@ function SeguimientoPage() {
                   <form onSubmit={handleUpload}>
                     <div className="admin-form-group">
                       <label>Tipo de Documento</label>
-                      <select 
-                        className="admin-input" 
-                        value={tipoDoc} 
+                      <select
+                        className="admin-input"
+                        value={tipoDoc}
                         onChange={(e) => setTipoDoc(e.target.value)}
-                        style={{padding: '12px', background: 'white'}}
+                        style={{ padding: '12px', background: 'white' }}
                       >
                         {TIPOS_DOCUMENTOS.map(tipo => (
                           <option key={tipo} value={tipo}>{tipo}</option>
@@ -405,18 +434,18 @@ function SeguimientoPage() {
 
                     <div className="admin-form-group">
                       <label>Descripción (Opcional)</label>
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         className="admin-input"
                         value={descripcionDoc}
                         onChange={(e) => setDescripcionDoc(e.target.value)}
                         placeholder="Ej. Firmado por gerente, versión final, etc."
-                        style={{padding: '12px'}}
+                        style={{ padding: '12px' }}
                       />
                     </div>
 
                     {/* ZONA DRAG & DROP */}
-                    <div 
+                    <div
                       style={{
                         border: `2px dashed ${dragActive ? '#840016' : '#cbd5e1'}`,
                         borderRadius: '12px',
@@ -427,27 +456,27 @@ function SeguimientoPage() {
                         backgroundColor: dragActive ? '#f8f0f0' : '#f8f9fa',
                         marginBottom: '20px'
                       }}
-                      onDragEnter={handleDrag} 
-                      onDragLeave={handleDrag} 
-                      onDragOver={handleDrag} 
+                      onDragEnter={handleDrag}
+                      onDragLeave={handleDrag}
+                      onDragOver={handleDrag}
                       onDrop={handleDrop}
                       onClick={() => inputRef.current?.click()}
                     >
-                      <input 
+                      <input
                         ref={inputRef}
-                        type="file" 
-                        style={{display: 'none'}}
+                        type="file"
+                        style={{ display: 'none' }}
                         onChange={handleFileChange}
                         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                       />
-                      
+
                       {!selectedFile ? (
                         <div>
-                          <FiUploadCloud style={{fontSize: '48px', color: '#840016', marginBottom: '10px'}} />
-                          <p style={{color: '#333', marginBottom: '5px'}}>
-                            Arrastra tu archivo aquí o <span style={{color: '#840016', fontWeight: '600'}}>haz clic para seleccionar</span>
+                          <FiUploadCloud style={{ fontSize: '48px', color: '#840016', marginBottom: '10px' }} />
+                          <p style={{ color: '#333', marginBottom: '5px' }}>
+                            Arrastra tu archivo aquí o <span style={{ color: '#840016', fontWeight: '600' }}>haz clic para seleccionar</span>
                           </p>
-                          <small style={{color: '#666'}}>Soporta: PDF, Word, Imágenes (Máx. 10MB)</small>
+                          <small style={{ color: '#666' }}>Soporta: PDF, Word, Imágenes (Máx. 10MB)</small>
                         </div>
                       ) : (
                         <div style={{
@@ -459,17 +488,17 @@ function SeguimientoPage() {
                           borderRadius: '8px',
                           border: '1px solid #e2e8f0'
                         }}>
-                          <FiFileText style={{fontSize: '32px', color: '#840016'}} />
-                          <div style={{flex: 1, textAlign: 'left'}}>
-                            <div style={{color: '#333', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                          <FiFileText style={{ fontSize: '32px', color: '#840016' }} />
+                          <div style={{ flex: 1, textAlign: 'left' }}>
+                            <div style={{ color: '#333', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {selectedFile.name}
                             </div>
-                            <div style={{color: '#666', fontSize: '14px'}}>
+                            <div style={{ color: '#666', fontSize: '14px' }}>
                               {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                             </div>
                           </div>
-                          <button 
-                            type="button" 
+                          <button
+                            type="button"
                             onClick={(e) => { e.stopPropagation(); removeSelectedFile(); }}
                             style={{
                               background: 'none',
@@ -488,12 +517,12 @@ function SeguimientoPage() {
                         </div>
                       )}
                     </div>
-                    
-                    <button 
-                      type="submit" 
+
+                    <button
+                      type="submit"
                       className="admin-submit-button"
                       disabled={uploading || !selectedFile}
-                      style={{width: '100%', marginTop: '10px'}}
+                      style={{ width: '100%', marginTop: '10px' }}
                     >
                       {uploading ? (
                         <>
@@ -524,8 +553,8 @@ function SeguimientoPage() {
                       borderTop: '1px solid #ecf0f1',
                       textAlign: 'center'
                     }}>
-                      <button 
-                        type="button" 
+                      <button
+                        type="button"
                         onClick={finalizarInvestigacion}
                         style={{
                           background: '#28a745',
@@ -543,7 +572,7 @@ function SeguimientoPage() {
                       >
                         <FiCheckCircle /> Concluir Investigación
                       </button>
-                      <p style={{color: '#666', fontSize: '14px', marginTop: '10px'}}>
+                      <p style={{ color: '#666', fontSize: '14px', marginTop: '10px' }}>
                         Al concluir, no se podrán subir más documentos.
                       </p>
                     </div>
@@ -574,7 +603,7 @@ function SeguimientoPage() {
                   {documentos.length} archivos
                 </span>
               </div>
-              
+
               {documentos.length === 0 ? (
                 <div style={{
                   textAlign: 'center',
@@ -584,8 +613,8 @@ function SeguimientoPage() {
                   borderRadius: '12px',
                   backgroundColor: '#f8f9fa'
                 }}>
-                  <FiFileText style={{fontSize: '48px', color: '#bbb', marginBottom: '15px'}} />
-                  <h3 style={{color: '#555', marginBottom: '10px'}}>No hay documentos cargados</h3>
+                  <FiFileText style={{ fontSize: '48px', color: '#bbb', marginBottom: '15px' }} />
+                  <h3 style={{ color: '#555', marginBottom: '10px' }}>No hay documentos cargados</h3>
                   <p>Comienza subiendo el primer documento usando el formulario de la izquierda.</p>
                 </div>
               ) : (
@@ -617,10 +646,10 @@ function SeguimientoPage() {
                       }}>
                         <FiFileText style={{
                           fontSize: '24px',
-                          color: doc.tipo === 'Reporte' ? '#3b82f6' : 
-                                 doc.tipo === 'Citatorio' ? '#8b5cf6' : 
-                                 doc.tipo === 'Acta' ? '#10b981' : 
-                                 doc.tipo === 'Dictamen' ? '#f59e0b' : '#666'
+                          color: doc.tipo === 'Reporte' ? '#3b82f6' :
+                            doc.tipo === 'Citatorio' ? '#8b5cf6' :
+                              doc.tipo === 'Acta' ? '#10b981' :
+                                doc.tipo === 'Dictamen' ? '#f59e0b' : '#666'
                         }} />
                         <span style={{
                           backgroundColor: '#e2e8f0',
@@ -633,18 +662,18 @@ function SeguimientoPage() {
                           {doc.tipo}
                         </span>
                       </div>
-                      
-                      <div style={{flex: 1}}>
+
+                      <div style={{ flex: 1 }}>
                         <div style={{
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'flex-start',
                           marginBottom: '5px'
                         }}>
-                          <h4 style={{margin: '0', color: '#333', fontSize: '15px', fontWeight: '600'}}>
+                          <h4 style={{ margin: '0', color: '#333', fontSize: '15px', fontWeight: '600' }}>
                             {doc.descripcion || doc.tipo}
                           </h4>
-                          <span style={{color: '#666', fontSize: '13px', whiteSpace: 'nowrap'}}>
+                          <span style={{ color: '#666', fontSize: '13px', whiteSpace: 'nowrap' }}>
                             {formatDate(doc.uploaded_at?.split('T')[0])}
                           </span>
                         </div>
@@ -659,12 +688,12 @@ function SeguimientoPage() {
                           {doc.nombre_archivo}
                         </p>
                       </div>
-                      
-                      <div style={{display: 'flex', gap: '8px'}}>
-                        <a 
-                          href={doc.archivo} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
+
+                      <div style={{ display: 'flex', gap: '8px' }}>
+
+                        <button
+                          type="button"
+                          onClick={() => handlePreview(doc)}
                           style={{
                             width: '36px',
                             height: '36px',
@@ -676,14 +705,33 @@ function SeguimientoPage() {
                             alignItems: 'center',
                             justifyContent: 'center',
                             color: '#3b82f6',
-                            textDecoration: 'none'
+                          }}
+                          title="Ver"
+                        >
+                          <FiEye />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDownload(doc)}
+                          style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '8px',
+                            border: '1px solid #e2e8f0',
+                            background: 'white',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#3b82f6',
                           }}
                           title="Descargar"
                         >
                           <FiDownload />
-                        </a>
+                        </button>
                         {investigacion?.estatus !== 'Concluida' && (
-                          <button 
+                          <button
                             onClick={() => handleDeleteDoc(doc.id)}
                             style={{
                               width: '36px',
@@ -718,10 +766,10 @@ function SeguimientoPage() {
             <h2 className="admin-section-title">
               <FiInfo /> Información General
             </h2>
-            
-            <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               <div>
-                <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555'}}>
+                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555' }}>
                   Descripción General
                 </label>
                 <div style={{
@@ -734,10 +782,10 @@ function SeguimientoPage() {
                   {investigacion?.descripcion_general || 'No especificada'}
                 </div>
               </div>
-              
-              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 <div>
-                  <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555'}}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555' }}>
                     Gravedad
                   </label>
                   <div style={{
@@ -753,7 +801,7 @@ function SeguimientoPage() {
                   </div>
                 </div>
                 <div>
-                  <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555'}}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555' }}>
                     Procedencia
                   </label>
                   <div style={{
@@ -775,11 +823,11 @@ function SeguimientoPage() {
             <h2 className="admin-section-title">
               <FiHome /> Ubicación Organizacional
             </h2>
-            
-            <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
-              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 <div>
-                  <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555'}}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555' }}>
                     Dirección
                   </label>
                   <div style={{
@@ -793,7 +841,7 @@ function SeguimientoPage() {
                   </div>
                 </div>
                 <div>
-                  <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555'}}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555' }}>
                     Centro
                   </label>
                   <div style={{
@@ -807,10 +855,10 @@ function SeguimientoPage() {
                   </div>
                 </div>
               </div>
-              
-              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 <div>
-                  <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555'}}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555' }}>
                     Área/Departamento
                   </label>
                   <div style={{
@@ -824,7 +872,7 @@ function SeguimientoPage() {
                   </div>
                 </div>
                 <div>
-                  <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555'}}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555' }}>
                     Régimen
                   </label>
                   <div style={{
@@ -838,10 +886,10 @@ function SeguimientoPage() {
                   </div>
                 </div>
               </div>
-              
+
               {investigacion?.sindicato && (
                 <div>
-                  <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555'}}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555' }}>
                     Sindicato
                   </label>
                   <div style={{
@@ -863,7 +911,7 @@ function SeguimientoPage() {
             <h2 className="admin-section-title">
               <FiCalendar /> Fechas Importantes
             </h2>
-            
+
             <div className="admin-dates-grid">
               <div className="admin-date-card">
                 <FiCalendar />
@@ -872,7 +920,7 @@ function SeguimientoPage() {
                   <p>{formatDate(investigacion?.fecha_reporte)}</p>
                 </div>
               </div>
-              
+
               <div className="admin-date-card">
                 <FiEye />
                 <div>
@@ -880,7 +928,7 @@ function SeguimientoPage() {
                   <p>{formatDate(investigacion?.fecha_conocimiento_hechos)}</p>
                 </div>
               </div>
-              
+
               <div className="admin-date-card">
                 <FiClock />
                 <div>
@@ -888,7 +936,7 @@ function SeguimientoPage() {
                   <p>{formatDate(investigacion?.fecha_evento)}</p>
                 </div>
               </div>
-              
+
               <div className="admin-date-card">
                 <FiAlertTriangle />
                 <div>
@@ -897,7 +945,7 @@ function SeguimientoPage() {
                 </div>
               </div>
             </div>
-            
+
             {investigacion?.economica && (
               <div style={{
                 background: '#fff3cd',
@@ -918,11 +966,11 @@ function SeguimientoPage() {
             <h2 className="admin-section-title">
               <FiMapPin /> Información del Evento
             </h2>
-            
-            <div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
-              <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 <div>
-                  <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555'}}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555' }}>
                     Lugar de los hechos
                   </label>
                   <div style={{
@@ -936,7 +984,7 @@ function SeguimientoPage() {
                   </div>
                 </div>
                 <div>
-                  <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555'}}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555' }}>
                     Centro de Trabajo
                   </label>
                   <div style={{
@@ -950,10 +998,10 @@ function SeguimientoPage() {
                   </div>
                 </div>
               </div>
-              
+
               {investigacion?.observaciones && (
                 <div>
-                  <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555'}}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555' }}>
                     Observaciones
                   </label>
                   <div style={{
@@ -968,10 +1016,10 @@ function SeguimientoPage() {
                   </div>
                 </div>
               )}
-              
+
               {investigacion?.antecedentes && (
                 <div>
-                  <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555'}}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555' }}>
                     Antecedentes
                   </label>
                   <div style={{
@@ -994,22 +1042,22 @@ function SeguimientoPage() {
             <h2 className="admin-section-title">
               <FiUsers /> Personas Involucradas
             </h2>
-            
+
             <div className="admin-personas-section">
               <h3>Investigadores</h3>
               {renderPersonas(investigacion?.investigadores || [], 'investigadores')}
             </div>
-            
+
             <div className="admin-personas-section">
               <h3>Contactos</h3>
               {renderPersonas(investigacion?.contactos || [], 'contactos')}
             </div>
-            
+
             <div className="admin-personas-section">
               <h3>Personal Reportado</h3>
               {renderPersonas(investigacion?.involucrados || [], 'involucrados')}
             </div>
-            
+
             <div className="admin-personas-section">
               <h3>Testigos</h3>
               {renderPersonas(investigacion?.testigos || [], 'testigos')}
@@ -1017,12 +1065,17 @@ function SeguimientoPage() {
           </section>
         </div>
       )}
-      
+
       <style>{`
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
       `}</style>
+
+      <DocumentPreviewModal
+        documento={previewFile}
+        onClose={() => setPreviewFile(null)}
+      />
     </div>
   );
 }

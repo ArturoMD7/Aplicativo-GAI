@@ -91,6 +91,7 @@ class Investigacion(UppercaseMixin,models.Model):
     ESTATUS_CHOICES = [
         ('ABIERTA', 'ABIERTA'),
         ('SEGUIMIENTO', 'SEGUIMIENTO'),
+        ('ENVIADA_A_CONCLUIR', 'ENVIADA_A_CONCLUIR'),
         ('CONCLUIDA', 'CONCLUIDA'),
     ]
     estatus = models.CharField(max_length=20, choices=ESTATUS_CHOICES, default='ABIERTA')
