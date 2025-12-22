@@ -40,6 +40,30 @@ function InvestigacionListPage() {
   const [selectedSancion, setSelectedSancion] = useState('');
   const [showMenu, setShowMenu] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'ascending' });
+  const [userRole, setUserRole] = useState<string>('');
+
+  useEffect(() => {
+    const checkRole = async () => {
+      let role = localStorage.getItem('userRole');
+
+      if (!role) {
+        try {
+          // Si no hay rol guardado, intentar obtenerlo
+          const profileRes = await apiClient.get('/api/user/profile/');
+          const groups = profileRes.data.groups;
+          if (groups && groups.length > 0) {
+            role = groups[0];
+            localStorage.setItem('userRole', role || '');
+          }
+        } catch (error) {
+          console.error("Error al obtener rol:", error);
+        }
+      }
+
+      setUserRole(role || '');
+    };
+    checkRole();
+  }, []);
 
   useEffect(() => {
     const fetchInvestigaciones = async () => {
@@ -308,13 +332,15 @@ function InvestigacionListPage() {
             size="medium"
           />
 
-          <ButtonIcon
-            variant="download"
-            to="/investigaciones/nuevo"
-            icon={<FiPlus />}
-            text="Nuevo"
-            size="medium"
-          />
+          {(['Admin', 'AdminCentral'].includes(userRole) || userRole.startsWith('Supervisor')) && (
+            <ButtonIcon
+              variant="download"
+              to="/investigaciones/nuevo"
+              icon={<FiPlus />}
+              text="Nuevo"
+              size="medium"
+            />
+          )}
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', marginLeft: '1px' }}>

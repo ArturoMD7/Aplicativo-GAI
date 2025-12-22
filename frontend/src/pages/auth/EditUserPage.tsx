@@ -70,7 +70,8 @@ function EditUserPage() {
         email: user.email,
         first_name: user.first_name,
         last_name: user.last_name,
-        groups: selectedGroups
+        groups: selectedGroups,
+        ficha: user.ficha
       });
 
       setSuccess('Usuario actualizado correctamente');
@@ -204,9 +205,8 @@ function EditUserPage() {
               {availableGroups.map(group => (
                 <div
                   key={group.id}
-                  className={`admin-role-option ${
-                    selectedGroups.includes(group.name) ? 'selected' : ''
-                  }`}
+                  className={`admin-role-option ${selectedGroups.includes(group.name) ? 'selected' : ''
+                    }`}
                   onClick={() => handleRoleToggle(group.name)}
                 >
                   <div className="admin-role-checkbox" />

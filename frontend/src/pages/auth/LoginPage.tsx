@@ -35,6 +35,18 @@ function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
       localStorage.setItem('access_token', response.data.access);
       localStorage.setItem('refresh_token', response.data.refresh);
 
+      try {
+        const profileRes = await apiClient.get('/api/user/profile/');
+        const groups = profileRes.data.groups;
+        if (groups && groups.length > 0) {
+          localStorage.setItem('userRole', groups[0]);
+        } else {
+          localStorage.setItem('userRole', '');
+        }
+      } catch (profileError) {
+        console.error('Error al obtener perfil:', profileError);
+      }
+
       onLoginSuccess();
 
       navigate('/', { replace: true });

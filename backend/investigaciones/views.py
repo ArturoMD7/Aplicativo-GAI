@@ -74,10 +74,28 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
         user = self.request.user
         queryset = Investigacion.objects.all()
         
-
         if user.is_authenticated:
-            if not (user.groups.filter(name='Admin').exists() or user.is_superuser):
-                queryset = queryset.filter(created_by=user)
+            # Si es superusuario o Admin/AdminCentral, ve todo
+            if user.is_superuser or user.groups.filter(name__in=['Admin', 'AdminCentral']).exists():
+                pass # No filtrar, retornar todo
+            else:
+                # Filtrar por región según el grupo
+                groups = user.groups.values_list('name', flat=True)
+                
+                # Mapeo de grupos a gerencias
+                if 'SupervisorNTE' in groups or 'OperadorNTE' in groups:
+                    queryset = queryset.filter(gerencia_responsable='NORTE')
+                elif 'SupervisorSUR' in groups or 'OperadorSUR' in groups:
+                    queryset = queryset.filter(gerencia_responsable='SUR')
+                elif 'SupervisorSTE' in groups or 'OperadorSTE' in groups:
+                    queryset = queryset.filter(gerencia_responsable='SURESTE')
+                elif 'SupervisorALT' in groups or 'OperadorALT' in groups:
+                    queryset = queryset.filter(gerencia_responsable='ALTIPLANO')
+                elif 'SupervisorGAI' in groups or 'OperadorGAI' in groups:
+                    queryset = queryset.filter(gerencia_responsable='GAI')
+                else:
+                    # Si no tiene grupo válido, solo ve lo que creó (fallback)
+                    queryset = queryset.filter(created_by=user)
         
         # Filtros adicionales
         gravedad = self.request.query_params.get('gravedad')

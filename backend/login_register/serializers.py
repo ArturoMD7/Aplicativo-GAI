@@ -106,9 +106,22 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'username']
 
     def update(self, instance, validated_data):
+        # Extraer datos del perfil si existen
+        profile_data = validated_data.pop('profile', {})
+        ficha = profile_data.get('ficha')
+
         if 'email' in validated_data:
             instance.username = validated_data['email']
-        return super().update(instance, validated_data)
+        
+        # Actualizar usuario
+        instance = super().update(instance, validated_data)
+
+        # Actualizar ficha en el perfil
+        if ficha:
+            instance.profile.ficha = ficha
+            instance.profile.save()
+
+        return instance
 
 
 class ChangePasswordSerializer(serializers.Serializer):
