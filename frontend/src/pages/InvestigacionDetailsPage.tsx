@@ -51,15 +51,7 @@ function InvestigacionDetailsPage() {
   const handlePreview = (doc: any) => {
     const ext = doc.nombre_archivo.split('.').pop()?.toLowerCase();
     if (ext === 'pdf' || ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) {
-      // Logic for previewing would go here, for now alerting or opening in new tab if possible.
-      // Since we don't have the DocumentPreviewModal imported/setup here, we might just download or rely on default browser behavior for links if we had them.
-      // But let's check SeguimientoPage implementation. It uses a state `previewFile` and a Modal.
-      // For simplicity in this Task, if the user didn't ask for the Modal specifically but "como el de SeguimientoPage", implies functionality.
-      // However, without the Modal component imported, I'll stick to a simple alert or reuse logic.
-      // Wait, I can see `DocumentPreviewModal` usage in `SeguimientoPage`. I should probably import it if I want full parity.
-      // The user said "el expediente sera como el de: SeguimientoPage.tsx".
-      // Let's implement basic download for now, or just open in new tab if it's a link.
-      // But `doc.archivo` is likely a URL.
+     
       window.open(doc.archivo, '_blank');
     } else {
       Swal.fire({
