@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
 import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload, FiAlertCircle, FiTrendingUp, FiFilter, FiChevronUp, FiChevronDown } from 'react-icons/fi';
@@ -29,6 +30,8 @@ type SortConfig = {
 };
 
 function InvestigacionListPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [investigaciones, setInvestigaciones] = useState<InvestigacionListado[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -446,7 +449,7 @@ function InvestigacionListPage() {
 
                       <ButtonIcon
                         variant="view"
-                        to={`/investigaciones/detalles/${inv.id}`}
+                        onClick={() => navigate(`/investigaciones/detalles/${inv.id}`, { state: { from: location.pathname } })}
                         icon={<FiEye />}
                         title="Ver detalles"
                         size="medium"

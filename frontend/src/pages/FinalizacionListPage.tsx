@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiEdit, FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiFileText, FiTrendingUp, FiClock } from 'react-icons/fi'; // Importar FiFileText y FiClock
+import { FiEdit, FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiFileText, FiTrendingUp, FiClock, FiEye } from 'react-icons/fi'; // Importar FiFileText y FiClock
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import Pagination from '../components/Pagination';
 import * as XLSX from 'xlsx';
@@ -28,6 +28,7 @@ function FinalizacionListPage() {
   const [statusFilter, setStatusFilter] = useState<'PENDING' | 'COMPLETED'>('PENDING');
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchInvestigaciones = async () => {
@@ -298,9 +299,9 @@ function FinalizacionListPage() {
                     <div className="action-buttons" style={{ justifyContent: 'center' }}>
                       <ButtonIcon
                         variant="edit"
-                        onClick={() => navigate(`/investigaciones/seguimiento/${inv.id}`)}
-                        icon={<FiEdit />}
-                        title="Gestionar Expediente"
+                        onClick={() => navigate(`/investigaciones/detalles/${inv.id}`, { state: { from: location.pathname } })}
+                        icon={<FiEye />}
+                        title="Ver"
                         size="medium"
                       />
 
