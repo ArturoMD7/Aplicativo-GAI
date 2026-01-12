@@ -245,7 +245,7 @@ function FinalizacionListPage() {
                 <th>No. Reporte</th>
                 <th>Documento</th>
                 <th>Dirección</th>
-                <th>Gravedad</th>
+                <th>Relevancia</th>
                 <th>Fecha Reporte</th>
                 <th style={{ textAlign: 'center' }}>Días en Proceso</th>
                 <th style={{ textAlign: 'center' }}>Acciones</th>

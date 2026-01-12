@@ -6,8 +6,10 @@ import {
   FiArrowLeft, FiUploadCloud, FiFileText, FiTrash2,
   FiCheckCircle, FiDownload, FiX, FiCalendar,
   FiMapPin, FiHash, FiUsers, FiBriefcase,
-  FiHome, FiAlertTriangle, FiInfo, FiClock, FiEye
+  FiHome, FiAlertTriangle, FiInfo, FiClock, FiEye,
+  FiEdit3, FiSave
 } from 'react-icons/fi';
+import type { OpcionesDropdowns } from '../types/investigacion.types';
 import Swal from 'sweetalert2';
 import '../styles/InvestigacionPage.css';
 import DocumentPreviewModal from '../components/Modals/DocumentPreviewModal';
@@ -18,8 +20,10 @@ const TIPOS_DOCUMENTOS = [
   'Acta',
   'Dictamen',
   'Resultado',
-  'Anexo'
+  'Anexo',
+  'Pruebas'
 ];
+
 
 interface Documento {
   id: number;
@@ -38,7 +42,15 @@ function SeguimientoPage() {
   const [investigacion, setInvestigacion] = useState<any>(null);
   const [documentos, setDocumentos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
   const [activeTab, setActiveTab] = useState<'documentos' | 'detalles'>('documentos');
+  const [opciones, setOpciones] = useState<OpcionesDropdowns | null>(null);
+
+  // --- ESTADOS PARA RECONSIDERACIÓN ---
+  const [isReconsideracion, setIsReconsideracion] = useState(false);
+  const [fichaReconsideracion, setFichaReconsideracion] = useState('');
+  const [sancionDefinitiva, setSancionDefinitiva] = useState('');
+  const [savingReconsideracion, setSavingReconsideracion] = useState(false);
 
   // Estado para subida de archivo
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -58,6 +70,14 @@ function SeguimientoPage() {
       const resInv = await apiClient.get(`/api/investigaciones/investigaciones/${id}/`);
       setInvestigacion(resInv.data);
 
+      const opcionesRes = await apiClient.get('/api/investigaciones/opciones/');
+      setOpciones(opcionesRes.data);
+
+      // Inicializar estados de Reconsideración con datos del backend
+      setIsReconsideracion(resInv.data.reconsideracion || false);
+      setFichaReconsideracion(resInv.data.ficha_reconsideracion || '');
+      setSancionDefinitiva(resInv.data.sancion_definitiva || '');
+
       const resDocs = await apiClient.get(`/api/investigaciones/documentos/?investigacion_id=${id}`);
       setDocumentos(resDocs.data);
     } catch (error) {
@@ -65,6 +85,38 @@ function SeguimientoPage() {
       Swal.fire('Error', 'No se pudieron cargar los datos', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveReconsideracion = async () => {
+    try {
+      setSavingReconsideracion(true);
+      // Preparamos el payload. Si isReconsideracion es false, limpiamos los campos.
+      const payload = {
+        reconsideracion: isReconsideracion,
+        ficha_reconsideracion: isReconsideracion ? fichaReconsideracion : null,
+        sancion_definitiva: isReconsideracion ? sancionDefinitiva : null
+      };
+
+      await apiClient.patch(`/api/investigaciones/investigaciones/${id}/`, payload);
+
+      // Actualizamos el objeto investigacion localmente para reflejar cambios sin recargar
+      setInvestigacion((prev: any) => ({ ...prev, ...payload }));
+
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+      Toast.fire({ icon: 'success', title: 'Reconsideración actualizada' });
+
+    } catch (error) {
+      console.error(error);
+      Swal.fire('Error', 'No se pudieron guardar los cambios de reconsideración', 'error');
+    } finally {
+      setSavingReconsideracion(false);
     }
   };
 
@@ -118,9 +170,6 @@ function SeguimientoPage() {
     try {
       setUploading(true);
 
-      // CORRECCIÓN AQUÍ:
-      // Agregamos el tercer argumento para sobrescribir el Content-Type
-      // que tu apiClient tiene por defecto (JSON)
       await apiClient.post('/api/investigaciones/documentos/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -390,13 +439,124 @@ function SeguimientoPage() {
       {/* CONTENIDO DE PESTAÑAS */}
       {activeTab === 'documentos' ? (
         <div className="admin-register-form-container">
+          {/* ----------------- INICIO SECCIÓN RECONSIDERACIÓN ----------------- */}
+          <div style={{
+            marginBottom: '30px',
+            border: '1px solid #ecf0f1',
+            padding: '20px',
+            backgroundColor: '#fff',
+            borderRadius: '12px'
+          }}>
+            <h2 className="admin-section-title" style={{ color: '#2c3e50', display: 'flex', alignItems: 'center', gap: '10px', marginTop: 0 }}>
+              <FiEdit3 /> Reconsideración
+            </h2>
+
+            <div className="admin-form-group">
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '15px', color: '#333' }}>
+                <input
+                  type="checkbox"
+                  checked={isReconsideracion}
+                  onChange={(e) => setIsReconsideracion(e.target.checked)}
+                  style={{ width: '18px', height: '18px', accentColor: '#840016' }}
+                  disabled={investigacion?.estatus === 'Concluida'}
+                />
+                ¿Se realizó Reconsideración?
+              </label>
+            </div>
+
+            {isReconsideracion && (
+              <div style={{
+                marginTop: '15px',
+                padding: '15px',
+                background: '#f8f9fa',
+                borderRadius: '8px',
+                borderLeft: '4px solid #840016'
+              }}>
+                {/* Ficha que autoriza */}
+                <div className="admin-form-group">
+                  <label style={{ fontWeight: '600', fontSize: '13px', color: '#555' }}>Ficha que autoriza reconsideración</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={fichaReconsideracion}
+                    onChange={(e) => setFichaReconsideracion(e.target.value)}
+                    placeholder="Ej. 123456"
+                    disabled={investigacion?.estatus === 'Concluida'}
+                    style={{ padding: '10px' }}
+                  />
+                </div>
+
+                {/* Sanción Actual (Solo Lectura) */}
+                <div className="admin-form-group">
+                  <label style={{ fontWeight: '600', fontSize: '13px', color: '#555' }}>Sanción Actual (Original)</label>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={investigacion?.conductas || 'Sin sanción registrada'}
+                    disabled
+                    style={{ background: '#e9ecef', color: '#6c757d', cursor: 'not-allowed', padding: '10px' }}
+                  />
+                </div>
+
+                {/* Sanción Definitiva (Select) */}
+                <div className="admin-form-group">
+                  <label style={{ fontWeight: '600', fontSize: '13px', color: '#555' }}>Sanción Definitiva</label>
+                  <select
+                    className="admin-input"
+                    value={sancionDefinitiva}
+                    onChange={(e) => setSancionDefinitiva(e.target.value)}
+                    disabled={investigacion?.estatus === 'Concluida'}
+                    style={{ padding: '10px', background: 'white' }}
+                  >
+                    <option value="">-- Seleccione sanción final --</option>
+                    {opciones?.conductas?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {investigacion?.estatus !== 'Concluida' && (
+              <button
+                onClick={handleSaveReconsideracion}
+                disabled={savingReconsideracion}
+                style={{
+                  marginTop: '15px',
+                  width: '100%',
+                  padding: '10px',
+                  background: '#2c3e50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: savingReconsideracion ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  fontWeight: '600',
+                  transition: 'background 0.2s'
+                }}
+              >
+                {savingReconsideracion ? (
+                  <>Guardando...</>
+                ) : (
+                  <><FiSave /> Guardar Reconsideración</>
+                )}
+              </button>
+            )}
+          </div>
+          {/* ----------------- FIN SECCIÓN RECONSIDERACIÓN ----------------- */}
+
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1.5fr',
             gap: '30px'
           }}>
-            {/* COLUMNA IZQUIERDA: Formulario de Subida */}
+            {/* COLUMNA IZQUIERDA: Formulario de Subida + RECONSIDERACION */}
             <div className="admin-form-section">
+
+
+
+
               <h2 className="admin-section-title">
                 <FiUploadCloud /> Subir Documento
               </h2>
@@ -786,7 +946,7 @@ function SeguimientoPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 <div>
                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#555' }}>
-                    Gravedad
+                    Relevancia
                   </label>
                   <div style={{
                     padding: '8px 16px',

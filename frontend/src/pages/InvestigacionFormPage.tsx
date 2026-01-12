@@ -811,7 +811,7 @@ function InvestigacionFormPage() {
 
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label>Gravedad *</label>
+                <label>Relevancia *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-exclamation-triangle"></i>
                   <select name="gravedad" value={formState.gravedad} onChange={handleChange} required>

@@ -148,6 +148,9 @@ class InvestigacionSerializer(serializers.ModelSerializer):
             'lugar', 'observaciones', 'fecha_evento', 'centro_trabajo',
             'antecedentes',
             
+            # Sección 5: Reconsideracion
+            'reconsideracion', 'ficha_reconsideracion', 'sancion_definitiva',
+            
             # Relaciones
             'contactos', 'investigadores', 'involucrados', 'testigos', 'reportantes',
             

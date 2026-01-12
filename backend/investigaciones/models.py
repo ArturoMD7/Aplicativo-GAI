@@ -127,6 +127,11 @@ class Investigacion(UppercaseMixin,models.Model):
     fecha_evento = models.DateField()
     centro_trabajo = models.CharField(max_length=100)
     antecedentes = models.CharField(max_length=150)
+
+    # Sección 5: Reconsideracion
+    reconsideracion = models.BooleanField(default=False)
+    ficha_reconsideracion = models.CharField(max_length=20, null=True, blank=True)
+    sancion_definitiva = models.CharField(max_length=70, choices=CONDUCTAS_CHOICES, null=True, blank=True)
     
     # Auditoría
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='investigaciones_creadas')
@@ -263,6 +268,7 @@ class DocumentoInvestigacion(models.Model):
         ('Reporte', 'Reporte para investigación'),
         ('Citatorio', 'Citatorio'),
         ('Acta', 'Acta'),
+        ('Pruebas', 'Pruebas'),
         ('Dictamen', 'Dictamen'),
         ('Resultado', 'Resultado de la investigación'),
         ('Anexo', 'Anexo'),
