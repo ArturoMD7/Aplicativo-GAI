@@ -8,6 +8,12 @@ from rest_framework import generics, permissions
 from rest_framework.permissions import AllowAny
 from .serializers import RegisterSerializer, UserSerializer, GroupSerializer, UserUpdateSerializer, ChangePasswordSerializer, AdminResetPasswordSerializer
 from django.contrib.auth.models import User, Group
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import CustomTokenObtainPairSerializer
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 class IsAdminGroup(permissions.BasePermission):
     """

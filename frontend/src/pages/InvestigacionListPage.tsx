@@ -15,7 +15,7 @@ const GERENCIA_CHOICES = [
   'NORTE', 'SUR', 'SURESTE', 'ALTIPLANO', 'GAI',
 ];
 
-const SANCIONES_POSIBLES = [
+const CONDUCTAS_POSIBLES = [
   'SUSPENSION DE LABORES', 'SUSTRACCION DE EQUIPO MOBILIARIO', 'FALTA DE PROBIDAD Y HONRADEZ',
   'ALTERACION DEL ORDEN', 'PRESENTACION DE DOCUMENTACION IRREGULAR', 'ACTITUD INDEBIDA', 'FALTAS INJUSTIFICADAS',
   'NEGLIGENCIA EN EL DESARROLLO DE FUNCIONES', 'DISCRIMINACION', 'ACOSO LABORAL O MOBBING', 'ACOSO Y/O HOSTIGAMIENTO SEXUAL',
@@ -186,7 +186,7 @@ function InvestigacionListPage() {
       String(value).toLowerCase().includes(texto)
     );
     const matchesGerencia = selectedGerencia ? inv.gerencia_responsable === selectedGerencia : true;
-    const matchesSancion = selectedSancion ? inv.sanciones === selectedSancion : true;
+    const matchesSancion = selectedSancion ? inv.conductas === selectedSancion : true;
 
     return matchesSearch && matchesGerencia && matchesSancion;
   });
@@ -358,8 +358,8 @@ function InvestigacionListPage() {
         <div style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
           <FiFilter style={{ color: '#666', marginRight: '5px' }} />
           <select value={selectedSancion} onChange={(e) => setSelectedSancion(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}>
-            <option value="">Todas las Sanciones</option>
-            {SANCIONES_POSIBLES.map(s => <option key={s} value={s}>{s}</option>)}
+            <option value="">Todas las Conductas</option>
+            {CONDUCTAS_POSIBLES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
       </div>
@@ -385,7 +385,7 @@ function InvestigacionListPage() {
                 <th>Investigadores</th>
                 <th>Personal Reportado</th>
                 <th onClick={() => requestSort('procedencia')} style={{ cursor: 'pointer' }}>Procedencia {getSortIcon('procedencia')}</th>
-                <th onClick={() => requestSort('sanciones')} style={{ cursor: 'pointer' }}>Conducta {getSortIcon('sanciones')}</th>
+                <th onClick={() => requestSort('conductas')} style={{ cursor: 'pointer' }}>Conducta {getSortIcon('conductas')}</th>
                 <th onClick={() => requestSort('gravedad')} style={{ cursor: 'pointer' }}>Gravedad {getSortIcon('gravedad')}</th>
                 <th onClick={() => requestSort('gerencia_responsable')} style={{ cursor: 'pointer' }}>Región {getSortIcon('gerencia_responsable')}</th>
                 <th onClick={() => requestSort('fecha_reporte')} style={{ cursor: 'pointer' }}>Fecha Reporte {getSortIcon('fecha_reporte')}</th>
@@ -422,7 +422,7 @@ function InvestigacionListPage() {
 
                   <td className="text-muted">{inv.procedencia}</td>
 
-                  <td className="text-muted">{inv.sanciones}</td>
+                  <td className="text-muted">{inv.conductas}</td>
 
                   <td>
                     <span className={`gravedad-badge ${getGravedadClass(inv.gravedad)}`}>

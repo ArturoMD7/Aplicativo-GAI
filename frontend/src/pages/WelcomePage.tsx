@@ -42,7 +42,7 @@ const GERENCIA_CHOICES = [
   'NORTE', 'SUR', 'SUESTE', 'ALTIPLANO', 'GAI',
 ];
 
-const SANCIONES_POSIBLES = [
+const CONDUCTAS_POSIBLES = [
   'SUSPENSION DE LABORES', 'SUSTRACCION DE EQUIPO MOBILIARIO', 'FALTA DE PROBIDAD Y HONRADEZ',
   'ALTERACION DEL ORDEN', 'PRESENTACION DE DOCUMENTACION IRREGULAR', 'ACTITUD INDEBIDA', 'FALTAS INJUSTIFICADAS',
   'NEGLIGENCIA EN EL DESARROLLO DE FUNCIONES', 'DISCRIMINACION', 'ACOSO LABORAL O MOBBING', 'ACOSO Y/O HOSTIGAMIENTO SEXUAL',
@@ -185,10 +185,10 @@ function WelcomePage() {
   // --- PREPARACIÓN DE DATOS PARA GRÁFICA ---
   const chartData = useMemo(() => {
     const counts: Record<string, number> = {};
-    SANCIONES_POSIBLES.forEach(s => counts[s] = 0);
+    CONDUCTAS_POSIBLES.forEach(s => counts[s] = 0);
 
     filteredByGerencia.forEach((inv: any) => {
-      const sancion = inv.sanciones;
+      const sancion = inv.conductas;
       if (counts[sancion] !== undefined) {
         counts[sancion]++;
       }
@@ -324,7 +324,7 @@ function WelcomePage() {
           </table>
         </div>
 
-        {/* SECCIÓN 2: GRÁFICA DE SANCIONES (Estilo solicitado) */}
+        {/* SECCIÓN 2: GRÁFICA DE CONDUCTAS (Estilo solicitado) */}
         <div className="dashboard-section chart-section">
           <div className="section-header">
             <h2><FiActivity /> Estadísticas por Sanción ({selectedGerencia || 'General'})</h2>
@@ -354,7 +354,7 @@ function WelcomePage() {
               </ResponsiveContainer>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#999' }}>
-                No hay sanciones registradas para esta selección.
+                No hay conductas registradas para esta selección.
               </div>
             )}
           </div>

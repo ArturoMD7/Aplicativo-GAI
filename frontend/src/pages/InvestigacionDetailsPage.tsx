@@ -51,7 +51,7 @@ function InvestigacionDetailsPage() {
   const handlePreview = (doc: any) => {
     const ext = doc.nombre_archivo.split('.').pop()?.toLowerCase();
     if (ext === 'pdf' || ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) {
-     
+
       window.open(doc.archivo, '_blank');
     } else {
       Swal.fire({
@@ -283,7 +283,7 @@ function InvestigacionDetailsPage() {
               <i className="fas fa-exclamation-circle"></i>
               <input
                 type="text"
-                value={investigacion.sanciones || 'No especificada'}
+                value={investigacion.conductas || 'No especificada'}
                 readOnly
                 className="admin-readonly-field"
               />

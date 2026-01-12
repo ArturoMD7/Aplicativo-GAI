@@ -49,7 +49,7 @@ class Investigacion(UppercaseMixin,models.Model):
     ]
     regimen = models.CharField(max_length=15, choices=REGIMEN_CHOICES)
 
-    SANCIONES_CHOICES = [
+    CONDUCTAS_CHOICES = [
         ('SUSPENSION DE LABORES', 'SUSPENSION DE LABORES'),
         ('SUSTRACCION DE EQUIPO MOBILIARIO', 'SUSTRACCION DE EQUIPO MOBILIARIO'),
         ('FALTA DE PROBIDAD Y HONRADEZ', 'FALTA DE PROBIDAD Y HONRADEZ'),
@@ -69,7 +69,7 @@ class Investigacion(UppercaseMixin,models.Model):
         ('MERCADO ILICITO DE COMBUSTIBLES', 'MERCADO ILICITO DE COMBUSTIBLES'),
         ('OTRAS FALTAS', 'OTRAS FALTAS'),
     ]
-    sanciones = models.CharField(max_length=65, choices=SANCIONES_CHOICES, default='OTRAS FALTAS')
+    conductas = models.CharField(max_length=65, choices=CONDUCTAS_CHOICES, default='OTRAS FALTAS')
     
     SINDICATO_CHOICES = [
         ('STPRM', 'STPRM'),

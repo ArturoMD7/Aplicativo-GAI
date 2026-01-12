@@ -10,13 +10,14 @@ from django.conf.urls.static import static
 
 from django.views.static import serve
 from django.views.decorators.clickjacking import xframe_options_exempt
+from login_register.views import CustomTokenObtainPairView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     path('api/register/', RegisterView.as_view(), name='register'),
 
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path("api/token/", CustomTokenObtainPairView.as_view(), name="token"),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/users/', UserListView.as_view(), name='user_list'),
     path('api/groups/', GroupListView.as_view(), name='group-list'),

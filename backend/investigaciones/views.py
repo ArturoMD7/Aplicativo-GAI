@@ -114,7 +114,7 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
         direccion = self.request.query_params.get('direccion')
         gerencia = self.request.query_params.get('gerencia')
         estado = self.request.query_params.get('estado') 
-        sanciones = self.request.query_params.get('sanciones')
+        conductas = self.request.query_params.get('conductas')
         
         if gravedad:
             queryset = queryset.filter(gravedad=gravedad)
@@ -130,8 +130,8 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(fecha_prescripcion__lt=hoy)
             elif estado == 'activo':
                 queryset = queryset.filter(fecha_prescripcion__gte=hoy)
-        if sanciones:
-            queryset = queryset.filter(sanciones=sanciones)
+        if conductas:
+            queryset = queryset.filter(conductas=conductas)
         
         return queryset.order_by('-created_at')
 
@@ -148,7 +148,7 @@ def opciones_view(request):
         'sindicatos': [choice[0] for choice in Investigacion.SINDICATO_CHOICES],
         'gravedades': [choice[0] for choice in Investigacion.GRAVEDAD_CHOICES],
         'gerencias': [choice[0] for choice in Investigacion.GERENCIA_CHOICES],
-        'sanciones': [choice[0] for choice in Investigacion.SANCIONES_CHOICES],
+        'conductas': [choice[0] for choice in Investigacion.CONDUCTAS_CHOICES],
     }
     serializer = OpcionesSerializer(opciones)
     return Response(serializer.data)
@@ -333,14 +333,14 @@ def estadisticas_view(request):
     for gravedad in ['Alta', 'Media', 'Baja']:
         por_gravedad[gravedad] = queryset.filter(gravedad=gravedad).count()
 
-    por_sanciones = {}
+    por_conductas = {}
     for sancion in ['SUSPENCION DE LABORES', 'SUSTRACCION DE EQUIPO MOBILIARIO', 'FALTA DE PROBIDAD Y HONRADEZ',
     'ALTERACION DEL ORDEN', 'PRESENTACION DE DOCUMENTACION IRREGULAR', 'ACTITUD INDEBIDA', 'FALTAS INJUSTIFICADAS',
     'NEGLIGENCIA EN EL DESARROLLO DE FUNCIONES', 'DISCRIMINACION', 'ACOSO LABORAL O MOBBING', 'ACOSO Y/O HOSTIGAMIENTO SEXUAL',
     'CONCURRIR CON EFECTOS DE ESTUPEFACIENTES Y/O EDO DE EBRIEDAD', 'INCUMPLIMIENTO DE NORMAS DE TRABAJO Y/O PROCEDIMIENTOS DE TRABAJO',
     'USO INDEBIDO DE UTILES Y/O HERRAMIENTAS DE TRABAJO', 'CLAUSULA 253 CCT', 'ACTOS DE CORRUPCION', 'MERCADO ILICITO DE COMBUSTIBLES',
     'OTRAS FALTAS']:
-        por_sanciones[sancion] = queryset.filter(sanciones=sancion).count()
+        por_conductas[sancion] = queryset.filter(conductas=sancion).count()
     
     # Estadísticas por dirección
     por_direccion = {}

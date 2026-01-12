@@ -73,7 +73,7 @@ function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
             <div className="form-group input-icon">
               <i className="fas fa-envelope" aria-hidden="true"></i>
               <input
-                type="email"
+                type="text"
                 value={email}
                 placeholder="Correo electrónico"
                 onChange={(e) => setEmail(e.target.value)}

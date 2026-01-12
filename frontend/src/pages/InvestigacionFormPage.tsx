@@ -14,11 +14,12 @@ import '../styles/InvestigacionaDetails.css';
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import { FiEdit } from 'react-icons/fi';
 import { FaArrowLeft } from "react-icons/fa";
+import Swal from 'sweetalert2';
 
 const initialState: InvestigacionFormState = {
   nombre_corto: '',
   montoeconomico: null,
-  sanciones: '',
+  conductas: '',
   descripcion_general: '',
   direccion: '',
   procedencia: '',
@@ -128,6 +129,7 @@ function InvestigacionFormPage() {
   const [areasCoduni, setAreasCoduni] = useState<string[]>([]);
   const [showPdfModal, setShowPdfModal] = useState(false);
   const [showMontoEconomico, setShowMontoEconomico] = useState(false);
+  const [montoText, setMontoText] = useState('');
 
   const [contactoActual, setContactoActual] = useState<ContactoForm>({
     ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', tipo: 'responsable'
@@ -258,6 +260,9 @@ function InvestigacionFormPage() {
         const investigacionData = response.data;
         setFormState(investigacionData);
         setIsEditMode(true);
+        if (investigacionData.montoeconomico) {
+          setMontoText(investigacionData.montoeconomico.toLocaleString('en-US'));
+        }
 
         // Cargar áreas para el centro si existe
         if (investigacionData.centro) {
@@ -370,25 +375,71 @@ function InvestigacionFormPage() {
         economica: processedValue,
         montoeconomico: !processedValue ? null : prev.montoeconomico
       }));
+      if (!processedValue) setMontoText('');
     }
-    else if (name === 'montoeconomico') {
-      const montoValue = value === '' ? null : parseFloat(value);
 
-      setFormState(prev => {
-        let nuevaGravedad = prev.gravedad;
 
-        if (montoValue !== null && montoValue >= 100000) {
-          nuevaGravedad = 'ALTA';
-        }
-        return {
-          ...prev,
-          montoeconomico: montoValue,
-          gravedad: nuevaGravedad
-        };
-      });
+    else if (name === 'conductas') {
+      setFormState(prev => ({
+        ...prev,
+        conductas: value,
+        gravedad: value === 'ACOSO Y/O HOSTIGAMIENTO SEXUAL' ? 'ALTA' : prev.gravedad
+      }));
     }
     else {
       setFormState(prev => ({ ...prev, [name]: processedValue }));
+    }
+  };
+
+  const handleMontoRawChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawValue = e.target.value.replace(/[^0-9.]/g, ''); // Solo números y puntos
+    const parts = rawValue.split('.');
+
+    // Evitar múltiples puntos
+    if (parts.length > 2) return;
+
+    // Formatear parte entera con comas
+    const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    const formatted = parts.length > 1 ? `${integerPart}.${parts[1]}` : integerPart;
+
+    setMontoText(formatted);
+
+    const numericValue = rawValue === '' ? null : parseFloat(rawValue);
+
+    setFormState(prev => {
+      let nuevaGravedad = prev.gravedad;
+
+      if (numericValue !== null && numericValue >= 100000) {
+        nuevaGravedad = 'ALTA';
+      }
+      return {
+        ...prev,
+        montoeconomico: numericValue,
+        gravedad: nuevaGravedad
+      };
+    });
+  };
+
+  const handleMontoBlur = () => {
+    const rawValue = montoText.replace(/[^0-9.]/g, '');
+    const value = parseFloat(rawValue);
+
+    if (value > 20000000) {
+      Swal.fire({
+        title: 'Confirmar Monto',
+        text: `La cantidad ingresada (${montoText}) es superior a 20,000,000. ¿Es correcta?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, es correcta',
+        cancelButtonText: 'No, corregir'
+      }).then((result) => {
+        if (!result.isConfirmed) {
+          setMontoText('');
+          setFormState(prev => ({ ...prev, montoeconomico: null }));
+        }
+      });
     }
   };
 
@@ -750,9 +801,9 @@ function InvestigacionFormPage() {
               <label>Conducta *</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-exclamation-triangle"></i>
-                <select name="sanciones" value={formState.sanciones} onChange={handleChange} required>
+                <select name="conductas" value={formState.conductas} onChange={handleChange} required>
                   <option value="">Seleccione...</option>
-                  {opciones?.sanciones?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  {opciones?.conductas?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                 </select>
               </div>
             </div>
@@ -801,14 +852,12 @@ function InvestigacionFormPage() {
                 <div className="admin-input-with-icon">
                   <i className="fas fa-money-bill-wave"></i>
                   <input
-                    type="number"
+                    type="text"
                     name="montoeconomico"
-                    value={formState.montoeconomico || ''}
-                    onChange={handleChange}
+                    value={montoText}
+                    onChange={handleMontoRawChange}
+                    onBlur={handleMontoBlur}
                     required={formState.economica} // Solo requerido si economica es true
-                    min="0"
-                    step="0.01"
-                    max="999999999"
                     placeholder="Ingrese el monto económico"
                   />
                 </div>
@@ -938,23 +987,25 @@ function InvestigacionFormPage() {
               Tiempo
             </h2>
 
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label>Fecha de Reporte *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-file-upload"></i>
-                  <input
-                    type="date"
-                    name="fecha_reporte"
-                    value={formState.fecha_reporte}
-                    onChange={handleChange}
-                    required
-                  />
+            <div className="admin-form-row ">
+              {false && (
+                <div className="admin-form-group">
+                  <label>Fecha de Reporte *</label>
+                  <div className="admin-input-with-icon">
+                    <i className="fas fa-file-upload"></i>
+                    <input
+                      type="date"
+                      name="fecha_reporte"
+                      value={formState.fecha_reporte}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div className="admin-form-group">
-                <label>Fecha Conocimiento de Hechos *</label>
+                <label>Fecha Conocimiento de Hechos por Parte del Representante Patronal *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-eye"></i>
                   <input

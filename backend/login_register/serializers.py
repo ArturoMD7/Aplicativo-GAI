@@ -1,6 +1,46 @@
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+from django.contrib.auth import authenticate
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        identifier = attrs.get("username")
+        password = attrs.get("password")
+
+        try:
+            if "@" in identifier:
+                user = User.objects.get(email=identifier)
+            else:
+                user = User.objects.get(username=identifier)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Usuario o contraseña incorrectos")
+
+        user = authenticate(
+            username=user.username,
+            password=password
+        )
+
+        if not user:
+            raise serializers.ValidationError("Usuario o contraseña incorrectos")
+
+        if not user.is_active:
+            raise serializers.ValidationError("Usuario inactivo")
+
+        data = super().validate({
+            "username": user.username,
+            "password": password
+        })
+
+        data["user"] = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "is_staff": user.is_staff
+        }
+
+        return data
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
@@ -57,7 +97,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         groups_data = validated_data.pop('groups', None)
         
         user = User.objects.create_user(
-            username=validated_data['email'], 
+            username=ficha_value, 
             email=validated_data['email'],
             password=validated_data['password'],
             first_name=validated_data.get('first_name', ''),
