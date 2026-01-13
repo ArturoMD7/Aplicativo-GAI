@@ -57,6 +57,7 @@ export interface Testigo extends BasePersona {
 export interface InvestigacionFormState {
   montoeconomico: number | null;
   conductas: string;
+  subconducta: string;
   id?: number;
   nombre_corto: string;
   descripcion_general: string;

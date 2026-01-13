@@ -20,6 +20,7 @@ const initialState: InvestigacionFormState = {
   nombre_corto: '',
   montoeconomico: null,
   conductas: '',
+  subconducta: '',
   descripcion_general: '',
   direccion: '',
   procedencia: '',
@@ -111,6 +112,103 @@ interface TestigoForm {
 }
 
 type TipoPersona = 'contactos' | 'investigadores' | 'involucrados' | 'testigos' | 'reportantes';
+
+const subconductasMap: Record<string, string[]> = {
+  'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS': [
+    'INCUMPLIMIENTO DE NORMAS DE TRABAJO',
+    'INCUMPLIMIENTO DE PROCEDIMIENTOS OPERATIVOS',
+    'INCUMPLIMIENTO DE LINEAMIENTOS INTERNOS',
+    'INCUMPLIMIENTO DE INSTRUCCIONES GENERALES',
+    'INCUMPLIMIENTO DE CLÁUSULAS CONTRACTUALES'
+  ],
+  'FALTAS INJUSTIFICADAS / ABANDONO DE LABORES': [
+    'FALTAS INJUSTIFICADAS',
+    'ABANDONO DE LABORES',
+    'INASISTENCIAS REITERADAS',
+    'OMISIÓN DE PRESENTARSE AL CENTRO DE TRABAJO'
+  ],
+  'NEGLIGENCIA EN EL DESEMPEÑO DE FUNCIONES': [
+    'OMISIONES EN EL DESARROLLO DE FUNCIONES',
+    'EJECUCIÓN DEFICIENTE DE TAREAS ASIGNADAS',
+    'FALTA DE CUIDADO O DILIGENCIA',
+    'NEGLIGENCIA OPERATIVA SIN DOLO'
+  ],
+  'ACOSO LABORAL (MOBBING)': [
+    'ACOSO LABORAL',
+    'HOSTIGAMIENTO LABORAL NO SEXUAL',
+    'CONDUCTAS SISTEMÁTICAS DE PRESIÓN O INTIMIDACIÓN'
+  ],
+  'ACTITUD INDEBIDA': [
+    'ACTITUD INDEBIDA',
+    'CONDUCTA INAPROPIADA',
+    'FALTAS AL RESPETO',
+    'COMPORTAMIENTO CONTRARIO A LA CONVIVENCIA LABORAL'
+  ],
+  'DESOBEDIENCIA': [
+    'DESOBEDIENCIA A INSTRUCCIONES SUPERIORES',
+    'NEGATIVA A ACATAR ÓRDENES DIRECTAS',
+    'INCUMPLIMIENTO DE INSTRUCCIONES OPERATIVAS',
+    'RESISTENCIA INJUSTIFICADA A LA AUTORIDAD'
+  ],
+  'ALTERACIÓN DEL ORDEN Y DISCIPLINA': [
+    'ALTERACIÓN DEL ORDEN',
+    'RIÑAS O CONFRONTACIONES',
+    'ESCÁNDALOS O CONDUCTAS DISRUPTIVAS',
+    'AFECTACIÓN A LA DISCIPLINA DEL CENTRO DE TRABAJO'
+  ],
+  'SUSTRACCIÓN O ROBO DE BIENES': [
+    'SUSTRACCIÓN',
+    'ROBO',
+    'SUSTRACCIÓN DE EQUIPO MOBILIARIO',
+    'PÉRDIDA DE BIENES IMPUTABLE',
+    'USO INDEBIDO CON ÁNIMO DE APROPIACIÓN'
+  ],
+  'USO INDEBIDO DE BIENES, HERRAMIENTAS O RECURSOS': [
+    'USO INDEBIDO DE ÚTILES Y/O HERRAMIENTAS',
+    'USO NO AUTORIZADO DE BIENES DE LA EMPRESA',
+    'USO PERSONAL DE RECURSOS SIN APROPIACIÓN'
+  ],
+  'HOSTIGAMIENTO O ACOSO SEXUAL': [
+    'HOSTIGAMIENTO SEXUAL',
+    'ACOSO SEXUAL',
+    'CONDUCTAS DE CONNOTACIÓN SEXUAL',
+    'VIOLENCIA DIGITAL DE ÍNDOLE SEXUAL'
+  ],
+  'CONCURRENCIA EN ESTADO INCONVENIENTE': [
+    'CONCURRIR EN ESTADO DE EBRIEDAD',
+    'PRESENTARSE BAJO EL INFLUJO DE ALCOHOL',
+    'PRESENTARSE BAJO EFECTOS DE SUSTANCIAS PROHIBIDAS'
+  ],
+  'DIVULGACIÓN O USO INDEBIDO DE INFORMACIÓN': [
+    'DIVULGACIÓN DE INFORMACIÓN CONFIDENCIAL',
+    'USO INDEBIDO DE INFORMACIÓN',
+    'ACCESO NO AUTORIZADO A INFORMACIÓN'
+  ],
+  'OCASIONAR DAÑOS O PERJUICIOS': [
+    'DAÑOS A BIENES DE LA EMPRESA',
+    'DAÑOS A INSTALACIONES',
+    'PERJUICIOS OCASIONADOS POR ACCIÓN U OMISIÓN'
+  ],
+  'SUSPENSIÓN UNILATERAL DE LABORES': [
+    'SUSPENSIÓN DE LABORES',
+    'PARO INJUSTIFICADO',
+    'NEGATIVA INJUSTIFICADA A PRESTAR SERVICIOS'
+  ],
+  'DISCRIMINACIÓN': [
+    'DISCRIMINACIÓN LABORAL',
+    'TRATO DIFERENCIADO INJUSTIFICADO'
+  ],
+  'ACCIDENTE DE TRABAJO': [
+    'ACCIDENTE DE TRABAJO',
+    'INCIDENTE CON POSIBLE RESPONSABILIDAD LABORAL'
+  ],
+  'OTRAS CONDUCTAS': [
+    'CONDUCTA NO LISTADA ANTERIORMENTE'
+  ],
+  'CLÁUSULA 253 CCT': [
+    'APLICACIÓN DE CLÁUSULA 253'
+  ]
+};
 
 function InvestigacionFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -383,7 +481,8 @@ function InvestigacionFormPage() {
       setFormState(prev => ({
         ...prev,
         conductas: value,
-        gravedad: value === 'ACOSO Y/O HOSTIGAMIENTO SEXUAL' ? 'ALTA' : prev.gravedad
+        subconducta: '',
+        gravedad: value === 'HOSTIGAMIENTO O ACOSO SEXUAL' ? 'ALTA' : prev.gravedad
       }));
     }
     else {
@@ -797,15 +896,44 @@ function InvestigacionFormPage() {
             </div>
 
 
-            <div className="admin-form-group">
-              <label>Conducta *</label>
-              <div className="admin-input-with-icon">
-                <i className="fas fa-exclamation-triangle"></i>
-                <select name="conductas" value={formState.conductas} onChange={handleChange} required>
-                  <option value="">Seleccione...</option>
-                  {opciones?.conductas?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                </select>
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>Conducta *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-exclamation-triangle"></i>
+                  <select
+                    name="conductas"
+                    value={formState.conductas}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Seleccione...</option>
+                    {Object.keys(subconductasMap).map(conducta => (
+                      <option key={conducta} value={conducta}>{conducta}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
+
+              {subconductasMap[formState.conductas] && subconductasMap[formState.conductas].length > 0 && (
+                <div className="admin-form-group">
+                  <label>Detalle de Conducta *</label>
+                  <div className="admin-input-with-icon">
+                    <i className="fas fa-list-ul"></i>
+                    <select
+                      name="subconducta"
+                      value={formState.subconducta}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="">Seleccione detalle...</option>
+                      {subconductasMap[formState.conductas].map(sub => (
+                        <option key={sub} value={sub}>{sub}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
             </div>
 
 
