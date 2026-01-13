@@ -100,6 +100,7 @@ export interface InvestigacionFormState {
   reportantes: Reportante[];
   involucrados: Involucrado[];
   testigos: Testigo[];
+  detalles_conducta?: string;
 }
 
 export interface OpcionesDropdowns {
@@ -135,7 +136,8 @@ export interface InvestigacionListado {
   involucrados: string[];
   estatus: 'Abierta' | 'Seguimiento' | 'Concluida' | 'ABIERTA' | 'SEGUIMIENTO' | 'CONCLUIDA' | 'ENVIADA_A_CONCLUIR';
   conductas: string;
-
+  subconducta?: string;
+  detalles_conducta?: string;
 }
 
 export interface Antecedente {

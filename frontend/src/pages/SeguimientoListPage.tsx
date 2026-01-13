@@ -1,15 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiEdit, FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiFileText, FiTrendingUp } from 'react-icons/fi'; // Importar FiFileText
+import { FiEdit, FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiFileText, FiTrendingUp, FiFilter, FiChevronUp, FiChevronDown } from 'react-icons/fi';
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import Pagination from '../components/Pagination';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import '../styles/InvestigacionPage.css'; 
-import DocumentosModals from '../components/Modals/DocumentosModals'; 
+import '../styles/InvestigacionPage.css';
+import DocumentosModals from '../components/Modals/DocumentosModals';
 import Swal from 'sweetalert2';
+import { GERENCIA_CHOICES, subconductasMap, CONDUCTAS_POSIBLES } from '../data/investigacionConstants';
+
+type SortConfig = {
+  key: keyof InvestigacionListado | null;
+  direction: 'ascending' | 'descending';
+};
 
 function SeguimientoListPage() {
   const [investigaciones, setInvestigaciones] = useState<InvestigacionListado[]>([]);
@@ -19,13 +25,20 @@ function SeguimientoListPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-  
+
+  // Filters
+  const [selectedGerencia, setSelectedGerencia] = useState('');
+  const [selectedConducta, setSelectedConducta] = useState('');
+  const [selectedSubconducta, setSelectedSubconducta] = useState('');
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'ascending' });
+
   // Estados para el Modal de Documentos
   const [isDocModalOpen, setIsDocModalOpen] = useState(false);
   const [selectedInvestigacionId, setSelectedInvestigacionId] = useState<number | null>(null);
   const [selectedReporteNum, setSelectedReporteNum] = useState('');
-  
+
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchInvestigaciones = async () => {
@@ -74,12 +87,61 @@ function SeguimientoListPage() {
     return 'gravedad-default';
   };
 
+  const availableSubconductas = useMemo(() => {
+    if (!selectedConducta) return [];
+    return subconductasMap[selectedConducta] || [];
+  }, [selectedConducta]);
+
+  // Reset subconducta when conducta changes
+  useEffect(() => {
+    setSelectedSubconducta('');
+  }, [selectedConducta]);
+
   const filteredInvestigaciones = investigaciones.filter((inv) => {
     const texto = searchTerm.toLowerCase();
-    return Object.values(inv).some(value =>
+    const searchMatch = Object.values(inv).some(value =>
       String(value).toLowerCase().includes(texto)
     );
+    const matchesGerencia = selectedGerencia ? inv.gerencia_responsable === selectedGerencia : true;
+    const matchesConducta = selectedConducta ? inv.conductas === selectedConducta : true;
+    const matchesSubconducta = selectedSubconducta ? inv.subconducta === selectedSubconducta : true;
+
+    return searchMatch && matchesGerencia && matchesConducta && matchesSubconducta;
   });
+
+  // Sorting Logic
+  const sortedInvestigaciones = useMemo(() => {
+    let sortableItems = [...filteredInvestigaciones];
+    if (sortConfig.key !== null) {
+      sortableItems.sort((a, b) => {
+        let valA: any = a[sortConfig.key as keyof InvestigacionListado];
+        let valB: any = b[sortConfig.key as keyof InvestigacionListado];
+
+        if (sortConfig.key === 'created_at' || sortConfig.key === 'fecha_reporte' || sortConfig.key === 'fecha_prescripcion') {
+          valA = new Date(valA).getTime();
+          valB = new Date(valB).getTime();
+        }
+
+        if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredInvestigaciones, sortConfig]);
+
+  const requestSort = (key: keyof InvestigacionListado) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (columnKey: keyof InvestigacionListado) => {
+    if (sortConfig.key !== columnKey) return <span style={{ opacity: 0.3, marginLeft: '5px' }}>↕</span>;
+    return sortConfig.direction === 'ascending' ? <FiChevronUp /> : <FiChevronDown />;
+  };
 
   const formatDate = (str: string) => {
     if (!str) return '';
@@ -94,10 +156,12 @@ function SeguimientoListPage() {
     }
     const data = filteredInvestigaciones.map(inv => ({
       'No. Reporte': inv.numero_reporte,
-      'Documento': inv.nombre_corto,
-      'Dirección': inv.direccion,
-      'Fecha Reporte': new Date(inv.fecha_reporte).toLocaleDateString(),
-      'Estatus': inv.estatus
+      'Documento de Origen': inv.nombre_corto,
+      'Gravedad': inv.gravedad,
+      'Creado Por': inv.created_by_name,
+      'Fecha Creación': new Date(inv.created_at).toLocaleDateString(),
+      'Fecha Prescripción': new Date(inv.fecha_prescripcion).toLocaleDateString(),
+      'Días Restantes': inv.dias_restantes
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -115,11 +179,39 @@ function SeguimientoListPage() {
     setIsDocModalOpen(true);
   };
 
+  const renderInvestigadores = (investigadores: string[] | string) => {
+    if (!investigadores || (Array.isArray(investigadores) && investigadores.length === 0)) {
+      return <span className="text-muted" style={{ fontSize: '0.85rem' }}>Sin asignar</span>;
+    }
+    const lista = Array.isArray(investigadores) ? investigadores : [investigadores];
+    return (
+      <div className="investigadores-list">
+        {lista.map((nombre, index) => (
+          <span key={index} className="investigador-badge">{nombre}</span>
+        ))}
+      </div>
+    );
+  };
+
+  const renderInvolucrados = (involucrados: string[] | string) => {
+    if (!involucrados || (Array.isArray(involucrados) && involucrados.length === 0)) {
+      return <span className="text-muted" style={{ fontSize: '0.85rem' }}>Sin asignar</span>;
+    }
+    const lista = Array.isArray(involucrados) ? involucrados : [involucrados];
+    return (
+      <div className="involucrados-list">
+        {lista.map((nombre, index) => (
+          <span key={index} className="involucrados-badge">{nombre}</span>
+        ))}
+      </div>
+    );
+  };
+
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredInvestigaciones.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredInvestigaciones.length / itemsPerPage);
+  const currentItems = sortedInvestigaciones.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(sortedInvestigaciones.length / itemsPerPage);
 
   const handlePageChange = (pageNumber: number) => setCurrentPage(pageNumber);
   const handleItemsPerPageChange = (items: number) => { setItemsPerPage(items); setCurrentPage(1); };
@@ -133,7 +225,7 @@ function SeguimientoListPage() {
             <FiSearch className="search-icon" />
             <input
               type="text"
-              placeholder="Buscar..."
+              placeholder="Buscar reporte, nombre..."
               value={searchTerm}
               onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
             />
@@ -142,39 +234,72 @@ function SeguimientoListPage() {
         </div>
       </div>
 
+      <div style={{ display: 'flex', alignItems: 'center', marginLeft: '1px', flexWrap: 'wrap', gap: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FiFilter style={{ color: '#666', marginRight: '5px' }} />
+          <select value={selectedGerencia} onChange={(e) => setSelectedGerencia(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}>
+            <option value="">Todas las Gerencias</option>
+            {GERENCIA_CHOICES.map(g => <option key={g} value={g}>{g}</option>)}
+          </select>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <FiFilter style={{ color: '#666', marginRight: '5px' }} />
+          <select value={selectedConducta} onChange={(e) => setSelectedConducta(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}>
+            <option value="">Todas las Conductas</option>
+            {CONDUCTAS_POSIBLES.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </div>
+
+        {selectedConducta && availableSubconductas.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FiFilter style={{ color: '#666', marginRight: '5px' }} />
+            <select value={selectedSubconducta} onChange={(e) => setSelectedSubconducta(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}>
+              <option value="">Todas las Subconductas</option>
+              {availableSubconductas.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        )}
+      </div>
+
       {loading && <div className="loading-message">Cargando...</div>}
-      {error && <div className="error-message"><FiAlertCircle style={{marginRight:8}}/> {error}</div>}
+      {error && <div className="error-message"><FiAlertCircle style={{ marginRight: 8 }} /> {error}</div>}
 
       {!loading && !error && (
         <div className="table-container">
           <table className="investigacion-table">
             <thead>
               <tr>
-                {/* 1. Nueva columna al inicio para el botón de documentos */}
-                <th style={{width: '60px', textAlign: 'center'}}>Docs</th>
-                <th>No. Reporte</th>
-                <th>Documento</th>
-                <th>Dirección</th>
-                <th>Gravedad</th>
-                <th>Fecha Reporte</th>
-                <th style={{textAlign: 'center'}}>Días en Proceso</th>
+                <th style={{ width: '60px', textAlign: 'center' }}>Docs</th>
+                <th onClick={() => requestSort('numero_reporte')} style={{ cursor: 'pointer' }}>No. Reporte {getSortIcon('numero_reporte')}</th>
+                <th onClick={() => requestSort('nombre_corto')} style={{ cursor: 'pointer' }}>Documento de Origen {getSortIcon('nombre_corto')}</th>
+                <th onClick={() => requestSort('direccion')} style={{ cursor: 'pointer' }}>Dirección {getSortIcon('direccion')}</th>
+                <th>Investigadores</th>
+                <th>Personal Reportado</th>
+                <th onClick={() => requestSort('procedencia')} style={{ cursor: 'pointer' }}>Procedencia {getSortIcon('procedencia')}</th>
+                <th onClick={() => requestSort('conductas')} style={{ cursor: 'pointer' }}>Conducta {getSortIcon('conductas')}</th>
+                <th onClick={() => requestSort('gravedad')} style={{ cursor: 'pointer' }}>Gravedad {getSortIcon('gravedad')}</th>
+                <th onClick={() => requestSort('gerencia_responsable')} style={{ cursor: 'pointer' }}>Región {getSortIcon('gerencia_responsable')}</th>
+                <th onClick={() => requestSort('fecha_reporte')} style={{ cursor: 'pointer' }}>Fecha Reporte {getSortIcon('fecha_reporte')}</th>
+                <th onClick={() => requestSort('fecha_prescripcion')} style={{ cursor: 'pointer' }}>Prescripción {getSortIcon('fecha_prescripcion')}</th>
+                <th style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => requestSort('dias_restantes')}>Días Rest. {getSortIcon('dias_restantes')}</th>
+                <th onClick={() => requestSort('created_by_name')} style={{ cursor: 'pointer' }}>Creado Por {getSortIcon('created_by_name')}</th>
                 <th style={{ textAlign: 'center' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {currentItems.map((inv) => (
                 <tr key={inv.id}>
-                  {/* 2. Botón en la primera columna */}
-                  <td style={{textAlign: 'center', borderLeft: '4px solid #17a2b8'}}>
-                    <button 
+                  <td style={{ textAlign: 'center', borderLeft: '4px solid #17a2b8' }}>
+                    <button
                       onClick={() => handleOpenDocs(inv.id, inv.numero_reporte)}
                       className="btn-icon-only"
                       title="Ver archivos adjuntos"
                       style={{
-                        background: 'none', 
-                        border: 'none', 
-                        cursor: 'pointer', 
-                        color: '#840016', // Color guinda PEMEX
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#840016',
                         fontSize: '1.2rem',
                         display: 'flex',
                         alignItems: 'center',
@@ -187,29 +312,40 @@ function SeguimientoListPage() {
                   </td>
 
                   <td className="col-reporte">
-                    {inv.numero_reporte}
+                    {inv.numero_reporte || <span className="text-muted">Sin asignar</span>}
                   </td>
-                  
+
                   <td style={{ fontWeight: 500 }}>{inv.nombre_corto}</td>
                   <td className="text-muted">{inv.direccion}</td>
-                  
+
+                  <td>{renderInvestigadores(inv.investigadores)}</td>
+                  <td>{renderInvolucrados(inv.involucrados)}</td>
+                  <td className="text-muted">{inv.procedencia}</td>
+                  <td className="text-muted">{inv.conductas}</td>
+
                   <td>
                     <span className={`gravedad-badge ${getGravedadClass(inv.gravedad)}`}>
-                      {inv.gravedad}
+                      {inv.gravedad || 'N/D'}
                     </span>
                   </td>
-                  
+
+                  <td className="text-muted">{inv.gerencia_responsable}</td>
                   <td>{formatDate(inv.fecha_reporte)}</td>
-                  
-                  <td style={{ textAlign: 'center', color: '#666' }}>
-                     {Math.floor((new Date().getTime() - new Date(inv.created_at).getTime()) / (1000 * 3600 * 24))} días
+                  <td>{formatDate(inv.fecha_prescripcion)}</td>
+
+                  <td className="col-dias" style={{ color: inv.dias_restantes < 10 ? '#e74c3c' : '#333' }}>
+                    {inv.dias_restantes}
+                  </td>
+
+                  <td className="text-muted" style={{ fontSize: '0.8rem' }}>
+                    {inv.created_by_name}
                   </td>
 
                   <td>
-                    <div className="action-buttons" style={{justifyContent: 'center'}}>
+                    <div className="action-buttons" style={{ justifyContent: 'center' }}>
                       <ButtonIcon
                         variant="edit"
-                        onClick={() => navigate(`/investigaciones/seguimiento/${inv.id}`)}
+                        onClick={() => navigate(`/investigaciones/seguimiento/${inv.id}`, { state: { from: location.pathname } })}
                         icon={<FiEdit />}
                         title="Gestionar Expediente"
                         size="medium"
@@ -223,7 +359,6 @@ function SeguimientoListPage() {
                         size="medium"
                       />
                     </div>
-                    
                   </td>
                 </tr>
               ))}
@@ -250,8 +385,7 @@ function SeguimientoListPage() {
         </div>
       )}
 
-      {/* 3. Renderizar el componente de Modals */}
-      <DocumentosModals 
+      <DocumentosModals
         isOpen={isDocModalOpen}
         onClose={() => setIsDocModalOpen(false)}
         investigacionId={selectedInvestigacionId}

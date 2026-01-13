@@ -51,6 +51,7 @@ const initialState: InvestigacionFormState = {
   responsable_puesto: '',
   responsable_extension: '',
   responsable_email: '',
+  detalles_conducta: '',
 };
 
 interface ContactoForm {
@@ -113,102 +114,7 @@ interface TestigoForm {
 
 type TipoPersona = 'contactos' | 'investigadores' | 'involucrados' | 'testigos' | 'reportantes';
 
-const subconductasMap: Record<string, string[]> = {
-  'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS': [
-    'INCUMPLIMIENTO DE NORMAS DE TRABAJO',
-    'INCUMPLIMIENTO DE PROCEDIMIENTOS OPERATIVOS',
-    'INCUMPLIMIENTO DE LINEAMIENTOS INTERNOS',
-    'INCUMPLIMIENTO DE INSTRUCCIONES GENERALES',
-    'INCUMPLIMIENTO DE CLÁUSULAS CONTRACTUALES'
-  ],
-  'FALTAS INJUSTIFICADAS / ABANDONO DE LABORES': [
-    'FALTAS INJUSTIFICADAS',
-    'ABANDONO DE LABORES',
-    'INASISTENCIAS REITERADAS',
-    'OMISIÓN DE PRESENTARSE AL CENTRO DE TRABAJO'
-  ],
-  'NEGLIGENCIA EN EL DESEMPEÑO DE FUNCIONES': [
-    'OMISIONES EN EL DESARROLLO DE FUNCIONES',
-    'EJECUCIÓN DEFICIENTE DE TAREAS ASIGNADAS',
-    'FALTA DE CUIDADO O DILIGENCIA',
-    'NEGLIGENCIA OPERATIVA SIN DOLO'
-  ],
-  'ACOSO LABORAL (MOBBING)': [
-    'ACOSO LABORAL',
-    'HOSTIGAMIENTO LABORAL NO SEXUAL',
-    'CONDUCTAS SISTEMÁTICAS DE PRESIÓN O INTIMIDACIÓN'
-  ],
-  'ACTITUD INDEBIDA': [
-    'ACTITUD INDEBIDA',
-    'CONDUCTA INAPROPIADA',
-    'FALTAS AL RESPETO',
-    'COMPORTAMIENTO CONTRARIO A LA CONVIVENCIA LABORAL'
-  ],
-  'DESOBEDIENCIA': [
-    'DESOBEDIENCIA A INSTRUCCIONES SUPERIORES',
-    'NEGATIVA A ACATAR ÓRDENES DIRECTAS',
-    'INCUMPLIMIENTO DE INSTRUCCIONES OPERATIVAS',
-    'RESISTENCIA INJUSTIFICADA A LA AUTORIDAD'
-  ],
-  'ALTERACIÓN DEL ORDEN Y DISCIPLINA': [
-    'ALTERACIÓN DEL ORDEN',
-    'RIÑAS O CONFRONTACIONES',
-    'ESCÁNDALOS O CONDUCTAS DISRUPTIVAS',
-    'AFECTACIÓN A LA DISCIPLINA DEL CENTRO DE TRABAJO'
-  ],
-  'SUSTRACCIÓN O ROBO DE BIENES': [
-    'SUSTRACCIÓN',
-    'ROBO',
-    'SUSTRACCIÓN DE EQUIPO MOBILIARIO',
-    'PÉRDIDA DE BIENES IMPUTABLE',
-    'USO INDEBIDO CON ÁNIMO DE APROPIACIÓN'
-  ],
-  'USO INDEBIDO DE BIENES, HERRAMIENTAS O RECURSOS': [
-    'USO INDEBIDO DE ÚTILES Y/O HERRAMIENTAS',
-    'USO NO AUTORIZADO DE BIENES DE LA EMPRESA',
-    'USO PERSONAL DE RECURSOS SIN APROPIACIÓN'
-  ],
-  'HOSTIGAMIENTO O ACOSO SEXUAL': [
-    'HOSTIGAMIENTO SEXUAL',
-    'ACOSO SEXUAL',
-    'CONDUCTAS DE CONNOTACIÓN SEXUAL',
-    'VIOLENCIA DIGITAL DE ÍNDOLE SEXUAL'
-  ],
-  'CONCURRENCIA EN ESTADO INCONVENIENTE': [
-    'CONCURRIR EN ESTADO DE EBRIEDAD',
-    'PRESENTARSE BAJO EL INFLUJO DE ALCOHOL',
-    'PRESENTARSE BAJO EFECTOS DE SUSTANCIAS PROHIBIDAS'
-  ],
-  'DIVULGACIÓN O USO INDEBIDO DE INFORMACIÓN': [
-    'DIVULGACIÓN DE INFORMACIÓN CONFIDENCIAL',
-    'USO INDEBIDO DE INFORMACIÓN',
-    'ACCESO NO AUTORIZADO A INFORMACIÓN'
-  ],
-  'OCASIONAR DAÑOS O PERJUICIOS': [
-    'DAÑOS A BIENES DE LA EMPRESA',
-    'DAÑOS A INSTALACIONES',
-    'PERJUICIOS OCASIONADOS POR ACCIÓN U OMISIÓN'
-  ],
-  'SUSPENSIÓN UNILATERAL DE LABORES': [
-    'SUSPENSIÓN DE LABORES',
-    'PARO INJUSTIFICADO',
-    'NEGATIVA INJUSTIFICADA A PRESTAR SERVICIOS'
-  ],
-  'DISCRIMINACIÓN': [
-    'DISCRIMINACIÓN LABORAL',
-    'TRATO DIFERENCIADO INJUSTIFICADO'
-  ],
-  'ACCIDENTE DE TRABAJO': [
-    'ACCIDENTE DE TRABAJO',
-    'INCIDENTE CON POSIBLE RESPONSABILIDAD LABORAL'
-  ],
-  'OTRAS CONDUCTAS': [
-    'CONDUCTA NO LISTADA ANTERIORMENTE'
-  ],
-  'CLÁUSULA 253 CCT': [
-    'APLICACIÓN DE CLÁUSULA 253'
-  ]
-};
+import { subconductasMap } from '../data/investigacionConstants';
 
 function InvestigacionFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -482,6 +388,7 @@ function InvestigacionFormPage() {
         ...prev,
         conductas: value,
         subconducta: '',
+        detalles_conducta: value === 'OTRAS CONDUCTAS' ? prev.detalles_conducta : '',
         gravedad: value === 'HOSTIGAMIENTO O ACOSO SEXUAL' ? 'ALTA' : prev.gravedad
       }));
     }
@@ -774,6 +681,14 @@ function InvestigacionFormPage() {
       return;
     }
 
+    if (formState.conductas === 'OTRAS CONDUCTAS') {
+      if (!formState.detalles_conducta || formState.detalles_conducta.length < 100) {
+        setLoading(false);
+        setError('Si selecciona "OTRAS CONDUCTAS", debe detallar la conducta con un mínimo de 100 caracteres.');
+        return;
+      }
+    }
+
     try {
       const dataToSubmit = {
         ...formState,
@@ -915,6 +830,30 @@ function InvestigacionFormPage() {
                 </div>
               </div>
 
+
+
+              {formState.conductas === 'OTRAS CONDUCTAS' && (
+                <div className="admin-form-group" style={{ gridColumn: '1 / -1' }}>
+                  <label>Detalles de la conducta *</label>
+                  <div className="admin-input-with-icon">
+                    <i className="fas fa-align-left"></i>
+                    <textarea
+                      name="detalles_conducta"
+                      value={formState.detalles_conducta || ''}
+                      onChange={handleChange}
+                      required
+                      minLength={100}
+                      placeholder="Describa la conducta detalladamente (mínimo 100 caracteres)..."
+                      className="admin-textarea"
+                      rows={4}
+                    />
+                  </div>
+                  <small className="admin-field-hint">
+                    Carácteres actuales: {formState.detalles_conducta?.length || 0} / 100 mínimo
+                  </small>
+                </div>
+              )}
+
               {subconductasMap[formState.conductas] && subconductasMap[formState.conductas].length > 0 && (
                 <div className="admin-form-group">
                   <label>Detalle de Conducta *</label>
@@ -974,26 +913,28 @@ function InvestigacionFormPage() {
               </div>
             </div>
 
-            {formState.economica && (
-              <div className="admin-form-group">
-                <label>Monto Económico *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-money-bill-wave"></i>
-                  <input
-                    type="text"
-                    name="montoeconomico"
-                    value={montoText}
-                    onChange={handleMontoRawChange}
-                    onBlur={handleMontoBlur}
-                    required={formState.economica} // Solo requerido si economica es true
-                    placeholder="Ingrese el monto económico"
-                  />
+            {
+              formState.economica && (
+                <div className="admin-form-group">
+                  <label>Monto Económico *</label>
+                  <div className="admin-input-with-icon">
+                    <i className="fas fa-money-bill-wave"></i>
+                    <input
+                      type="text"
+                      name="montoeconomico"
+                      value={montoText}
+                      onChange={handleMontoRawChange}
+                      onBlur={handleMontoBlur}
+                      required={formState.economica} // Solo requerido si economica es true
+                      placeholder="Ingrese el monto económico"
+                    />
+                  </div>
+                  <small className="admin-field-hint">
+                    Ingrese el monto con dos decimales (ej: 1500.00)
+                  </small>
                 </div>
-                <small className="admin-field-hint">
-                  Ingrese el monto con dos decimales (ej: 1500.00)
-                </small>
-              </div>
-            )}
+              )
+            }
 
 
             {/* --- SUB-SECCIÓN REPORTANTES (Dentro de Info General) --- */}
@@ -1103,12 +1044,13 @@ function InvestigacionFormPage() {
               )}
             </div>
 
-          </section>
+          </section >
 
           {/* --- SECCIÓN 2: FECHAS IMPORTANTES --- */}
-          <section
+          < section
             className="admin-form-section"
-            style={{ gridColumn: '1 / -1' }}
+            style={{ gridColumn: '1 / -1' }
+            }
           >
             <h2 className="admin-section-title">
               <i className="fas fa-calendar-alt"></i>
@@ -1180,10 +1122,10 @@ function InvestigacionFormPage() {
             </div>
 
 
-          </section>
+          </section >
 
           {/* --- SECCIÓN 5: INFORMACIÓN DEL EVENTO --- */}
-          <section className="admin-form-section">
+          < section className="admin-form-section" >
             <h2 className="admin-section-title">
               <i className="fas fa-calendar-check"></i>
               Modo y Lugar
@@ -1256,10 +1198,10 @@ function InvestigacionFormPage() {
                 />
               </div>
             </div>
-          </section>
+          </section >
 
           {/* --- SECCIÓN 3: UBICACIÓN ORGANIZACIONAL --- */}
-          <section className="admin-form-section">
+          < section className="admin-form-section" >
             <h2 className="admin-section-title">
               <i className="fas fa-building"></i>
               Ubicación Organizacional
@@ -1326,18 +1268,20 @@ function InvestigacionFormPage() {
               </div>
             </div>
 
-            {(formState.regimen === 'Sindicalizado' || formState.regimen === 'Ambos') && (
-              <div className="admin-form-group">
-                <label>Sindicato *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-handshake"></i>
-                  <select name="sindicato" value={formState.sindicato || ''} onChange={handleChange} required>
-                    <option value="">Seleccione...</option>
-                    {opciones?.sindicatos.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
+            {
+              (formState.regimen === 'Sindicalizado' || formState.regimen === 'Ambos') && (
+                <div className="admin-form-group">
+                  <label>Sindicato *</label>
+                  <div className="admin-input-with-icon">
+                    <i className="fas fa-handshake"></i>
+                    <select name="sindicato" value={formState.sindicato || ''} onChange={handleChange} required>
+                      <option value="">Seleccione...</option>
+                      {opciones?.sindicatos.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    </select>
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            }
 
             <div className="admin-form-group">
               <label>Gerencia Responsable *</label>
@@ -1350,54 +1294,56 @@ function InvestigacionFormPage() {
               </div>
             </div>
 
-            {formState.responsable_ficha && (
-              <div className="gerente-info-container" style={{ gridColumn: '1 / -1', background: '#f0f4f8', padding: '15px', borderRadius: '8px', marginTop: '10px' }}>
-                <h4 style={{ marginBottom: '10px', fontSize: '0.9rem' }}>Datos del Responsable (Nivel 44)</h4>
-                <div className="admin-form-row">
-                  <div className="admin-form-group">
-                    <label>Nombre del Responsable</label>
-                    <input type="text" value={formState.responsable_nombre} readOnly className="admin-readonly-field" />
+            {
+              formState.responsable_ficha && (
+                <div className="gerente-info-container" style={{ gridColumn: '1 / -1', background: '#f0f4f8', padding: '15px', borderRadius: '8px', marginTop: '10px' }}>
+                  <h4 style={{ marginBottom: '10px', fontSize: '0.9rem' }}>Datos del Responsable (Nivel 44)</h4>
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Nombre del Responsable</label>
+                      <input type="text" value={formState.responsable_nombre} readOnly className="admin-readonly-field" />
+                    </div>
+
+                  </div>
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Ficha</label>
+                      <input type="text" value={formState.responsable_ficha} readOnly className="admin-readonly-field" />
+                    </div>
+                    <div className="admin-form-group">
+
+                      <label>Extensión Responsable *</label>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={formState.responsable_extension}
+                        onChange={handleChange}
+                        placeholder="Extensión"
+                      />
+                    </div>
+
+
                   </div>
 
-                </div>
-                <div className="admin-form-row">
                   <div className="admin-form-group">
-                    <label>Ficha</label>
-                    <input type="text" value={formState.responsable_ficha} readOnly className="admin-readonly-field" />
-                  </div>
-                  <div className="admin-form-group">
-
-                    <label>Extensión Responsable *</label>
+                    <label>Email Responsable *</label>
                     <input
                       type="text"
                       className="admin-input"
-                      value={formState.responsable_extension}
+                      value={formState.responsable_email}
                       onChange={handleChange}
-                      placeholder="Extensión"
+                      placeholder="Ingrese email"
                     />
                   </div>
 
-
                 </div>
+              )
+            }
 
-                <div className="admin-form-group">
-                  <label>Email Responsable *</label>
-                  <input
-                    type="text"
-                    className="admin-input"
-                    value={formState.responsable_email}
-                    onChange={handleChange}
-                    placeholder="Ingrese email"
-                  />
-                </div>
-
-              </div>
-            )}
-
-          </section>
+          </section >
 
           {/* --- SECCIÓN 4: GERENCIA RESPONSABLE --- */}
-          <section className="admin-form-section">
+          < section className="admin-form-section" >
             <h2 className="admin-section-title">
               <i className="fas fa-user-tie"></i>
               Gerencia Responsable
@@ -1520,282 +1466,284 @@ function InvestigacionFormPage() {
             </div>
 
             {/* Investigadores - Solo visible para Supervisores y Admin */}
-            {(['Admin', 'AdminCentral'].includes(userRole) || userRole.startsWith('Supervisor')) && (
-              <div className="admin-personas-section">
-                <h3>Investigadores</h3>
-                <div className="admin-form-group">
-                  <label>Ficha</label>
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-
-                    <input
-                      type="text"
-                      className="admin-input"
-                      value={investigadorActual.ficha}
-                      onChange={(e) => setInvestigadorActual(prev => ({ ...prev, ficha: e.target.value }))}
-                      onKeyDown={(e) => handleEnterBusqueda(e, investigadorActual.ficha, 'investigador')}
-                      placeholder="Ingrese ficha y presione Enter o Tab"
-                    />
-
-                  </div>
-
-                </div>
-
-                <div className="admin-form-row">
+            {
+              (['Admin', 'AdminCentral'].includes(userRole) || userRole.startsWith('Supervisor')) && (
+                <div className="admin-personas-section">
+                  <h3>Investigadores</h3>
                   <div className="admin-form-group">
-                    <label>Nombre</label>
-                    <input type="text" value={investigadorActual.nombre} readOnly className="admin-readonly-field" />
-                  </div>
-                  <div className="admin-form-group">
-                    <label>Categoría</label>
-                    <input type="text" value={investigadorActual.categoria} readOnly className="admin-readonly-field" />
-                  </div>
-                </div>
+                    <label>Ficha</label>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
 
-                <div className="admin-form-row">
-                  <div className="admin-form-group">
-                    <label>Puesto</label>
-                    <input type="text" value={investigadorActual.puesto} readOnly className="admin-readonly-field" />
-                  </div>
-                  <div className="admin-form-group">
-                    <label>Extensión</label>
-                    <input
-                      type="text"
-                      className="admin-input"
-                      value={investigadorActual.extension}
-                      onChange={(e) => setInvestigadorActual(prev => ({ ...prev, extension: e.target.value }))}
-                      placeholder="Extensión"
-                    />
-                  </div>
-                </div>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={investigadorActual.ficha}
+                        onChange={(e) => setInvestigadorActual(prev => ({ ...prev, ficha: e.target.value }))}
+                        onKeyDown={(e) => handleEnterBusqueda(e, investigadorActual.ficha, 'investigador')}
+                        placeholder="Ingrese ficha y presione Enter o Tab"
+                      />
 
-                <div className="admin-form-group">
-                  <label>Numero de Constancia de Habilitación</label>
-                  <input
-                    type="text"
-                    className="admin-input"
-                    value={investigadorActual.no_constancia}
-                    onChange={(e) => setInvestigadorActual(prev => ({ ...prev, no_constancia: e.target.value }))}
-                    placeholder="Numero de Constancia de Habilitación"
-                  />
-                </div>
-
-                {/* CUADRO SIMPLE PARA DESCARGAR PDF*/}
-                {mostrarPDF && (
-                  <>
-                    <div className="admin-form-group" style={{
-                      marginTop: '15px',
-                      marginBottom: '15px'
-                    }}>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '12px 15px',
-                        backgroundColor: '#f8f9fa',
-                        border: '1px solid #dee2e6',
-                        borderRadius: '6px',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <i className="fas fa-file-pdf" style={{
-                            color: '#e74c3c',
-                            fontSize: '20px'
-                          }}></i>
-                          <div>
-                            <div style={{ fontWeight: '600', color: '#333' }}>
-                              Constancia de Habilitación #{investigadorActual.no_constancia}
-                            </div>
-                            <div style={{
-                              fontSize: '12px',
-                              color: '#6c757d',
-                              marginTop: '2px'
-                            }}>
-                              Disponible para visualización y descarga
-                            </div>
-                          </div>
-                        </div>
-
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                          {/* BOTÓN PREVISUALIZAR */}
-                          <button
-                            type="button"
-                            onClick={() => setShowPdfModal(true)}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '5px',
-                              padding: '6px 12px',
-                              backgroundColor: '#17a2b8',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              fontSize: '14px',
-                              fontWeight: '500'
-                            }}
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#138496'}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#17a2b8'}
-                          >
-                            <i className="fas fa-eye"></i>
-                            Ver
-                          </button>
-
-                          {/* BOTÓN DESCARGAR  */}
-                          <button
-                            type="button"
-                            onClick={handleDescargarPDF}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '5px',
-                              padding: '6px 12px',
-                              backgroundColor: '#28a745',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              fontSize: '14px',
-                              fontWeight: '500'
-                            }}
-                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#218838'}
-                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#28a745'}
-                          >
-                            <i className="fas fa-download"></i>
-                            Descargar
-                          </button>
-                        </div>
-                      </div>
                     </div>
 
-                    {/* MODAL PARA PREVISUALIZAR PDF */}
-                    {showPdfModal && (
-                      <div style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        width: '100vw',
-                        height: '100vh',
-                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        zIndex: 9999
+                  </div>
+
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Nombre</label>
+                      <input type="text" value={investigadorActual.nombre} readOnly className="admin-readonly-field" />
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Categoría</label>
+                      <input type="text" value={investigadorActual.categoria} readOnly className="admin-readonly-field" />
+                    </div>
+                  </div>
+
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Puesto</label>
+                      <input type="text" value={investigadorActual.puesto} readOnly className="admin-readonly-field" />
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Extensión</label>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={investigadorActual.extension}
+                        onChange={(e) => setInvestigadorActual(prev => ({ ...prev, extension: e.target.value }))}
+                        placeholder="Extensión"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="admin-form-group">
+                    <label>Numero de Constancia de Habilitación</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={investigadorActual.no_constancia}
+                      onChange={(e) => setInvestigadorActual(prev => ({ ...prev, no_constancia: e.target.value }))}
+                      placeholder="Numero de Constancia de Habilitación"
+                    />
+                  </div>
+
+                  {/* CUADRO SIMPLE PARA DESCARGAR PDF*/}
+                  {mostrarPDF && (
+                    <>
+                      <div className="admin-form-group" style={{
+                        marginTop: '15px',
+                        marginBottom: '15px'
                       }}>
                         <div style={{
-                          width: '90%',
-                          height: '90%',
-                          backgroundColor: 'white',
-                          borderRadius: '8px',
                           display: 'flex',
-                          flexDirection: 'column',
-                          overflow: 'hidden',
-                          boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '12px 15px',
+                          backgroundColor: '#f8f9fa',
+                          border: '1px solid #dee2e6',
+                          borderRadius: '6px',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                         }}>
-                          {/* Cabecera del Modal */}
-                          <div style={{
-                            padding: '10px 20px',
-                            borderBottom: '1px solid #dee2e6',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            backgroundColor: '#f8f9fa'
-                          }}>
-                            <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#333' }}>
-                              Previsualización
-                            </h3>
-                            <button
-                              type="button"
-                              onClick={() => setShowPdfModal(false)}
-                              style={{
-                                background: 'none',
-                                border: 'none',
-                                fontSize: '1.5rem',
-                                cursor: 'pointer',
-                                color: '#666'
-                              }}
-                            >
-                              &times;
-                            </button>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <i className="fas fa-file-pdf" style={{
+                              color: '#e74c3c',
+                              fontSize: '20px'
+                            }}></i>
+                            <div>
+                              <div style={{ fontWeight: '600', color: '#333' }}>
+                                Constancia de Habilitación #{investigadorActual.no_constancia}
+                              </div>
+                              <div style={{
+                                fontSize: '12px',
+                                color: '#6c757d',
+                                marginTop: '2px'
+                              }}>
+                                Disponible para visualización y descarga
+                              </div>
+                            </div>
                           </div>
 
-                          {/* Cuerpo del Modal (Iframe) */}
-                          <div style={{ flex: 1, padding: 0, backgroundColor: '#525659' }}>
-                            <iframe
-                              src={pdfUrl}
-                              width="100%"
-                              height="100%"
-                              style={{ border: 'none' }}
-                              title="Visor PDF"
-                            />
+                          <div style={{ display: 'flex', gap: '10px' }}>
+                            {/* BOTÓN PREVISUALIZAR */}
+                            <button
+                              type="button"
+                              onClick={() => setShowPdfModal(true)}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                padding: '6px 12px',
+                                backgroundColor: '#17a2b8',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                fontWeight: '500'
+                              }}
+                              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#138496'}
+                              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#17a2b8'}
+                            >
+                              <i className="fas fa-eye"></i>
+                              Ver
+                            </button>
+
+                            {/* BOTÓN DESCARGAR  */}
+                            <button
+                              type="button"
+                              onClick={handleDescargarPDF}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                padding: '6px 12px',
+                                backgroundColor: '#28a745',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                fontWeight: '500'
+                              }}
+                              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#218838'}
+                              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#28a745'}
+                            >
+                              <i className="fas fa-download"></i>
+                              Descargar
+                            </button>
                           </div>
                         </div>
                       </div>
-                    )}
-                  </>
-                )}
 
-                <div className="admin-form-group">
-                  <label>Email</label>
-                  <input
-                    type="email"
-                    className="admin-input"
-                    value={investigadorActual.email}
-                    onChange={(e) => setInvestigadorActual(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="Correo electrónico"
-                  />
-                </div>
-                <button type="button" onClick={agregarInvestigador} className="admin-submit-button" style={{ maxWidth: '200px' }}>
-                  Agregar Investigador
-                </button>
-
-                {/* Lista de investigadores agregados */}
-                {formState.investigadores.length > 0 && (
-                  <div style={{ marginTop: '20px', width: '100%' }}>
-                    <h4 style={{ marginBottom: '15px', color: '#333' }}>Investigadores Agregados:</h4>
-
-                    <div className="admin-personas-grid" style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                      gap: '20px'
-                    }}>
-
-                      {formState.investigadores.map((investigador, index) => (
-                        <div key={index} className="admin-persona-card">
-                          <div className="admin-persona-header">
-                            <h4>{investigador.nombre}</h4>
-                            <span className="admin-ficha">Ficha: {investigador.ficha}</span>
-                          </div>
-                          <div className="admin-persona-details">
-                            <div className="admin-detail-row">
-                              <span className="admin-label">Email:</span>
-                              <span className="admin-value">{investigador.email}</span>
+                      {/* MODAL PARA PREVISUALIZAR PDF */}
+                      {showPdfModal && (
+                        <div style={{
+                          position: 'fixed',
+                          top: 0,
+                          left: 0,
+                          width: '100vw',
+                          height: '100vh',
+                          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                          zIndex: 9999
+                        }}>
+                          <div style={{
+                            width: '90%',
+                            height: '90%',
+                            backgroundColor: 'white',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden',
+                            boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+                          }}>
+                            {/* Cabecera del Modal */}
+                            <div style={{
+                              padding: '10px 20px',
+                              borderBottom: '1px solid #dee2e6',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              backgroundColor: '#f8f9fa'
+                            }}>
+                              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#333' }}>
+                                Previsualización
+                              </h3>
+                              <button
+                                type="button"
+                                onClick={() => setShowPdfModal(false)}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  fontSize: '1.5rem',
+                                  cursor: 'pointer',
+                                  color: '#666'
+                                }}
+                              >
+                                &times;
+                              </button>
                             </div>
-                            <div className="admin-detail-row">
-                              <span className="admin-label">Extensión:</span>
-                              <span className="admin-value">{investigador.extension}</span>
+
+                            {/* Cuerpo del Modal (Iframe) */}
+                            <div style={{ flex: 1, padding: 0, backgroundColor: '#525659' }}>
+                              <iframe
+                                src={pdfUrl}
+                                width="100%"
+                                height="100%"
+                                style={{ border: 'none' }}
+                                title="Visor PDF"
+                              />
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => eliminarPersona('investigadores', index)}
-                            className="admin-back-button"
-                            style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
-                          >
-                            Eliminar
-                          </button>
                         </div>
-                      ))}
-                    </div>
+                      )}
+                    </>
+                  )}
+
+                  <div className="admin-form-group">
+                    <label>Email</label>
+                    <input
+                      type="email"
+                      className="admin-input"
+                      value={investigadorActual.email}
+                      onChange={(e) => setInvestigadorActual(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="Correo electrónico"
+                    />
                   </div>
-                )}
-              </div>
-            )}
-          </section>
+                  <button type="button" onClick={agregarInvestigador} className="admin-submit-button" style={{ maxWidth: '200px' }}>
+                    Agregar Investigador
+                  </button>
+
+                  {/* Lista de investigadores agregados */}
+                  {formState.investigadores.length > 0 && (
+                    <div style={{ marginTop: '20px', width: '100%' }}>
+                      <h4 style={{ marginBottom: '15px', color: '#333' }}>Investigadores Agregados:</h4>
+
+                      <div className="admin-personas-grid" style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                        gap: '20px'
+                      }}>
+
+                        {formState.investigadores.map((investigador, index) => (
+                          <div key={index} className="admin-persona-card">
+                            <div className="admin-persona-header">
+                              <h4>{investigador.nombre}</h4>
+                              <span className="admin-ficha">Ficha: {investigador.ficha}</span>
+                            </div>
+                            <div className="admin-persona-details">
+                              <div className="admin-detail-row">
+                                <span className="admin-label">Email:</span>
+                                <span className="admin-value">{investigador.email}</span>
+                              </div>
+                              <div className="admin-detail-row">
+                                <span className="admin-label">Extensión:</span>
+                                <span className="admin-value">{investigador.extension}</span>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => eliminarPersona('investigadores', index)}
+                              className="admin-back-button"
+                              style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            }
+          </section >
 
 
 
           {/* --- SECCIÓN 6: PERSONAS INVOLUCRADAS --- */}
-          <section className="admin-form-section">
+          < section className="admin-form-section" >
             <h2 className="admin-section-title">
               <i className="fas fa-users"></i>
               Personal reportado
@@ -2187,7 +2135,7 @@ function InvestigacionFormPage() {
                 </div>
               )}
             </div>
-          </section>
+          </section >
 
           <div className="admin-form-actions">
             <button
@@ -2206,9 +2154,9 @@ function InvestigacionFormPage() {
               {isEditMode ? 'Actualizar' : 'Guardar'} Investigación
             </button>
           </div>
-        </form>
-      </div>
-    </div>
+        </form >
+      </div >
+    </div >
   );
 }
 

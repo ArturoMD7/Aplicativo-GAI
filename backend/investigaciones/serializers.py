@@ -134,7 +134,7 @@ class InvestigacionSerializer(serializers.ModelSerializer):
             
             # Sección 1: Registro de Investigación
             'direccion', 'procedencia', 'regimen', 'sindicato', 
-            'centro', 'area_depto', 'gravedad', 'conductas', 'subconducta', 'montoeconomico',
+            'centro', 'area_depto', 'gravedad', 'conductas', 'subconducta', 'detalles_conducta', 'montoeconomico',
             
             # Sección 2: Conocimiento de Hechos
             'fecha_reporte', 'fecha_conocimiento_hechos', 'fecha_prescripcion',
@@ -344,7 +344,7 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
             'direccion', 'gravedad', 'fecha_reporte', 'fecha_prescripcion',
             'gerencia_responsable', 'created_by_name', 'dias_restantes',
             'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos', 'investigadores', 'involucrados', 'reportantes',
-            'estatus', 'conductas', 'subconducta'
+            'estatus', 'conductas', 'subconducta', 'detalles_conducta'
         ]
 
     def get_dias_restantes(self, obj):

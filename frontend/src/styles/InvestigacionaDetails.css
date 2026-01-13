@@ -2,15 +2,15 @@
 /* InvestigacionDetails.css */
 
 .admin-register-container {
-  width: 100%;             
-  max-width: 100%;         
-  padding: 20px 40px;      
-  box-sizing: border-box;  
+  width: 100%;
+  max-width: 100%;
+  padding: 20px 40px;
+  box-sizing: border-box;
 }
 
 .admin-register-form-container {
-  max-width: 1000px;       
-  margin: 0 auto;         
+  max-width: 1000px;
+  margin: 0 auto;
   width: 100%;
 }
 
@@ -106,7 +106,8 @@
 
 .admin-textarea {
   resize: vertical;
-  min-height: 80px;
+  min-height: 120px;
+  font-family: inherit;
 }
 
 /* Grid de fechas */
@@ -487,16 +488,16 @@
 }
 
 .admin-register-form-container {
-  max-width: 1600px; 
+  max-width: 1600px;
   margin: 0 auto;
-  width: 95%; 
+  width: 95%;
 }
 
 .admin-register-form-container form {
   display: grid;
-  grid-template-columns: 1fr 1fr; 
-  gap: 25px; 
-  align-items: start; 
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+  align-items: start;
 }
 
 .admin-form-section {
@@ -505,13 +506,13 @@
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   border: 1px solid #ecf0f1;
-  margin-bottom: 0; 
-  height: 100%; 
+  margin-bottom: 0;
+  height: 100%;
 }
 
 .admin-alert,
 .admin-form-actions {
-  grid-column: 1 / -1; 
+  grid-column: 1 / -1;
 }
 
 
@@ -519,28 +520,30 @@
   .admin-register-form-container {
     max-width: 900px;
   }
-  
+
   .admin-register-form-container form {
-    grid-template-columns: 1fr; 
+    grid-template-columns: 1fr;
   }
 }
 
 
-.admin-input, 
-.admin-select {
+.admin-input,
+.admin-select,
+.admin-textarea {
   width: 100%;
-  padding: 12px 16px; 
+  padding: 12px 16px;
   border: 1px solid #dcdfe4;
   border-radius: 8px;
   font-size: 1rem;
   background: #fff;
   color: #333;
   transition: border-color 0.3s ease;
-  box-sizing: border-box; 
+  box-sizing: border-box;
 }
 
-.admin-input:focus, 
-.admin-select:focus {
+.admin-input:focus,
+.admin-select:focus,
+.admin-textarea:focus {
   border-color: #840016;
   outline: none;
   box-shadow: 0 0 0 3px rgba(132, 0, 22, 0.1);

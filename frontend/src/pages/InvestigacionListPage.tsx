@@ -11,18 +11,7 @@ import Swal from 'sweetalert2';
 import { saveAs } from 'file-saver';
 import '../styles/InvestigacionPage.css';
 
-const GERENCIA_CHOICES = [
-  'NORTE', 'SUR', 'SURESTE', 'ALTIPLANO', 'GAI',
-];
-
-const CONDUCTAS_POSIBLES = [
-  'SUSPENSION DE LABORES', 'SUSTRACCION DE EQUIPO MOBILIARIO', 'FALTA DE PROBIDAD Y HONRADEZ',
-  'ALTERACION DEL ORDEN', 'PRESENTACION DE DOCUMENTACION IRREGULAR', 'ACTITUD INDEBIDA', 'FALTAS INJUSTIFICADAS',
-  'NEGLIGENCIA EN EL DESARROLLO DE FUNCIONES', 'DISCRIMINACION', 'ACOSO LABORAL O MOBBING', 'ACOSO Y/O HOSTIGAMIENTO SEXUAL',
-  'CONCURRIR CON EFECTOS DE ESTUPEFACIENTES Y/O EDO DE EBRIEDAD', 'INCUMPLIMIENTO DE NORMAS DE TRABAJO Y/O PROCEDIMIENTOS DE TRABAJO',
-  'USO INDEBIDO DE UTILES Y/O HERRAMIENTAS DE TRABAJO', 'CLAUSULA 253 CCT', 'ACTOS DE CORRUPCION', 'MERCADO ILICITO DE COMBUSTIBLES',
-  'OTRAS FALTAS'
-];
+import { GERENCIA_CHOICES, subconductasMap, CONDUCTAS_POSIBLES } from '../data/investigacionConstants';
 
 type SortConfig = {
   key: keyof InvestigacionListado | null;
@@ -41,6 +30,7 @@ function InvestigacionListPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedGerencia, setSelectedGerencia] = useState('');
   const [selectedSancion, setSelectedSancion] = useState('');
+  const [selectedSubconducta, setSelectedSubconducta] = useState('');
   const [showMenu, setShowMenu] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'ascending' });
   const [userRole, setUserRole] = useState<string>('');
@@ -86,7 +76,18 @@ function InvestigacionListPage() {
       }
     };
     fetchInvestigaciones();
+    fetchInvestigaciones();
   }, []);
+
+  const availableSubconductas = useMemo(() => {
+    if (!selectedSancion) return [];
+    return subconductasMap[selectedSancion] || [];
+  }, [selectedSancion]);
+
+  // Reset subconducta when conducta changes
+  useEffect(() => {
+    setSelectedSubconducta('');
+  }, [selectedSancion]);
 
   const getSemaforoColor = (semaforo: string) => {
     const colors: Record<string, string> = {
@@ -187,8 +188,9 @@ function InvestigacionListPage() {
     );
     const matchesGerencia = selectedGerencia ? inv.gerencia_responsable === selectedGerencia : true;
     const matchesSancion = selectedSancion ? inv.conductas === selectedSancion : true;
+    const matchesSubconducta = selectedSubconducta ? inv.subconducta === selectedSubconducta : true;
 
-    return matchesSearch && matchesGerencia && matchesSancion;
+    return matchesSearch && matchesGerencia && matchesSancion && matchesSubconducta;
   });
 
   const formatDate = (str: string) => {
@@ -362,6 +364,16 @@ function InvestigacionListPage() {
             {CONDUCTAS_POSIBLES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
         </div>
+
+        {selectedSancion && availableSubconductas.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
+            <FiFilter style={{ color: '#666', marginRight: '5px' }} />
+            <select value={selectedSubconducta} onChange={(e) => setSelectedSubconducta(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}>
+              <option value="">Todas las Subconductas</option>
+              {availableSubconductas.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        )}
       </div>
 
 

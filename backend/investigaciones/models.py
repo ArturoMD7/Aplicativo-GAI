@@ -71,6 +71,8 @@ class Investigacion(UppercaseMixin,models.Model):
     ]
     conductas = models.CharField(max_length=65, choices=CONDUCTAS_CHOICES, default='OTRAS FALTAS')
 
+    detalles_conducta = models.TextField(null=True, blank=True)
+
     subconducta = models.CharField(max_length=100, null=True, blank=True)
     
     SINDICATO_CHOICES = [
