@@ -8,7 +8,7 @@ from django.db import connections
 from django.utils import timezone
 from datetime import date
 from .permissions import IsAdminOrReadOnly
-from .models import Investigacion, Involucrado, InvestigacionHistorico, DocumentoInvestigacion
+from .models import Investigacion, Involucrado, InvestigacionHistorico, DocumentoInvestigacion, CatalogoInvestigador
 from .serializers import (
     InvestigacionSerializer, InvestigacionListSerializer, 
     EmpleadoBusquedaSerializer, OpcionesSerializer,
@@ -135,7 +135,30 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
         
         return queryset.order_by('-created_at')
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def validar_investigador_view(request):
+    """
+    Valida si una ficha pertenece al catálogo de investigadores autorizados
+    y devuelve su número de constancia.
+    """
+    ficha = request.query_params.get('ficha')
+    
+    if not ficha:
+        return Response({'error': 'Ficha requerida'}, status=400)
 
+    try:
+        investigador = CatalogoInvestigador.objects.get(ficha=ficha, activo=True)
+        
+        return Response({
+            'es_investigador': True,
+            'no_constancia': investigador.no_constancia,
+        })
+    except CatalogoInvestigador.DoesNotExist:
+        return Response({
+            'es_investigador': False,
+            'error': 'Esta ficha no corresponde a un investigador autorizado o está inactivo.'
+        }, status=404)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

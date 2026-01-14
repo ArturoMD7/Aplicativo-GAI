@@ -16,4 +16,5 @@ urlpatterns = [
     path('areas-por-centro/', views.areas_por_centro_view, name='areas-por-centro'),
     path('estadisticas/', views.estadisticas_view, name='estadisticas'),
     path('buscar-gerente-responsable/', views.buscar_gerente_responsable_view, name='buscar-gerente-responsable'),
+    path('validar-investigador/', views.validar_investigador_view, name='validar_investigador'),
 ]

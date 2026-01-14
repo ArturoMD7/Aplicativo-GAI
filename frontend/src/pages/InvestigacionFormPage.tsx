@@ -167,23 +167,53 @@ function InvestigacionFormPage() {
 
   const [mostrarPDF, setMostrarPDF] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string>('');
+  const [pdfError, setPdfError] = useState<string>('');
+
 
   useEffect(() => {
-    if (investigadorActual.no_constancia === '001') {
-      const pdfPath = '.';
-      setPdfUrl('/629429_001.pdf');
-      setMostrarPDF(true);
-    } else {
+    const { no_constancia } = investigadorActual;
+
+    if (!no_constancia) {
       setMostrarPDF(false);
+      setPdfUrl('');
+      setPdfError('');
+      return;
     }
 
+    const timeoutId = setTimeout(async () => {
+      // Búsqueda en carpeta /constancias/ con el nombre exacto del número (ej: 001.pdf)
+      const fileName = `${no_constancia}.pdf`;
+      const url = `/constancias/${fileName}`;
+
+      try {
+        const response = await fetch(url, { method: 'HEAD' });
+        const contentType = response.headers.get('content-type');
+
+        if (response.ok && contentType && contentType.includes('application/pdf')) {
+          setPdfUrl(url);
+          setMostrarPDF(true);
+          setPdfError('');
+        } else {
+          setMostrarPDF(false);
+          setPdfUrl('');
+          setPdfError(`No se encontró constancia con número ${no_constancia}`);
+        }
+      } catch (err) {
+        console.error('Error buscando PDF:', err);
+        setMostrarPDF(false);
+        setPdfError('Error al buscar la constancia.');
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
   }, [investigadorActual.no_constancia]);
 
   const handleDescargarPDF = () => {
     if (pdfUrl) {
       const link = document.createElement('a');
       link.href = pdfUrl;
-      link.download = '629429_001.pdf';
+      const fileName = pdfUrl.split('/').pop() || 'constancia.pdf';
+      link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -476,12 +506,41 @@ function InvestigacionFormPage() {
   };
 
 
+  // ... import Swal (asegúrate de tenerlo importado)
+
   const buscarEmpleado = async (ficha: string, tipo: 'contacto' | 'investigador' | 'involucrado' | 'testigo' | 'reportante') => {
     if (!ficha.trim()) return;
 
     setAntecedentesEncontrados([]);
 
     try {
+      let datosInvestigadorAutorizado = null;
+
+      // PASO 1: Si es investigador, validamos PRIMERO en el catálogo especial
+      if (tipo === 'investigador') {
+        try {
+          const validacionRes = await apiClient.get(`/api/investigaciones/validar-investigador/?ficha=${ficha}`);
+          datosInvestigadorAutorizado = validacionRes.data;
+
+          if (!datosInvestigadorAutorizado.es_investigador) {
+            throw new Error("No autorizado");
+          }
+        } catch (err) {
+          Swal.fire({
+            icon: 'error',
+            title: 'No autorizado',
+            text: 'La ficha ingresada no pertenece a un investigador activo con número de constancia registrado.',
+          });
+          setInvestigadorActual({
+            ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', no_constancia: ''
+          });
+          setInvestigadorActual({
+            ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', no_constancia: ''
+          });
+          return;
+        }
+      }
+
       const response = await apiClient.get(`/api/investigaciones/buscar-empleado/?ficha=${ficha}`);
       const empleado: EmpleadoBuscado = response.data;
 
@@ -498,14 +557,28 @@ function InvestigacionFormPage() {
             puesto: empleado.puesto
           }));
           break;
+
         case 'investigador':
           setInvestigadorActual(prev => ({
             ...prev,
             nombre: empleado.nombre,
             categoria: empleado.categoria,
-            puesto: empleado.puesto
+            puesto: empleado.puesto,
+            no_constancia: datosInvestigadorAutorizado ? datosInvestigadorAutorizado.no_constancia : ''
           }));
+
+          const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000
+          });
+          Toast.fire({
+            icon: 'success',
+            title: `Investigador Validado: Constancia ${datosInvestigadorAutorizado.no_constancia}`
+          });
           break;
+
         case 'involucrado':
           setInvolucradoActual(prev => ({
             ...prev,
@@ -524,6 +597,7 @@ function InvestigacionFormPage() {
             seccion_sindical: empleado.seccion_sindical || ''
           }));
           break;
+
         case 'testigo':
           setTestigoActual(prev => ({
             ...prev,
@@ -534,6 +608,7 @@ function InvestigacionFormPage() {
             direccion: empleado.direccion
           }));
           break;
+
         case 'reportante':
           setReportanteActual(prev => ({
             ...prev,
@@ -1521,9 +1596,15 @@ function InvestigacionFormPage() {
                       type="text"
                       className="admin-input"
                       value={investigadorActual.no_constancia}
-                      onChange={(e) => setInvestigadorActual(prev => ({ ...prev, no_constancia: e.target.value }))}
-                      placeholder="Numero de Constancia de Habilitación"
+                      readOnly
+                      style={{ backgroundColor: '#f3f6f8ff', cursor: 'not-allowed' }}
+                      placeholder="Se cargará automáticamente al validar ficha"
                     />
+                    {pdfError && (
+                      <small style={{ color: '#e74c3c', marginTop: '5px', display: 'block' }}>
+                        <i className="fas fa-exclamation-circle"></i> {pdfError}
+                      </small>
+                    )}
                   </div>
 
                   {/* CUADRO SIMPLE PARA DESCARGAR PDF*/}

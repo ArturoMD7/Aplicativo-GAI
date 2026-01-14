@@ -154,12 +154,46 @@ function InvestigacionDetailsPage() {
                 </div>
               )}
 
-              {persona.subordinacion !== undefined && (
-                <div className="admin-detail-row">
-                  <span className="admin-label">Subordinación:</span>
-                  <span className={`admin-badge ${persona.subordinacion ? 'admin-badge-warning' : 'admin-badge-secondary'}`}>
-                    {persona.subordinacion ? 'Sí' : 'No'}
-                  </span>
+              <div className="admin-detail-row">
+                <span className="admin-label">Subordinación:</span>
+                <span className={`admin-badge ${persona.subordinacion ? 'admin-badge-warning' : 'admin-badge-secondary'}`}>
+                  {persona.subordinacion ? 'Sí' : 'No'}
+                </span>
+              </div>
+
+
+              {tipo === 'investigadores' && persona.no_constancia && (
+                <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed #eee' }}>
+                  <div className="admin-detail-row">
+                    <span className="admin-label">No. Constancia:</span>
+                    <span className="admin-value" style={{ fontWeight: '600' }}>{persona.no_constancia}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const url = `/constancias/${persona.no_constancia}.pdf`;
+                      window.open(url, '_blank');
+                    }}
+                    style={{
+                      marginTop: '8px',
+                      width: '100%',
+                      padding: '8px',
+                      backgroundColor: '#e74c3c',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
+                    }}
+                    className="hover-opacity"
+                  >
+                    <i className="fas fa-file-pdf"></i>
+                    Ver Constancia
+                  </button>
                 </div>
               )}
             </div>
@@ -286,6 +320,32 @@ function InvestigacionDetailsPage() {
                 value={investigacion.conductas || 'No especificada'}
                 readOnly
                 className="admin-readonly-field"
+              />
+            </div>
+          </div>
+
+          <div className="admin-form-group">
+            <label>Subconducta</label>
+            <div className="admin-input-with-icon">
+              <i className="fas fa-list-ul"></i>
+              <input
+                type="text"
+                value={investigacion.subconducta || 'No especificada'}
+                readOnly
+                className="admin-readonly-field"
+              />
+            </div>
+          </div>
+
+          <div className="admin-form-group">
+            <label>Detalles de la Conducta</label>
+            <div className="admin-input-with-icon">
+              <i className="fas fa-align-left"></i>
+              <textarea
+                value={investigacion.detalles_conducta || 'Sin detalles adicionales'}
+                readOnly
+                className="admin-readonly-field admin-textarea"
+                rows={3}
               />
             </div>
           </div>
@@ -448,6 +508,18 @@ function InvestigacionDetailsPage() {
                     <span className="admin-label">Puesto:</span>
                     <span className="admin-value">{investigacion.responsable_puesto}</span>
                   </div>
+                  {investigacion.responsable_extension && (
+                    <div className="admin-detail-row">
+                      <span className="admin-label">Extensión:</span>
+                      <span className="admin-value">{investigacion.responsable_extension}</span>
+                    </div>
+                  )}
+                  {investigacion.responsable_email && (
+                    <div className="admin-detail-row">
+                      <span className="admin-label">Email:</span>
+                      <span className="admin-value">{investigacion.responsable_email}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

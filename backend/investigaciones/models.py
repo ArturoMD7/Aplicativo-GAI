@@ -242,6 +242,16 @@ class Involucrado(UppercaseMixin, models.Model):
     sindicato = models.CharField(null=True, max_length=50)
     seccion_sindical = models.CharField(null=True, max_length=10)
 
+
+class CatalogoInvestigador(UppercaseMixin, models.Model):
+    ficha = models.CharField(max_length=20, unique=True)
+    nombre = models.CharField(max_length=100)
+    no_constancia = models.CharField(max_length=50)
+    activo = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.ficha} - {self.nombre}"
+
 def generar_ruta_archivo(instance, filename):
     ext = filename.split('.')[-1]
 
