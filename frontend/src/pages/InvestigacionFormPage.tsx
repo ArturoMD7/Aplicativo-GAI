@@ -61,7 +61,7 @@ interface ContactoForm {
   puesto: string;
   extension: string;
   email: string;
-  tipo: 'contacto' | 'responsable';
+  tipo: 'CONTACTO' | 'RESPONSABLE';
 }
 
 interface InvestigadorForm {
@@ -129,13 +129,6 @@ function InvestigacionFormPage() {
   const [formState, setFormState] = useState<InvestigacionFormState>(initialState);
   const [opciones, setOpciones] = useState<OpcionesDropdowns | null>(null);
 
-  // [TEMPORAL] Prellenar Centro para evitar errores de validación mientras está oculto
-  useEffect(() => {
-    if (!formState.centro) {
-      setFormState(prev => ({ ...prev, centro: 'OFICINAS CENTRALES' }));
-    }
-  }, [formState.centro]);
-
   const [centrosTrabajo, setCentrosTrabajo] = useState<string[]>([]);
   const [centrosCoduni, setCentrosCoduni] = useState<string[]>([]);
   const [areasCoduni, setAreasCoduni] = useState<string[]>([]);
@@ -144,7 +137,7 @@ function InvestigacionFormPage() {
   const [montoText, setMontoText] = useState('');
 
   const [contactoActual, setContactoActual] = useState<ContactoForm>({
-    ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', tipo: 'responsable'
+    ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', tipo: 'RESPONSABLE'
   });
   const [investigadorActual, setInvestigadorActual] = useState<InvestigadorForm>({
     ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', no_constancia: ''
@@ -651,7 +644,7 @@ function InvestigacionFormPage() {
     }));
 
     setContactoActual({
-      ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', tipo: 'contacto'
+      ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', tipo: 'CONTACTO'
     });
   };
 

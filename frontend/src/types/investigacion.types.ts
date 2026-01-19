@@ -18,7 +18,7 @@ export interface DocumentoInvestigacion {
 }
 
 export interface Contacto extends BasePersona {
-  tipo: 'contacto' | 'responsable';
+  tipo: 'CONTACTO' | 'RESPONSABLE';
 }
 
 export interface Investigador extends BasePersona {
