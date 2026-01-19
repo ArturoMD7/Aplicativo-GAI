@@ -128,6 +128,14 @@ function InvestigacionFormPage() {
 
   const [formState, setFormState] = useState<InvestigacionFormState>(initialState);
   const [opciones, setOpciones] = useState<OpcionesDropdowns | null>(null);
+
+  // [TEMPORAL] Prellenar Centro para evitar errores de validación mientras está oculto
+  useEffect(() => {
+    if (!formState.centro) {
+      setFormState(prev => ({ ...prev, centro: 'OFICINAS CENTRALES' }));
+    }
+  }, [formState.centro]);
+
   const [centrosTrabajo, setCentrosTrabajo] = useState<string[]>([]);
   const [centrosCoduni, setCentrosCoduni] = useState<string[]>([]);
   const [areasCoduni, setAreasCoduni] = useState<string[]>([]);
@@ -1202,7 +1210,7 @@ function InvestigacionFormPage() {
           {/* --- SECCIÓN 5: INFORMACIÓN DEL EVENTO --- */}
           < section className="admin-form-section"
             style={{ gridColumn: '1 / -1' }}
-          > 
+          >
             <h2 className="admin-section-title">
               <i className="fas fa-calendar-check"></i>
               Modo y Lugar
@@ -1294,7 +1302,7 @@ function InvestigacionFormPage() {
                 </div>
               </div>
 
-              <div className="admin-form-group">
+              <div className="admin-form-group" style={{ display: 'none' }}>
                 <label>Centro *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-industry"></i>

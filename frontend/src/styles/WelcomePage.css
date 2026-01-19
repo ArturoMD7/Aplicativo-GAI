@@ -247,7 +247,23 @@
 .hex-menu-container h1 {
     margin: 2px 0;
     line-height: 1.1;
+    font-size: 3rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.hex-menu-container h2 {
+    margin: 2px 0;
+    line-height: 1.1;
     font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+}
+
+.hex-menu-container h3 {
+    margin: 2px 0;
+    line-height: 1.1;
+    font-size: 2rem;
     font-weight: 700;
     color: #333;
 }

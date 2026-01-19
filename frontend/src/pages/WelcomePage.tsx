@@ -231,9 +231,9 @@ function WelcomePage() {
     return (
       <div className="welcome-page">
         <div className="hex-menu-container">
-          <h1 >Subdirección de Capital Humano</h1>
-          <h1 >Gerencia de Asuntos Internos</h1>
-          <h1 >Investigaciones {anioActual} </h1>
+          <h1> <strong>Subdirección de Capital Humano</strong></h1>
+          <h2 >Gerencia de Asuntos Internos</h2>
+          <h3 >Investigaciones {anioActual}: <strong> {stats.total}</strong> </h3>
           <div className="hex-grid">
             {REGIONES_CONFIG.map((region) => (
               <div key={region.key} className="hex-wrapper" onClick={() => handleRegionSelect(region.key)}>
