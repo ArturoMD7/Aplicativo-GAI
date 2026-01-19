@@ -791,14 +791,39 @@ function InvestigacionFormPage() {
 
       if (err.response?.status === 400) {
         const errorData = err.response.data;
-        if (typeof errorData === 'object') {
-          const errorMessages = Object.entries(errorData)
-            .map(([field, messages]) => {
-              const fieldName = field.replace(/_/g, ' ');
-              return `${fieldName}: ${Array.isArray(messages) ? messages.join(', ') : messages}`;
-            })
-            .join('\n');
-          setError(`Errores de validación:\n${errorMessages}`);
+
+        // Helper recursivo para formatear errores
+        const formatErrorMessage = (data: any): string => {
+          if (typeof data === 'string') return data;
+          if (Array.isArray(data)) {
+            return data.map((item, index) => {
+              const msg = formatErrorMessage(item);
+              // Si es un objeto dentro de un array (ej. error en un item específico de una lista), indicamos índice si es relevante
+              if (typeof item === 'object' && item !== null && Object.keys(item).length > 0) {
+                // Si el mensaje formateado no está vacío
+                if (msg && msg !== '{}') return `(Ítem ${index + 1}: ${msg})`;
+                return '';
+              }
+              return msg;
+            }).filter(msg => msg && msg !== '{}' && msg !== '()').join(', ');
+          }
+          if (typeof data === 'object' && data !== null) {
+            return Object.entries(data)
+              .map(([key, value]) => {
+                const formattedValue = formatErrorMessage(value);
+                if (!formattedValue || formattedValue === '{}') return '';
+                const fieldName = key.replace(/_/g, ' ');
+                return `${fieldName}: ${formattedValue}`;
+              })
+              .filter(msg => msg)
+              .join(', ');
+          }
+          return String(data);
+        };
+
+        if (typeof errorData === 'object' && errorData !== null) {
+          const formattedError = formatErrorMessage(errorData);
+          setError(`Errores de validación:\n${formattedError}`);
         } else {
           setError(`Error: ${errorData || 'Datos inválidos'}`);
         }
