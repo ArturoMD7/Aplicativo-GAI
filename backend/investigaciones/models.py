@@ -239,8 +239,8 @@ class Involucrado(UppercaseMixin, models.Model):
 
     regimen = models.CharField(null=True, max_length=10)
     jornada = models.CharField(null=True, max_length=10)
-    sindicato = models.CharField(null=True, max_length=50)
-    seccion_sindical = models.CharField(null=True, max_length=10)
+    sindicato = models.CharField(null=True, blank=True, max_length=50)
+    seccion_sindical = models.CharField(null=True, blank=True, max_length=10)
 
 
 class CatalogoInvestigador(UppercaseMixin, models.Model):
