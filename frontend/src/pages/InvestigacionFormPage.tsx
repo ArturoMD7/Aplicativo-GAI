@@ -1302,7 +1302,7 @@ function InvestigacionFormPage() {
                 </div>
               </div>
 
-              <div className="admin-form-group" style={{ display: 'none' }}>
+              <div className="admin-form-group">
                 <label>Centro *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-industry"></i>
