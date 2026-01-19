@@ -888,7 +888,7 @@ function InvestigacionFormPage() {
 
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label>Conducta *</label>
+                <label> Posible Conducta *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-exclamation-triangle"></i>
                   <select
@@ -1167,7 +1167,7 @@ function InvestigacionFormPage() {
 
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label>Fecha del Evento *</label>
+                <label>Fecha de los Hechos *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-calendar-day"></i>
                   <input
@@ -1200,7 +1200,9 @@ function InvestigacionFormPage() {
           </section >
 
           {/* --- SECCIÓN 5: INFORMACIÓN DEL EVENTO --- */}
-          < section className="admin-form-section" >
+          < section className="admin-form-section"
+            style={{ gridColumn: '1 / -1' }}
+          > 
             <h2 className="admin-section-title">
               <i className="fas fa-calendar-check"></i>
               Modo y Lugar
@@ -1273,10 +1275,8 @@ function InvestigacionFormPage() {
                 />
               </div>
             </div>
-          </section >
 
-          {/* --- SECCIÓN 3: UBICACIÓN ORGANIZACIONAL --- */}
-          < section className="admin-form-section" >
+            {/* --- SECCIÓN 3: UBICACIÓN ORGANIZACIONAL --- */}
             <h2 className="admin-section-title">
               <i className="fas fa-building"></i>
               Ubicación Organizacional
@@ -1414,7 +1414,6 @@ function InvestigacionFormPage() {
                 </div>
               )
             }
-
           </section >
 
           {/* --- SECCIÓN 4: GERENCIA RESPONSABLE --- */}

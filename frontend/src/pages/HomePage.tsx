@@ -33,7 +33,7 @@ function HomePage({ onLogout }: HomePageProps) {
 
       <div className="content-container">
         <header className="home-header">
-          <h1 className="app-title">GAI - Gerencia de Asuntos Internos</h1>
+          <h1 className="app-title"> </h1>
         </header>
 
         <main className="main-content">

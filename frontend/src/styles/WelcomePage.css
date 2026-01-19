@@ -244,19 +244,27 @@
     font-weight: 700;
 }
 
+.hex-menu-container h1 {
+    margin: 2px 0;
+    line-height: 1.1;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+}
+
 .hex-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 30px;
-  max-width: 1000px;
-  padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    max-width: 1000px;
+    padding: 10px;
 }
 
 
 .hex-wrapper:nth-child(4),
 .hex-wrapper:nth-child(5) {
-  margin-top: -70px;
+    margin-top: -70px;
 }
 
 .hex-wrapper {
@@ -271,18 +279,18 @@
 }
 
 .hexagon {
-  width: 300px;
-  height: 330px;
-  background-color: #ffffff;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  color: #333;
-  position: relative;
-  z-index: 1;
+    width: 300px;
+    height: 330px;
+    background-color: #ffffff;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: #333;
+    position: relative;
+    z-index: 1;
 }
 
 
@@ -363,5 +371,5 @@
 
 .chart-section {
     margin-top: 20px;
-    min-height: 450px; 
+    min-height: 450px;
 }

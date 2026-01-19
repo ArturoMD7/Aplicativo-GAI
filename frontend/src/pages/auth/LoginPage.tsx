@@ -133,7 +133,7 @@ function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
           {showHelp && (
             <div className="modal-help-overlay">
               <div className="modal-help">
-                <h3><i className="fas fa-info-circle"></i> Contactanos:</h3>
+                <h3><i className="fas fa-info-circle"></i> Contáctanos:</h3>
 
                 <h3><i></i> Gerencia de Asuntos Internos</h3>
 
@@ -142,7 +142,7 @@ function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
                   <p>Alejandra Gayosso Cabello
                     alejandra.gayosso@pemex.com</p>
 
-                  <li><b>Administrador del Sitema:</b></li>
+                  <li><b>Administrador del Sistema:</b></li>
                   <p>Ing. Jaime Morales García
                     jaime.morales@pemex.com</p>
 

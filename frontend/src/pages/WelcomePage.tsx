@@ -225,12 +225,15 @@ function WelcomePage() {
 
   if (loading) return <div className="loading-message">Cargando datos...</div>;
 
+  const anioActual = new Date().getFullYear();
   // --- RENDER ---
   if (showMenu) {
     return (
       <div className="welcome-page">
         <div className="hex-menu-container">
-          <h1 className="hex-title">Seleccione una Región</h1>
+          <h1 >Subdirección de Capital Humano</h1>
+          <h1 >Gerencia de Asuntos Internos</h1>
+          <h1 >Investigaciones {anioActual} </h1>
           <div className="hex-grid">
             {REGIONES_CONFIG.map((region) => (
               <div key={region.key} className="hex-wrapper" onClick={() => handleRegionSelect(region.key)}>
