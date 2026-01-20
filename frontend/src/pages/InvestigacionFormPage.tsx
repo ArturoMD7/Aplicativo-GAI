@@ -1443,13 +1443,14 @@ function InvestigacionFormPage() {
           </section >
 
           {/* --- SECCIÓN 4: GERENCIA RESPONSABLE --- */}
-          < section className="admin-form-section" >
-            {/* <h2 className="admin-section-title">
+          {(['Admin', 'AdminCentral'].includes(userRole) || userRole.startsWith('Supervisor')) && (
+            < section className="admin-form-section" >
+              {/* <h2 className="admin-section-title">
               <i className="fas fa-user-tie"></i>
               Gerencia Responsable
             </h2> */}
-
-            {/* Contactos */}
+              {/*
+             Contactos 
             <div className="admin-personas-section">
               <h3>Contactos</h3>
               <div className="admin-form-group">
@@ -1519,7 +1520,6 @@ function InvestigacionFormPage() {
                 Agregar Contacto
               </button>
 
-              {/* Lista de contactos agregados */}
               {formState.contactos.length > 0 && (
                 <div style={{ marginTop: '20px', width: '100%' }}>
                   <h4 style={{ marginBottom: '15px', color: '#333' }}>Contactos Agregados:</h4>
@@ -1531,7 +1531,6 @@ function InvestigacionFormPage() {
                   }}>
                     {formState.contactos.map((contacto, index) => (
                       <div key={index} className="admin-persona-card">
-                        {/* Mantén el contenido actual de cada tarjeta */}
                         <div className="admin-persona-header">
                           <h4>{contacto.nombre}</h4>
                           <span className="admin-ficha">Ficha: {contacto.ficha}</span>
@@ -1563,293 +1562,294 @@ function InvestigacionFormPage() {
                   </div>
                 </div>
               )}
-            </div>
+            </div> */}
 
-            {/* Investigadores - Solo visible para Supervisores y Admin */}
-            {
-              (['Admin', 'AdminCentral'].includes(userRole) || userRole.startsWith('Supervisor')) && (
-                <div className="admin-personas-section">
-                  <h3>Investigadores</h3>
-                  <div className="admin-form-group">
-                    <label>Ficha</label>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-
-                      <input
-                        type="text"
-                        className="admin-input"
-                        value={investigadorActual.ficha}
-                        onChange={(e) => setInvestigadorActual(prev => ({ ...prev, ficha: e.target.value }))}
-                        onKeyDown={(e) => handleEnterBusqueda(e, investigadorActual.ficha, 'investigador')}
-                        placeholder="Ingrese ficha y presione Enter o Tab"
-                      />
-
-                    </div>
-
-                  </div>
-
-                  <div className="admin-form-row">
+              {/* Investigadores - Solo visible para Supervisores y Admin */}
+              {
+                (['Admin', 'AdminCentral'].includes(userRole) || userRole.startsWith('Supervisor')) && (
+                  <div className="admin-personas-section">
+                    <h3>Investigadores</h3>
                     <div className="admin-form-group">
-                      <label>Nombre</label>
-                      <input type="text" value={investigadorActual.nombre} readOnly className="admin-readonly-field" />
-                    </div>
-                    <div className="admin-form-group">
-                      <label>Categoría</label>
-                      <input type="text" value={investigadorActual.categoria} readOnly className="admin-readonly-field" />
-                    </div>
-                  </div>
+                      <label>Ficha</label>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
 
-                  <div className="admin-form-row">
-                    <div className="admin-form-group">
-                      <label>Puesto</label>
-                      <input type="text" value={investigadorActual.puesto} readOnly className="admin-readonly-field" />
-                    </div>
-                    <div className="admin-form-group">
-                      <label>Extensión</label>
-                      <input
-                        type="text"
-                        className="admin-input"
-                        value={investigadorActual.extension}
-                        onChange={(e) => setInvestigadorActual(prev => ({ ...prev, extension: e.target.value }))}
-                        placeholder="Extensión"
-                      />
-                    </div>
-                  </div>
+                        <input
+                          type="text"
+                          className="admin-input"
+                          value={investigadorActual.ficha}
+                          onChange={(e) => setInvestigadorActual(prev => ({ ...prev, ficha: e.target.value }))}
+                          onKeyDown={(e) => handleEnterBusqueda(e, investigadorActual.ficha, 'investigador')}
+                          placeholder="Ingrese ficha y presione Enter o Tab"
+                        />
 
-                  <div className="admin-form-group">
-                    <label>Número de Constancia de Habilitación</label>
-                    <input
-                      type="text"
-                      className="admin-input"
-                      value={investigadorActual.no_constancia}
-                      readOnly
-                      style={{ backgroundColor: '#f3f6f8ff', cursor: 'not-allowed' }}
-                      placeholder="Se cargará automáticamente al validar ficha"
-                    />
-                    {pdfError && (
-                      <small style={{ color: '#e74c3c', marginTop: '5px', display: 'block' }}>
-                        <i className="fas fa-exclamation-circle"></i> {pdfError}
-                      </small>
-                    )}
-                  </div>
-
-                  {/* CUADRO SIMPLE PARA DESCARGAR PDF*/}
-                  {mostrarPDF && (
-                    <>
-                      <div className="admin-form-group" style={{
-                        marginTop: '15px',
-                        marginBottom: '15px'
-                      }}>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          padding: '12px 15px',
-                          backgroundColor: '#f8f9fa',
-                          border: '1px solid #dee2e6',
-                          borderRadius: '6px',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <i className="fas fa-file-pdf" style={{
-                              color: '#e74c3c',
-                              fontSize: '20px'
-                            }}></i>
-                            <div>
-                              <div style={{ fontWeight: '600', color: '#333' }}>
-                                Constancia de Habilitación #{investigadorActual.no_constancia}
-                              </div>
-                              <div style={{
-                                fontSize: '12px',
-                                color: '#6c757d',
-                                marginTop: '2px'
-                              }}>
-                                Disponible para visualización y descarga
-                              </div>
-                            </div>
-                          </div>
-
-                          <div style={{ display: 'flex', gap: '10px' }}>
-                            {/* BOTÓN PREVISUALIZAR */}
-                            <button
-                              type="button"
-                              onClick={() => setShowPdfModal(true)}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '5px',
-                                padding: '6px 12px',
-                                backgroundColor: '#17a2b8',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                fontSize: '14px',
-                                fontWeight: '500'
-                              }}
-                              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#138496'}
-                              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#17a2b8'}
-                            >
-                              <i className="fas fa-eye"></i>
-                              Ver
-                            </button>
-
-                            {/* BOTÓN DESCARGAR  */}
-                            <button
-                              type="button"
-                              onClick={handleDescargarPDF}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '5px',
-                                padding: '6px 12px',
-                                backgroundColor: '#28a745',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                fontSize: '14px',
-                                fontWeight: '500'
-                              }}
-                              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#218838'}
-                              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#28a745'}
-                            >
-                              <i className="fas fa-download"></i>
-                              Descargar
-                            </button>
-                          </div>
-                        </div>
                       </div>
 
-                      {/* MODAL PARA PREVISUALIZAR PDF */}
-                      {showPdfModal && (
-                        <div style={{
-                          position: 'fixed',
-                          top: 0,
-                          left: 0,
-                          width: '100vw',
-                          height: '100vh',
-                          backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          zIndex: 9999
+                    </div>
+
+                    <div className="admin-form-row">
+                      <div className="admin-form-group">
+                        <label>Nombre</label>
+                        <input type="text" value={investigadorActual.nombre} readOnly className="admin-readonly-field" />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Categoría</label>
+                        <input type="text" value={investigadorActual.categoria} readOnly className="admin-readonly-field" />
+                      </div>
+                    </div>
+
+                    <div className="admin-form-row">
+                      <div className="admin-form-group">
+                        <label>Puesto</label>
+                        <input type="text" value={investigadorActual.puesto} readOnly className="admin-readonly-field" />
+                      </div>
+                      <div className="admin-form-group">
+                        <label>Extensión</label>
+                        <input
+                          type="text"
+                          className="admin-input"
+                          value={investigadorActual.extension}
+                          onChange={(e) => setInvestigadorActual(prev => ({ ...prev, extension: e.target.value }))}
+                          placeholder="Extensión"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="admin-form-group">
+                      <label>Número de Constancia de Habilitación</label>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={investigadorActual.no_constancia}
+                        readOnly
+                        style={{ backgroundColor: '#f3f6f8ff', cursor: 'not-allowed' }}
+                        placeholder="Se cargará automáticamente al validar ficha"
+                      />
+                      {pdfError && (
+                        <small style={{ color: '#e74c3c', marginTop: '5px', display: 'block' }}>
+                          <i className="fas fa-exclamation-circle"></i> {pdfError}
+                        </small>
+                      )}
+                    </div>
+
+                    {/* CUADRO SIMPLE PARA DESCARGAR PDF*/}
+                    {mostrarPDF && (
+                      <>
+                        <div className="admin-form-group" style={{
+                          marginTop: '15px',
+                          marginBottom: '15px'
                         }}>
                           <div style={{
-                            width: '90%',
-                            height: '90%',
-                            backgroundColor: 'white',
-                            borderRadius: '8px',
                             display: 'flex',
-                            flexDirection: 'column',
-                            overflow: 'hidden',
-                            boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '12px 15px',
+                            backgroundColor: '#f8f9fa',
+                            border: '1px solid #dee2e6',
+                            borderRadius: '6px',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
                           }}>
-                            {/* Cabecera del Modal */}
-                            <div style={{
-                              padding: '10px 20px',
-                              borderBottom: '1px solid #dee2e6',
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                              backgroundColor: '#f8f9fa'
-                            }}>
-                              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#333' }}>
-                                Previsualización
-                              </h3>
-                              <button
-                                type="button"
-                                onClick={() => setShowPdfModal(false)}
-                                style={{
-                                  background: 'none',
-                                  border: 'none',
-                                  fontSize: '1.5rem',
-                                  cursor: 'pointer',
-                                  color: '#666'
-                                }}
-                              >
-                                &times;
-                              </button>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <i className="fas fa-file-pdf" style={{
+                                color: '#e74c3c',
+                                fontSize: '20px'
+                              }}></i>
+                              <div>
+                                <div style={{ fontWeight: '600', color: '#333' }}>
+                                  Constancia de Habilitación #{investigadorActual.no_constancia}
+                                </div>
+                                <div style={{
+                                  fontSize: '12px',
+                                  color: '#6c757d',
+                                  marginTop: '2px'
+                                }}>
+                                  Disponible para visualización y descarga
+                                </div>
+                              </div>
                             </div>
 
-                            {/* Cuerpo del Modal (Iframe) */}
-                            <div style={{ flex: 1, padding: 0, backgroundColor: '#525659' }}>
-                              <iframe
-                                src={pdfUrl}
-                                width="100%"
-                                height="100%"
-                                style={{ border: 'none' }}
-                                title="Visor PDF"
-                              />
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                              {/* BOTÓN PREVISUALIZAR */}
+                              <button
+                                type="button"
+                                onClick={() => setShowPdfModal(true)}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '5px',
+                                  padding: '6px 12px',
+                                  backgroundColor: '#17a2b8',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  fontSize: '14px',
+                                  fontWeight: '500'
+                                }}
+                                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#138496'}
+                                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#17a2b8'}
+                              >
+                                <i className="fas fa-eye"></i>
+                                Ver
+                              </button>
+
+                              {/* BOTÓN DESCARGAR  */}
+                              <button
+                                type="button"
+                                onClick={handleDescargarPDF}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '5px',
+                                  padding: '6px 12px',
+                                  backgroundColor: '#28a745',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  fontSize: '14px',
+                                  fontWeight: '500'
+                                }}
+                                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#218838'}
+                                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#28a745'}
+                              >
+                                <i className="fas fa-download"></i>
+                                Descargar
+                              </button>
                             </div>
                           </div>
                         </div>
-                      )}
-                    </>
-                  )}
 
-                  <div className="admin-form-group">
-                    <label>Email</label>
-                    <input
-                      type="email"
-                      className="admin-input"
-                      value={investigadorActual.email}
-                      onChange={(e) => setInvestigadorActual(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="Correo electrónico"
-                    />
-                  </div>
-                  <button type="button" onClick={agregarInvestigador} className="admin-submit-button" style={{ maxWidth: '200px' }}>
-                    Agregar Investigador
-                  </button>
-
-                  {/* Lista de investigadores agregados */}
-                  {formState.investigadores.length > 0 && (
-                    <div style={{ marginTop: '20px', width: '100%' }}>
-                      <h4 style={{ marginBottom: '15px', color: '#333' }}>Investigadores Agregados:</h4>
-
-                      <div className="admin-personas-grid" style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                        gap: '20px'
-                      }}>
-
-                        {formState.investigadores.map((investigador, index) => (
-                          <div key={index} className="admin-persona-card">
-                            <div className="admin-persona-header">
-                              <h4>{investigador.nombre}</h4>
-                              <span className="admin-ficha">Ficha: {investigador.ficha}</span>
-                            </div>
-                            <div className="admin-persona-details">
-                              <div className="admin-detail-row">
-                                <span className="admin-label">Email:</span>
-                                <span className="admin-value">{investigador.email}</span>
+                        {/* MODAL PARA PREVISUALIZAR PDF */}
+                        {showPdfModal && (
+                          <div style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            width: '100vw',
+                            height: '100vh',
+                            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            zIndex: 9999
+                          }}>
+                            <div style={{
+                              width: '90%',
+                              height: '90%',
+                              backgroundColor: 'white',
+                              borderRadius: '8px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              overflow: 'hidden',
+                              boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
+                            }}>
+                              {/* Cabecera del Modal */}
+                              <div style={{
+                                padding: '10px 20px',
+                                borderBottom: '1px solid #dee2e6',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                backgroundColor: '#f8f9fa'
+                              }}>
+                                <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#333' }}>
+                                  Previsualización
+                                </h3>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowPdfModal(false)}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    fontSize: '1.5rem',
+                                    cursor: 'pointer',
+                                    color: '#666'
+                                  }}
+                                >
+                                  &times;
+                                </button>
                               </div>
-                              <div className="admin-detail-row">
-                                <span className="admin-label">Extensión:</span>
-                                <span className="admin-value">{investigador.extension}</span>
+
+                              {/* Cuerpo del Modal (Iframe) */}
+                              <div style={{ flex: 1, padding: 0, backgroundColor: '#525659' }}>
+                                <iframe
+                                  src={pdfUrl}
+                                  width="100%"
+                                  height="100%"
+                                  style={{ border: 'none' }}
+                                  title="Visor PDF"
+                                />
                               </div>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => eliminarPersona('investigadores', index)}
-                              className="admin-back-button"
-                              style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
-                            >
-                              Eliminar
-                            </button>
                           </div>
-                        ))}
-                      </div>
+                        )}
+                      </>
+                    )}
+
+                    <div className="admin-form-group">
+                      <label>Email</label>
+                      <input
+                        type="email"
+                        className="admin-input"
+                        value={investigadorActual.email}
+                        onChange={(e) => setInvestigadorActual(prev => ({ ...prev, email: e.target.value }))}
+                        placeholder="Correo electrónico"
+                      />
                     </div>
-                  )}
-                </div>
-              )
-            }
-          </section >
+                    <button type="button" onClick={agregarInvestigador} className="admin-submit-button" style={{ maxWidth: '200px' }}>
+                      Agregar Investigador
+                    </button>
+
+                    {/* Lista de investigadores agregados */}
+                    {formState.investigadores.length > 0 && (
+                      <div style={{ marginTop: '20px', width: '100%' }}>
+                        <h4 style={{ marginBottom: '15px', color: '#333' }}>Investigadores Agregados:</h4>
+
+                        <div className="admin-personas-grid" style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                          gap: '20px'
+                        }}>
+
+                          {formState.investigadores.map((investigador, index) => (
+                            <div key={index} className="admin-persona-card">
+                              <div className="admin-persona-header">
+                                <h4>{investigador.nombre}</h4>
+                                <span className="admin-ficha">Ficha: {investigador.ficha}</span>
+                              </div>
+                              <div className="admin-persona-details">
+                                <div className="admin-detail-row">
+                                  <span className="admin-label">Email:</span>
+                                  <span className="admin-value">{investigador.email}</span>
+                                </div>
+                                <div className="admin-detail-row">
+                                  <span className="admin-label">Extensión:</span>
+                                  <span className="admin-value">{investigador.extension}</span>
+                                </div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => eliminarPersona('investigadores', index)}
+                                className="admin-back-button"
+                                style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
+                              >
+                                Eliminar
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              }
+            </section >
+          )}
 
 
 
           {/* --- SECCIÓN 6: PERSONAS INVOLUCRADAS --- */}
-          < section className="admin-form-section" >
+          < section className="admin-form-section" style={!(['Admin', 'AdminCentral'].includes(userRole) || userRole.startsWith('Supervisor')) ? { gridColumn: '1 / -1' } : {}} >
             <h2 className="admin-section-title">
               <i className="fas fa-users"></i>
               Personal reportado
