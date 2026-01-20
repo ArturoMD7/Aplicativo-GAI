@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import apiClient from '../../api/apliClient';
 import {
     FiUser, FiMail, FiBriefcase, FiShield,
-    FiFileText, FiCheckCircle, FiClock, FiAlertTriangle, FiXCircle, FiDownload
+    FiFileText, FiAlertTriangle, FiDownload
 } from 'react-icons/fi';
 import ButtonIcon from '../../components/Buttons/ButtonIcon';
 
@@ -69,7 +69,7 @@ const UserInfoPage = () => {
     const handleDownloadConstancia = () => {
         if (data?.investigador.no_constancia) {
             const fileName = `${data.investigador.no_constancia}.pdf`;
-            const url = `/constancias/${fileName}`; // Asumiendo que esta ruta es accesible publicamente o similar
+            const url = `/constancias/${fileName}`; 
             const link = document.createElement('a');
             link.href = url;
             link.download = fileName;

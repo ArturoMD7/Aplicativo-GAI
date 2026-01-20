@@ -15,6 +15,7 @@ const BUTTON_VARIANTS = {
     hoverColor: '#a50121',
     defaultIcon: <FiEdit />
   },
+
   delete: {
     color: '#dc3545',
     hoverColor: '#c82333',

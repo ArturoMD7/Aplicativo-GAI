@@ -1,9 +1,12 @@
 // src/pages/HomePage.tsx
 import React from 'react';
 // 1. Importa el Router
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import apiClient from '../api/apliClient';
 import Sidebar from '../components/Sidebar/Sidebar';
 import '../styles/HomePage.css';
+import { FiUser } from 'react-icons/fi';
 
 // 2. Importa tus nuevas páginas
 import WelcomePage from './WelcomePage';
@@ -26,7 +29,36 @@ type HomePageProps = {
   onLogout: () => void;
 };
 
+interface UserHeaderProfile {
+  id: number;
+  first_name: string;
+  last_name: string;
+  username: string;
+  profile_picture: string | null;
+}
+
 function HomePage({ onLogout }: HomePageProps) {
+  const [userProfile, setUserProfile] = useState<UserHeaderProfile | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await apiClient.get('/api/user/profile/');
+        setUserProfile(response.data);
+      } catch (error) {
+        console.error("Error fetching user profile for header", error);
+      }
+    };
+    fetchProfile();
+  }, []);
+
+  const handleProfileClick = () => {
+    if (userProfile) {
+      navigate(`/admin/user-info/${userProfile.id}`);
+    }
+  };
+
   return (
     <div className="layout-container">
 
@@ -35,6 +67,21 @@ function HomePage({ onLogout }: HomePageProps) {
       <div className="content-container">
         <header className="home-header">
           <h1 className="app-title"> </h1>
+
+          {userProfile && (
+            <div className="user-header-profile" onClick={handleProfileClick} title="Ver mi información">
+              <span className="user-header-name"> <strong>
+                {userProfile.first_name} {userProfile.last_name || userProfile.username}
+              </strong></span>
+              <div className="user-header-avatar">
+                {userProfile.profile_picture ? (
+                  <img src={userProfile.profile_picture} alt="Avatar" />
+                ) : (
+                  <FiUser />
+                )}
+              </div>
+            </div>
+          )}
         </header>
 
         <main className="main-content">
