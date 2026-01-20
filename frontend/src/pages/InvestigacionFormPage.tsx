@@ -1444,10 +1444,10 @@ function InvestigacionFormPage() {
 
           {/* --- SECCIÓN 4: GERENCIA RESPONSABLE --- */}
           < section className="admin-form-section" >
-            <h2 className="admin-section-title">
+            {/* <h2 className="admin-section-title">
               <i className="fas fa-user-tie"></i>
               Gerencia Responsable
-            </h2>
+            </h2> */}
 
             {/* Contactos */}
             <div className="admin-personas-section">
@@ -1616,7 +1616,7 @@ function InvestigacionFormPage() {
                   </div>
 
                   <div className="admin-form-group">
-                    <label>Numero de Constancia de Habilitación</label>
+                    <label>Número de Constancia de Habilitación</label>
                     <input
                       type="text"
                       className="admin-input"
@@ -1926,7 +1926,7 @@ function InvestigacionFormPage() {
 
               <div className="admin-form-row">
                 <div className="admin-form-group">
-                  <label>Regimen</label>
+                  <label>Régimen</label>
                   <input type="text" value={involucradoActual.regimen} readOnly className="admin-readonly-field" />
                 </div>
                 <div className="admin-form-group">

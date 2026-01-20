@@ -33,12 +33,12 @@ class Investigacion(UppercaseMixin,models.Model):
     direccion = models.CharField(max_length=100, choices=DIRECCION_CHOICES)
     
     PROCEDENCIA_CHOICES = [
-        ('ANONIMO', 'ANONIMO'),
+        ('ANÓNIMO', 'ANÓNIMO'),
         ('LÍNEA DE NEGOCIO', 'LÍNEA DE NEGOCIO'),
         ('LÍNEA DE ÉTICA', 'LÍNEA DE ÉTICA'),
         ('ESCRITO LIBRE INTERNO', 'ESCRITO LIBRE INTERNO'),
         ('ESCRITO LIBRE EXTERNO', 'ESCRITO LIBRE EXTERNO'),
-        ('CORREO ELECTRONICO', 'CORREO ELECTRONICO'),
+        ('CORREO ELECTRÓNICO', 'CORREO ELECTRÓNICO'),
     ]
     procedencia = models.CharField(max_length=30, choices=PROCEDENCIA_CHOICES)
     
