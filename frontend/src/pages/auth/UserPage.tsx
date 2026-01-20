@@ -1,9 +1,9 @@
 // src/components/Users/UsersPage.tsx
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; 
 import apiClient from '../../api/apliClient';
-import { FiPlus, FiUsers, FiEdit2, FiTrash2, FiLoader, FiUserX } from 'react-icons/fi';
-import '../../styles/Auth/UserPage.css'; 
+import { FiUsers, FiLoader, FiUserX, FiUser } from 'react-icons/fi';
+import ButtonIcon from '../../components/Buttons/ButtonIcon';
+import '../../styles/Auth/UserPage.css';
 
 type User = {
   id: number;
@@ -11,8 +11,9 @@ type User = {
   email: string;
   first_name: string;
   last_name: string;
-  groups: string[]; 
+  groups: string[];
   ficha?: string;
+  profile_picture?: string;
 };
 
 function UsersPage() {
@@ -36,18 +37,14 @@ function UsersPage() {
     fetchUsers();
   }, []);
 
-  const handleEdit = (userId: number) => {
-    console.log('Editar usuario:', userId);
-    alert(`Funcionalidad de edición para usuario ${userId} - Próximamente`);
-  };
 
   const handleDelete = async (userId: number, userEmail: string) => {
-    if (!window.confirm(`¿Estás seguro de que quieres eliminar al usuario "${userEmail}"?`)) {
+    if (!window.confirm(`¿Estás seguro de que quieres eliminar al usuario "${userEmail}" ? `)) {
       return;
     }
 
     try {
-      await apiClient.delete(`/api/user/${userId}/`);
+      await apiClient.delete(`/ api / user / ${userId}/`);
       alert(`Usuario ${userEmail} eliminado correctamente.`);
       setUsers(users.filter(u => u.id !== userId));
     } catch (err: any) {
@@ -84,9 +81,11 @@ function UsersPage() {
     <div className="admin-page">
       <div className="page-header">
         <h1><FiUsers /> Gestión de Usuarios</h1>
-        <Link to="/admin/register-user" className="btn-add-new">
-          <FiPlus /> Nuevo Usuario
-        </Link>
+        <ButtonIcon
+          to="/admin/register-user"
+          variant="add"
+          text="Nuevo Usuario"
+        />
       </div>
 
       <div className="user-list-container">
@@ -95,14 +94,19 @@ function UsersPage() {
             <FiUsers className="icon" />
             <h3>No hay usuarios registrados</h3>
             <p>Comienza agregando el primer usuario al sistema</p>
-            <Link to="/admin/register-user" className="btn-add-new" style={{ marginTop: '16px', display: 'inline-flex' }}>
-              <FiPlus /> Agregar Primer Usuario
-            </Link>
+            <div style={{ marginTop: '16px', display: 'inline-flex' }}>
+              <ButtonIcon
+                to="/admin/register-user"
+                variant="add"
+                text="Agregar Primer Usuario"
+              />
+            </div>
           </div>
         ) : (
           <table className="user-table">
             <thead>
               <tr>
+                <th style={{ width: '60px' }}></th>
                 <th>FICHA</th>
                 <th>Email</th>
                 <th>Nombre Completo</th>
@@ -113,10 +117,33 @@ function UsersPage() {
             <tbody>
               {users.map((user) => (
                 <tr key={user.id}>
+                  <td>
+                    <div style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      overflow: 'hidden',
+                      border: '2px solid #e0e0e0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#f8f9fa'
+                    }}>
+                      {user.profile_picture ? (
+                        <img
+                          src={user.profile_picture}
+                          alt="Av"
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <FiUser style={{ color: '#adb5bd', fontSize: '1.2rem' }} />
+                      )}
+                    </div>
+                  </td>
                   <td>{user.ficha}</td>
                   <td className="user-email">{user.email}</td>
                   <td className="user-name">
-                    {user.first_name || user.last_name 
+                    {user.first_name || user.last_name
                       ? `${user.first_name} ${user.last_name}`.trim()
                       : 'No especificado'
                     }
@@ -136,20 +163,24 @@ function UsersPage() {
                   </td>
                   <td>
                     <div className="actions-container">
-                      <Link 
-                        to={`/admin/edit-user/${user.id}`} 
-                        className="btn-edit" 
+                      <ButtonIcon
+                        to={`/admin/user-info/${user.id}`}
+                        variant="info"
+                        title="Información detallada"
+                        className="btn-info"
+                      />
+                      <ButtonIcon
+                        to={`/admin/edit-user/${user.id}`}
+                        variant="edit"
                         title="Editar usuario"
-                      >
-                        <FiEdit2 /> Editar
-                      </Link>
-                      <button 
-                        className="btn-delete"
+                        className="btn-edit"
+                      />
+                      <ButtonIcon
                         onClick={() => handleDelete(user.id, user.email)}
+                        variant="delete"
                         title="Eliminar usuario"
-                      >
-                        <FiTrash2 /> Eliminar
-                      </button>
+                        className="btn-delete"
+                      />
                     </div>
                   </td>
                 </tr>

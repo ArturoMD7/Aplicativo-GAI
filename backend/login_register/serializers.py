@@ -4,6 +4,8 @@ from rest_framework.validators import UniqueValidator
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         identifier = attrs.get("username")
@@ -59,10 +61,11 @@ class UserSerializer(serializers.ModelSerializer):
     )
 
     ficha = serializers.CharField(source='profile.ficha', read_only=True)
+    profile_picture = serializers.ImageField(source='profile.profile_picture', read_only=True)
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_staff', 'groups', 'ficha']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_staff', 'groups', 'ficha', 'profile_picture']
 
 class RegisterSerializer(serializers.ModelSerializer):
 
@@ -120,6 +123,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     Serializer para actualizar información básica del usuario
     """
     ficha = serializers.CharField(source='profile.ficha', required=False)
+    profile_picture = serializers.ImageField(source='profile.profile_picture', required=False)
 
     email = serializers.EmailField(
         required=True,
@@ -142,13 +146,14 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'ficha']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'ficha', 'profile_picture']
         read_only_fields = ['id', 'username']
 
     def update(self, instance, validated_data):
         # Extraer datos del perfil si existen
         profile_data = validated_data.pop('profile', {})
         ficha = profile_data.get('ficha')
+        profile_picture = profile_data.get('profile_picture')
 
         if 'email' in validated_data:
             instance.username = validated_data['email']
@@ -159,6 +164,10 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         # Actualizar ficha en el perfil
         if ficha:
             instance.profile.ficha = ficha
+            instance.profile.save()
+
+        if profile_picture:
+            instance.profile.profile_picture = profile_picture
             instance.profile.save()
 
         return instance

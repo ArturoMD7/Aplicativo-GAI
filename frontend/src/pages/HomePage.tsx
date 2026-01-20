@@ -12,6 +12,7 @@ import RegisterPage from './auth/RegisterPage';
 import InvestigacionListPage from './InvestigacionListPage';
 import InvestigacionFormPage from './InvestigacionFormPage';
 import EditUserPage from './auth/EditUserPage';
+import UserInfoPage from './auth/UserInfoPage';
 import Settings from './auth/Settings';
 import InvestigacionDetailsPage from './InvestigacionDetailsPage';
 import LogListPage from './LogsListPage';
@@ -57,6 +58,7 @@ function HomePage({ onLogout }: HomePageProps) {
             <Route path="/settings" element={<Settings />} />
 
             <Route path="/admin/edit-user/:userId" element={<EditUserPage />} />
+            <Route path="/admin/user-info/:userId" element={<UserInfoPage />} />
 
             <Route path="/investigaciones/nuevo" element={<InvestigacionFormPage />} />
 

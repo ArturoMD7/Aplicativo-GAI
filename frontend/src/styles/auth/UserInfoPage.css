@@ -1,0 +1,266 @@
+.user-info-page {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.user-dashboard-grid {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+    .user-dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.dashboard-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #f0f0f0;
+}
+
+/* Profile Card Profile Column */
+.profile-card {
+    text-align: center;
+    position: relative;
+    top: 2rem;
+    height: fit-content;
+}
+
+.profile-header {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.profile-image-large {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 1rem;
+    border: 4px solid white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-image-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.default-avatar {
+    font-size: 4rem;
+    color: #cbd5e0;
+}
+
+.profile-header h2 {
+    font-size: 1.4rem;
+    color: #2d3748;
+    margin: 0.5rem 0 0.25rem;
+    font-weight: 600;
+}
+
+.user-ficha {
+    display: inline-block;
+    background: #edf2f7;
+    color: #4a5568;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.profile-details {
+    text-align: left;
+}
+
+.detail-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #4a5568;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+}
+
+.roles-section {
+    margin: 1.5rem 0;
+}
+
+.roles-section h4 {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #718096;
+    margin-bottom: 0.75rem;
+}
+
+.roles-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.role-tag {
+    background: #ebf8ff;
+    color: #2b6cb0;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.investigador-status {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.5rem;
+}
+
+.investigador-status.active {
+    background: #f0fff4;
+    border: 1px solid #c6f6d5;
+    color: #22543d;
+}
+
+.investigador-status.inactive {
+    background: #fffaf0;
+    border: 1px solid #fbd38d;
+    color: #744210;
+}
+
+.constancia-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    width: 100%;
+}
+
+.btn-download-mini {
+    background: #276749;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: background 0.2s;
+}
+
+.btn-download-mini:hover {
+    background: #22543d;
+}
+
+/* Right Column */
+.productivity-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #2d3748;
+    border-bottom: 1px solid #edf2f7;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.15rem;
+}
+
+.productivity-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.prod-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    font-size: 1.05rem;
+}
+
+.prod-row-label {
+    color: #4a5568;
+    font-weight: 500;
+}
+
+.prod-row-value {
+    color: #2d3748;
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.highlight-process {
+    color: #d69e2e;
+    /* Warning color for process */
+}
+
+.highlight-done {
+    color: #38a169;
+    /* Success color for done */
+}
+
+/* Employee Details Grid */
+.employee-info-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #2d3748;
+    border-bottom: 1px solid #edf2f7;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.employee-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.emp-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.emp-item label {
+    font-size: 0.85rem;
+    color: #718096;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+}
+
+.emp-item strong {
+    font-size: 1.1rem;
+    color: #2d3748;
+}
+
+.empty-employee-state {
+    text-align: center;
+    padding: 3rem;
+    color: #718096;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}

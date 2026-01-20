@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './ButtonIcon.css';
-import { FiEdit, FiTrash, FiPlus, FiDownload, FiEye } from 'react-icons/fi';
+import { FiEdit, FiTrash, FiPlus, FiDownload, FiEye, FiInfo } from 'react-icons/fi';
 
 // Tipos de botón disponibles
 const BUTTON_VARIANTS = {
@@ -25,6 +25,11 @@ const BUTTON_VARIANTS = {
     hoverColor: '#218838',
     defaultIcon: <FiPlus />
   },
+  info: {
+    color: '#1e5b4f',
+    hoverColor: '#154238',
+    defaultIcon: <FiInfo />
+  },
   download: {
     color: '#17a2b8',
     hoverColor: '#138496',
@@ -40,7 +45,7 @@ const BUTTON_VARIANTS = {
 // Props del componente
 interface ButtonIconProps {
   // Tipo de botón (define colores por defecto)
-  variant?: 'view' | 'edit' | 'delete' | 'add' | 'download' | 'custom';
+  variant?: 'view' | 'edit' | 'delete' | 'add' | 'download' | 'custom' | 'info';
   // URL para navegación (si es Link) o función onClick (si es button)
   to?: string;
   onClick?: () => void;
@@ -75,25 +80,25 @@ const ButtonIcon: React.FC<ButtonIconProps> = ({
 }) => {
   // Obtener configuración del variant
   const variantConfig = BUTTON_VARIANTS[variant];
-  
+
   // Colores finales (personalizados o del variant)
   const finalColor = color || variantConfig.color;
   const finalHoverColor = hoverColor || variantConfig.hoverColor;
-  
+
   // Icono final (personalizado o del variant)
   const finalIcon = icon || variantConfig.defaultIcon;
-  
+
   // Clases CSS
   const sizeClass = `btn-icon-${size}`;
   const disabledClass = disabled ? 'btn-icon-disabled' : '';
   const combinedClassName = `btn-icon ${sizeClass} ${disabledClass} ${className}`.trim();
-  
+
   // Estilos inline
   const buttonStyle = {
     '--btn-color': finalColor,
     '--btn-hover-color': finalHoverColor
   } as React.CSSProperties;
-  
+
   // Si tiene 'to', es un Link de React Router
   if (to && !disabled) {
     return (
@@ -111,7 +116,7 @@ const ButtonIcon: React.FC<ButtonIconProps> = ({
       </Link>
     );
   }
-  
+
   // Si no tiene 'to', es un button normal
   return (
     <button

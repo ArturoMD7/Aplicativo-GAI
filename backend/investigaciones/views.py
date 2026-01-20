@@ -71,50 +71,53 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
         return f"SCH-{numero}/{año}/{prefijo}"
     
     def get_queryset(self):
-        user = self.request.user
-        queryset = Investigacion.objects.all()
-        
-        if user.is_authenticated:
-            # 1. Admin / Superuser
-            if user.is_superuser or user.groups.filter(name__in=['Admin', 'AdminCentral']).exists():
-                pass # Retornar todo
+        return get_investigaciones_for_user(self.request.user, self.request.query_params)
 
-            else:
-                groups = list(user.groups.values_list('name', flat=True))
-                
-                # Identificar roles
-                is_supervisor = any(g.startswith('Supervisor') for g in groups)
-                is_operador = any(g.startswith('Operador') for g in groups)
+def get_investigaciones_for_user(user, query_params=None):
+    queryset = Investigacion.objects.all()
+    
+    if user.is_authenticated:
+        # 1. Admin / Superuser
+        if user.is_superuser or user.groups.filter(name__in=['Admin', 'AdminCentral']).exists():
+            pass # Retornar todo
 
-                if is_supervisor:
-                    # Supervisor: Ve toda su región
-                    if 'SupervisorNTE' in groups:
-                        queryset = queryset.filter(gerencia_responsable='NORTE')
-                    elif 'SupervisorSUR' in groups:
-                        queryset = queryset.filter(gerencia_responsable='SUR')
-                    elif 'SupervisorSTE' in groups:
-                        queryset = queryset.filter(gerencia_responsable='SURESTE')
-                    elif 'SupervisorALT' in groups:
-                        queryset = queryset.filter(gerencia_responsable='ALTIPLANO')
-                    elif 'SupervisorGAI' in groups:
-                        queryset = queryset.filter(gerencia_responsable='GAI')
-                
-                elif is_operador:
-                    # Operador: Solo ve donde es investigador asignado
-                    if hasattr(user, 'profile') and user.profile.ficha:
-                        queryset = queryset.filter(investigadores__ficha=user.profile.ficha)
-                    else:
-                        queryset = queryset.none()
-                
+        else:
+            groups = list(user.groups.values_list('name', flat=True))
+            
+            # Identificar roles
+            is_supervisor = any(g.startswith('Supervisor') for g in groups)
+            is_operador = any(g.startswith('Operador') for g in groups)
+
+            if is_supervisor:
+                # Supervisor: Ve toda su región
+                if 'SupervisorNTE' in groups:
+                    queryset = queryset.filter(gerencia_responsable='NORTE')
+                elif 'SupervisorSUR' in groups:
+                    queryset = queryset.filter(gerencia_responsable='SUR')
+                elif 'SupervisorSTE' in groups:
+                    queryset = queryset.filter(gerencia_responsable='SURESTE')
+                elif 'SupervisorALT' in groups:
+                    queryset = queryset.filter(gerencia_responsable='ALTIPLANO')
+                elif 'SupervisorGAI' in groups:
+                    queryset = queryset.filter(gerencia_responsable='GAI')
+            
+            elif is_operador:
+                # Operador: Solo ve donde es investigador asignado
+                if hasattr(user, 'profile') and user.profile.ficha:
+                    queryset = queryset.filter(investigadores__ficha=user.profile.ficha)
                 else:
-                    queryset = queryset.filter(created_by=user) 
-                
-        # Filtros adicionales
-        gravedad = self.request.query_params.get('gravedad')
-        direccion = self.request.query_params.get('direccion')
-        gerencia = self.request.query_params.get('gerencia')
-        estado = self.request.query_params.get('estado') 
-        conductas = self.request.query_params.get('conductas')
+                    queryset = queryset.none()
+            
+            else:
+                queryset = queryset.filter(created_by=user) 
+            
+    # Filtros adicionales
+    if query_params:
+        gravedad = query_params.get('gravedad')
+        direccion = query_params.get('direccion')
+        gerencia = query_params.get('gerencia')
+        estado = query_params.get('estado') 
+        conductas = query_params.get('conductas')
         
         if gravedad:
             queryset = queryset.filter(gravedad=gravedad)
@@ -132,8 +135,95 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
                 queryset = queryset.filter(fecha_prescripcion__gte=hoy)
         if conductas:
             queryset = queryset.filter(conductas=conductas)
-        
-        return queryset.order_by('-created_at')
+    
+    return queryset.order_by('-created_at')
+
+from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_dashboard_view(request, user_id):
+    """
+    Obtiene información completa para el dashboard de un usuario específico:
+    - Info personal (perfil, ficha, foto)
+    - Info laboral (tablero, antecedentes)
+    - Status como investigador (constancia)
+    - Estadísticas de sus investigaciones (según sus permisos)
+    """
+    target_user = get_object_or_404(User, pk=user_id)
+    
+    # 1. Info Básica
+    user_data = {
+        'id': target_user.id,
+        'username': target_user.username,
+        'email': target_user.email,
+        'first_name': target_user.first_name,
+        'last_name': target_user.last_name,
+        'groups': list(target_user.groups.values_list('name', flat=True)),
+        'ficha': getattr(target_user.profile, 'ficha', None),
+        'profile_picture': None
+    }
+    if hasattr(target_user, 'profile') and target_user.profile.profile_picture:
+         user_data['profile_picture'] = request.build_absolute_uri(target_user.profile.profile_picture.url)
+
+    # 2. Info Laboral (Si tiene ficha)
+    empleado_data = None
+    if user_data['ficha']:
+        try:
+             with connections['pemex'].cursor() as cursor:
+                cursor.execute(
+                    "SELECT ficha, nombres, nivel_plaza, catego, mc_stext, edad, antig, rfc + homoclave as rfc, curp, direccion_coduni, grupo, jorna, sec_sin FROM [00_tablero_dg] WHERE ficha = %s", 
+                    [user_data['ficha']]
+                )
+                row = cursor.fetchone()
+                if row:
+                    empleado_data = {
+                        'nombre': row[1],
+                        'nivel': row[2],
+                        'categoria': row[3],
+                        'puesto': row[4],
+                        'edad': row[5],
+                        'antiguedad': row[6],
+                        'direccion': row[9],
+                        'regimen': row[10],
+                        'sindicato': "STPRM" if row[12] else ""
+                    }
+        except Exception as e:
+            print(f"Error fetching empleado info: {e}")
+
+    # 3. Status Investigador
+    investigador_data = {'es_investigador': False, 'no_constancia': None}
+    if user_data['ficha']:
+        try:
+            inv = CatalogoInvestigador.objects.get(ficha=user_data['ficha'], activo=True)
+            investigador_data = {
+                'es_investigador': True,
+                'no_constancia': inv.no_constancia
+            }
+        except CatalogoInvestigador.DoesNotExist:
+            pass
+
+    # 4. Estadísticas de Investigaciones (Simulando ser el usuario target)
+    inv_queryset = get_investigaciones_for_user(target_user)
+    
+    total = inv_queryset.count()
+    concluidas = inv_queryset.filter(estatus='CONCLUIDA').count()
+    # En proceso: todas las que NO están concluidas
+    en_proceso = inv_queryset.exclude(estatus='CONCLUIDA').count()
+
+    stats = {
+        'total': total,
+        'en_proceso': en_proceso,
+        'concluidas': concluidas,
+    }
+
+    return Response({
+        'user': user_data,
+        'empleado': empleado_data,
+        'investigador': investigador_data,
+        'stats': stats
+    })
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
