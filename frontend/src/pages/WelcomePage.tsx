@@ -13,8 +13,12 @@ import {
   FiCompass,
   FiTarget,
   FiGlobe,
-  FiArrowLeft
+  FiArrowLeft,
+  FiCalendar,
+  FiBarChart2,
+  FiPieChart
 } from 'react-icons/fi';
+import ButtonIcon from '../components/Buttons/ButtonIcon';
 import {
   BarChart,
   Bar,
@@ -58,6 +62,10 @@ type SortConfig = {
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
+    // Intentar obtener el nombre completo del payload si existe
+    const dataItem = payload[0].payload;
+    const displayName = dataItem.fullName || label;
+
     return (
       <div className="custom-tooltip" style={{
         backgroundColor: '#fff',
@@ -67,14 +75,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         borderRadius: '5px'
       }}>
         <p className="label" style={{ fontWeight: 'bold', color: '#840016', marginBottom: '5px' }}>
-          {label}
+          {displayName}
         </p>
-        <p className="intro" style={{ margin: 0, color: '#333' }}>
-          {`Cantidad: ${payload[0].value} casos`}
-        </p>
-        <p className="desc" style={{ fontSize: '0.8em', color: '#666', marginTop: '5px' }}>
-          Detalle por tipo de falta.
-        </p>
+        {payload.map((entry: any, index: number) => (
+          <p key={index} style={{ margin: 0, color: entry.color, fontSize: '0.9em' }}>
+            {entry.name}: {entry.value}
+          </p>
+        ))}
       </div>
     );
   }
@@ -88,6 +95,46 @@ function WelcomePage() {
   const [loading, setLoading] = useState(true);
   const [showMenu, setShowMenu] = useState(true);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'ascending' });
+  const [userRole, setUserRole] = useState<string>('');
+  const [activeChart, setActiveChart] = useState<'month' | 'region' | 'conduct'>('region');
+
+  useEffect(() => {
+    const initRoleAndRegion = async () => {
+      let role = localStorage.getItem('userRole');
+
+      if (!role) {
+        try {
+          const profileRes = await apiClient.get('/api/user/profile/');
+          const groups = profileRes.data.groups;
+          if (groups && groups.length > 0) {
+            role = groups[0];
+            localStorage.setItem('userRole', role || '');
+          }
+        } catch (error) {
+          console.error("Error al obtener rol:", error);
+        }
+      }
+
+      const currentRole = role || '';
+      setUserRole(currentRole);
+
+      if (!['Admin', 'AdminCentral'].includes(currentRole)) {
+        let region = '';
+        if (currentRole.endsWith('NTE')) region = 'NORTE';
+        else if (currentRole.endsWith('SUR')) region = 'SUR';
+        else if (currentRole.endsWith('STE')) region = 'SURESTE';
+        else if (currentRole.endsWith('ALT')) region = 'ALTIPLANO';
+        else if (currentRole.endsWith('GAI')) region = 'GAI';
+
+        if (region) {
+          setSelectedGerencia(region);
+          setShowMenu(false);
+        }
+      }
+    };
+
+    initRoleAndRegion();
+  }, []);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -182,26 +229,74 @@ function WelcomePage() {
     return sortableItems;
   }, [baseDataList, sortConfig]);
 
-  // --- PREPARACIÓN DE DATOS PARA GRÁFICA ---
-  const chartData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    CONDUCTAS_POSIBLES.forEach(s => counts[s] = 0);
+  // --- PREPARACIÓN DE DATOS PARA GRÁFICAS APILADAS ---
 
-    filteredByGerencia.forEach((inv: any) => {
-      const sancion = inv.conductas;
-      if (counts[sancion] !== undefined) {
-        counts[sancion]++;
+  // 1. Por Mes (YYYY-MM)
+  const dataByMonth = useMemo(() => {
+    const grouped: Record<string, { name: string, enProceso: number, completed: number }> = {};
+
+    filteredByGerencia.forEach(inv => {
+      const date = new Date(inv.created_at);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; // YYYY-MM
+
+      const monthName = date.toLocaleString('es-ES', { month: 'short', year: 'numeric' });
+
+      if (!grouped[key]) {
+        grouped[key] = { name: monthName, enProceso: 0, completed: 0 };
+      }
+
+      const status = getStatusCategory(inv.estatus);
+      if (status === 'En Proceso') grouped[key].enProceso++;
+      else grouped[key].completed++;
+    });
+
+    return Object.values(grouped).sort((a, b) => a.name.localeCompare(b.name));
+  }, [filteredByGerencia]);
+
+  // 2. Por Región
+  const dataByRegion = useMemo(() => {
+    const grouped: Record<string, { name: string, enProceso: number, completed: number }> = {};
+
+    REGIONES_CONFIG.forEach(reg => {
+      grouped[reg.key] = { name: reg.label, enProceso: 0, completed: 0 };
+    });
+
+    const sourceData = selectedGerencia ? filteredByGerencia : allInvestigaciones;
+
+    sourceData.forEach(inv => {
+      const region = inv.gerencia_responsable;
+      if (region && grouped[region]) {
+        const status = getStatusCategory(inv.estatus);
+        if (status === 'En Proceso') grouped[region].enProceso++;
+        else grouped[region].completed++;
       }
     });
 
-    return Object.keys(counts)
-      .map(key => ({
-        name: key,
-        shortName: key.length > 10 ? key.substring(0, 10) + '...' : key,
-        value: counts[key]
-      }))
-      .filter(item => item.value > 0)
-      .sort((a, b) => b.value - a.value);
+    return Object.values(grouped);
+  }, [allInvestigaciones, filteredByGerencia, selectedGerencia]);
+
+  // 3. Por Conducta
+  const dataByConduct = useMemo(() => {
+    const grouped: Record<string, { name: string, fullName?: string, enProceso: number, completed: number }> = {};
+
+    filteredByGerencia.forEach(inv => {
+      const conducta = inv.conductas || 'Sin Definir';
+      // Nombre corto para el eje X
+      const shortName = conducta.length > 15 ? conducta.substring(0, 15) + '...' : conducta;
+
+      if (!grouped[conducta]) {
+        grouped[conducta] = { name: shortName, fullName: conducta, enProceso: 0, completed: 0 };
+      }
+
+      const status = getStatusCategory(inv.estatus);
+      if (status === 'En Proceso') grouped[conducta].enProceso++;
+      else grouped[conducta].completed++;
+    });
+
+    // Top 10 más frecuentes
+    return Object.values(grouped)
+      .sort((a, b) => (b.enProceso + b.completed) - (a.enProceso + a.completed))
+      .slice(0, 10);
   }, [filteredByGerencia]);
 
 
@@ -252,9 +347,11 @@ function WelcomePage() {
 
   return (
     <div className="welcome-page">
-      <button onClick={handleBackToMenu} className="back-button">
-        <FiArrowLeft /> Regresar al Mapa de Regiones
-      </button>
+      {['Admin', 'AdminCentral'].includes(userRole) && (
+        <button onClick={handleBackToMenu} className="back-button">
+          <FiArrowLeft /> Regresar al Mapa de Regiones
+        </button>
+      )}
 
       <div className="dashboard-header">
         <h1>Panel de Control - {selectedGerencia || 'Vista General'}</h1>
@@ -328,38 +425,61 @@ function WelcomePage() {
         </div>
 
         {/* SECCIÓN 2: GRÁFICA DE CONDUCTAS (Estilo solicitado) */}
+        {/* SECCIÓN 2: GRÁFICA APILADA DINÁMICA */}
         <div className="dashboard-section chart-section">
-          <div className="section-header">
-            <h2><FiActivity /> Estadísticas por Sanción ({selectedGerencia || 'General'})</h2>
+          <div className="section-header" style={{ justifyContent: 'space-between' }}>
+            <h2>
+              {activeChart === 'month' && <FiCalendar />}
+              {activeChart === 'region' && <FiMap />}
+              {activeChart === 'conduct' && <FiBarChart2 />}
+              {activeChart === 'month' ? ' Tendencia Mensual' : activeChart === 'region' ? ' Por Región' : ' Por Conducta'}
+              <span style={{ fontSize: '0.8em', fontWeight: 'normal', color: '#666', marginLeft: '10px' }}>
+                ({selectedGerencia || 'General'})
+              </span>
+            </h2>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <ButtonIcon
+                variant={activeChart === 'month' ? 'edit' : 'custom'} // edit para activo (rojo), custom para inactivo (gris)
+                icon={<FiCalendar />}
+                text="Por Mes"
+                size="small"
+                onClick={() => setActiveChart('month')}
+              />
+              {!selectedGerencia && (
+                <ButtonIcon
+                  variant={activeChart === 'region' ? 'edit' : 'custom'}
+                  icon={<FiMap />}
+                  text="Por Región"
+                  size="small"
+                  onClick={() => setActiveChart('region')}
+                />
+              )}
+              <ButtonIcon
+                variant={activeChart === 'conduct' ? 'edit' : 'custom'}
+                icon={<FiBarChart2 />}
+                text="Por Conducta"
+                size="small"
+                onClick={() => setActiveChart('conduct')}
+              />
+            </div>
           </div>
 
           <div style={{ width: '100%', height: 400 }}>
-            {chartData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="shortName" tick={{ fontSize: 12 }} />
-                  <YAxis allowDecimals={false} />
-                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
-                  <Legend />
-                  <Bar
-                    dataKey="value"
-                    name="Incidencias"
-                    fill="#840016"
-                    barSize={40}
-                    radius={[4, 4, 0, 0]}
-                    animationDuration={1500}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#999' }}>
-                No hay conductas registradas para esta selección.
-              </div>
-            )}
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={activeChart === 'month' ? dataByMonth : activeChart === 'region' ? dataByRegion : dataByConduct}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis allowDecimals={false} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
+                <Legend iconType="circle" />
+                <Bar dataKey="enProceso" name="En Proceso" stackId="a" fill="#f39c12" barSize={50} />
+                <Bar dataKey="completed" name="Concluidas" stackId="a" fill="#2ecc71" barSize={50} radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 

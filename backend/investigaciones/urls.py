@@ -18,4 +18,5 @@ urlpatterns = [
     path('buscar-gerente-responsable/', views.buscar_gerente_responsable_view, name='buscar-gerente-responsable'),
     path('validar-investigador/', views.validar_investigador_view, name='validar_investigador'),
     path('user-dashboard/<int:user_id>/', views.user_dashboard_view, name='user-dashboard'),
+    path('user-dashboard/<int:user_id>/list/', views.user_dashboard_list_view, name='user-dashboard-list'),
 ]

@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import apiClient from '../../api/apliClient';
 import {
     FiUser, FiMail, FiBriefcase, FiShield,
-    FiFileText, FiAlertTriangle, FiDownload
+    FiFileText, FiAlertTriangle, FiDownload, FiEye
 } from 'react-icons/fi';
 import ButtonIcon from '../../components/Buttons/ButtonIcon';
 
@@ -47,6 +47,8 @@ const UserInfoPage = () => {
     const [data, setData] = useState<UserDashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [myInvestigaciones, setMyInvestigaciones] = useState<any[]>([]);
+    const [showMyList, setShowMyList] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -69,7 +71,7 @@ const UserInfoPage = () => {
     const handleDownloadConstancia = () => {
         if (data?.investigador.no_constancia) {
             const fileName = `${data.investigador.no_constancia}.pdf`;
-            const url = `/constancias/${fileName}`; 
+            const url = `/constancias/${fileName}`;
             const link = document.createElement('a');
             link.href = url;
             link.download = fileName;
@@ -77,6 +79,18 @@ const UserInfoPage = () => {
             link.click();
             document.body.removeChild(link);
         }
+    };
+
+    const handleToggleList = async () => {
+        if (!showMyList && myInvestigaciones.length === 0) {
+            try {
+                const response = await apiClient.get(`/api/investigaciones/user-dashboard/${userId}/list/`);
+                setMyInvestigaciones(response.data);
+            } catch (e) {
+                console.error("Error fetching investigations list:", e);
+            }
+        }
+        setShowMyList(!showMyList);
     };
 
     if (loading) return <div className="p-8 text-center">Cargando información del usuario...</div>;
@@ -142,6 +156,7 @@ const UserInfoPage = () => {
                             </div>
                         )}
                     </div>
+
                 </div>
 
                 {/* Columna Derecha: Detalle Empleado y Stats */}
@@ -198,7 +213,20 @@ const UserInfoPage = () => {
 
                     {/* Productividad (Anteriormente Resumen de Investigaciones) */}
                     <div className="dashboard-card productivity-card">
-                        <h3><FiFileText /> Productividad</h3>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h3 style={{ margin: 0 }}><FiFileText /> Productividad</h3>
+                            <button
+                                onClick={handleToggleList}
+                                style={{
+                                    background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem',
+                                    color: '#555', padding: '5px', display: 'flex', alignItems: 'center'
+                                }}
+                                title={showMyList ? "Ocultar lista" : "Ver lista de investigaciones"}
+                            >
+                                <FiEye />
+                            </button>
+                        </div>
+
                         <div className="productivity-summary">
                             <div className="prod-row">
                                 <span className="prod-row-label">En Proceso</span>
@@ -213,6 +241,27 @@ const UserInfoPage = () => {
                                 <span className="prod-row-value">{stats.total}</span>
                             </div>
                         </div>
+
+                        {showMyList && (
+                            <div className="mini-investigaciones-list" style={{ marginTop: '15px', maxHeight: '300px', overflowY: 'auto', borderTop: '1px solid #eee', paddingTop: '10px' }}>
+                                {myInvestigaciones.length > 0 ? (
+                                    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                                        {myInvestigaciones.map((inv: any) => (
+                                            <li key={inv.id} style={{ padding: '8px 0', borderBottom: '1px solid #f9f9f9', fontSize: '0.9em', display: 'flex', justifyContent: 'space-between' }}>
+                                                <span style={{ fontWeight: 600 }}>{inv.numero_reporte}</span>
+                                                <span className={`status-badge status-${inv.estatus?.toLowerCase().replace(' ', '-') || 'active'}`} style={{ fontSize: '0.8em', padding: '2px 6px', borderRadius: '4px', background: '#eee' }}>
+                                                    {inv.estatus}
+                                                </span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p style={{ color: '#888', fontStyle: 'italic', fontSize: '0.9em', textAlign: 'center' }}>
+                                        No se encontraron resultados.
+                                    </p>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                 </div>

@@ -90,29 +90,35 @@ def get_investigaciones_for_user(user, query_params=None):
             is_operador = any(g.startswith('Operador') for g in groups)
 
             if is_supervisor:
-                # Supervisor: Ve toda su región
-                if 'SupervisorNTE' in groups:
-                    queryset = queryset.filter(gerencia_responsable='NORTE')
-                elif 'SupervisorSUR' in groups:
-                    queryset = queryset.filter(gerencia_responsable='SUR')
-                elif 'SupervisorSTE' in groups:
-                    queryset = queryset.filter(gerencia_responsable='SURESTE')
-                elif 'SupervisorALT' in groups:
-                    queryset = queryset.filter(gerencia_responsable='ALTIPLANO')
-                elif 'SupervisorGAI' in groups:
-                    queryset = queryset.filter(gerencia_responsable='GAI')
+                # Si se solicita "personal", filtrar por creadas por él.
+                # Si NO, ve toda su región (comportamiento normal).
+                if query_params and query_params.get('personal') == 'true':
+                     queryset = queryset.filter(created_by=user)
+                else:
+                    if 'SupervisorNTE' in groups:
+                        queryset = queryset.filter(gerencia_responsable='NORTE')
+                    elif 'SupervisorSUR' in groups:
+                        queryset = queryset.filter(gerencia_responsable='SUR')
+                    elif 'SupervisorSTE' in groups:
+                        queryset = queryset.filter(gerencia_responsable='SURESTE')
+                    elif 'SupervisorALT' in groups:
+                        queryset = queryset.filter(gerencia_responsable='ALTIPLANO')
+                    elif 'SupervisorGAI' in groups:
+                        queryset = queryset.filter(gerencia_responsable='GAI')
             
             elif is_operador:
-                # Operador: Solo ve donde es investigador asignado
+                # Operador: Solo ve donde es investigador asignado (siempre es "personal" implicitamente)
                 if hasattr(user, 'profile') and user.profile.ficha:
                     queryset = queryset.filter(investigadores__ficha=user.profile.ficha)
                 else:
                     queryset = queryset.none()
             
             else:
+                 # Otros usuarios basícos: Solo creadas por ellos
                 queryset = queryset.filter(created_by=user) 
             
-    # Filtros adicionales
+    # Filtros adicionales 
+   
     if query_params:
         gravedad = query_params.get('gravedad')
         direccion = query_params.get('direccion')
@@ -120,6 +126,16 @@ def get_investigaciones_for_user(user, query_params=None):
         estado = query_params.get('estado') 
         conductas = query_params.get('conductas')
         
+        # Filtros para Admin que quiere ver info de otros usuarios
+        target_user_id = query_params.get('target_user_id')
+        target_ficha = query_params.get('target_ficha')
+
+        if target_user_id and (user.is_superuser or user.groups.filter(name__in=['Admin', 'AdminCentral']).exists() or str(user.id) == str(target_user_id)):
+            queryset = queryset.filter(created_by_id=target_user_id)
+        
+        if target_ficha and (user.is_superuser or user.groups.filter(name__in=['Admin', 'AdminCentral']).exists() or (hasattr(user, 'profile') and user.profile.ficha == target_ficha)):
+            queryset = queryset.filter(investigadores__ficha=target_ficha)
+
         if gravedad:
             queryset = queryset.filter(gravedad=gravedad)
         if direccion:
@@ -206,7 +222,9 @@ def user_dashboard_view(request, user_id):
             pass
 
     # 4. Estadísticas de Investigaciones (Simulando ser el usuario target)
-    inv_queryset = get_investigaciones_for_user(target_user)
+    # IMPORTANTE: Pasamos personal='true' para que si es Supervisor, cuente solo las suyas (Productividad)
+    # Si es Operador, ya filtra por asignación por defecto.
+    inv_queryset = get_investigaciones_for_user(target_user, query_params={'personal': 'true'})
     
     total = inv_queryset.count()
     concluidas = inv_queryset.filter(estatus='CONCLUIDA').count()
@@ -523,4 +541,23 @@ def estadisticas_view(request):
     }
     
     serializer = EstadisticasSerializer(estadisticas)
+    return Response(serializer.data)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def user_dashboard_list_view(request, user_id):
+    """
+    Lista las investigaciones que aparecen en el reporte de productividad del usuario.
+    Reutiliza la misma logica de permisos que el dashboard (personal='true').
+    """
+    target_user = get_object_or_404(User, pk=user_id)
+    
+    # Validar permisos: Solo el propio usuario o Admins pueden ver esto
+    is_admin = request.user.is_superuser or request.user.groups.filter(name__in=['Admin', 'AdminCentral']).exists()
+    if request.user.id != target_user.id and not is_admin:
+         return Response({'error': 'No tiene permiso para ver detalles de este usuario'}, status=403)
+
+    # Reutilizar lógica de filtrado del dashboard
+    inv_queryset = get_investigaciones_for_user(target_user, query_params={'personal': 'true'})
+    
+    serializer = InvestigacionListSerializer(inv_queryset, many=True)
     return Response(serializer.data)

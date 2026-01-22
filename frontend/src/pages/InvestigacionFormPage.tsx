@@ -120,6 +120,28 @@ function InvestigacionFormPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [userRole, setUserRole] = useState<string>('');
 
+  // Diccionario de descripciones para las conductas (Tooltips)
+  const conductaDescriptions: { [key: string]: string } = {
+    'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS': 'Incumplimiento de normas, procedimientos internos o instrucciones de trabajo',
+    'FALTAS INJUSTIFICADAS / ABANDONO DE LABORES': 'Faltas, abandono de labores, inasistencia',
+    'NEGLIGENCIA EN EL DESEMPEÑO DE FUNCIONES': 'Descuido, falta de cuidado o diligencia en el trabajo',
+    'ACOSO LABORAL (MOBBING)': 'Hostigamiento laboral, maltrato psicológico o verbal sistemático',
+    'ACTITUD INDEBIDA': 'Comportamiento irrespetuoso, agresivo o inapropiado',
+    'DESOBEDIENCIA': 'Negativa a obedecer órdenes o instrucciones del superior',
+    'ALTERACIÓN DEL ORDEN Y DISCIPLINA': 'Riñas, escándalos, juegos de azar o distracciones',
+    'SUSTRACCIÓN O ROBO DE BIENES': 'Robo, hurto o apropiación indebida de bienes de la empresa',
+    'USO INDEBIDO DE BIENES, HERRAMIENTAS O RECURSOS': 'Uso personal o no autorizado de activos de la empresa',
+    'HOSTIGAMIENTO O ACOSO SEXUAL': 'Insinuaciones, tocamientos o agresiones de naturaleza sexual',
+    'CONCURRENCIA EN ESTADO INCONVENIENTE': 'Alcohol, drogas o enervantes',
+    'DIVULGACIÓN O USO INDEBIDO DE INFORMACIÓN': 'Revelación de secretos industriales o información confidencial',
+    'OCASIONAR DAÑOS O PERJUICIOS': 'Daño intencional o accidental a instalaciones o equipos',
+    'SUSPENSIÓN UNILATERAL DE LABORES': 'Paro de labores no autorizado',
+    'DISCRIMINACIÓN': 'Trato desigual por género, raza, religión, etc.',
+    'ACCIDENTE DE TRABAJO': 'Incidentes que resulten en lesiones o daños materiales',
+    'OTRAS CONDUCTAS': '',
+    'CLÁUSULA 253 CCT': ''
+  };
+
   useEffect(() => {
     setUserRole(localStorage.getItem('userRole') || '');
   }, []);
@@ -503,8 +525,6 @@ function InvestigacionFormPage() {
     }
   };
 
-
-  // ... import Swal (asegúrate de tenerlo importado)
 
   const buscarEmpleado = async (ficha: string, tipo: 'contacto' | 'investigador' | 'involucrado' | 'testigo' | 'reportante') => {
     if (!ficha.trim()) return;
@@ -927,7 +947,13 @@ function InvestigacionFormPage() {
                   >
                     <option value="">Seleccione...</option>
                     {opciones?.conductas.map(conducta => (
-                      <option key={conducta} value={conducta}>{conducta}</option>
+                      <option
+                        key={conducta}
+                        value={conducta}
+                        title={conductaDescriptions[conducta] || ''}
+                      >
+                        {conducta}
+                      </option>
                     ))}
                   </select>
                 </div>
