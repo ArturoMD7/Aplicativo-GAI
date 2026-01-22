@@ -1892,7 +1892,7 @@ function InvestigacionFormPage() {
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 'bold' }}>
                       <i className="fas fa-exclamation-triangle"></i>
-                      <span>Se encontraron {antecedentesEncontrados.length} antecedentes</span>
+                      <span>Se encontraron {antecedentesEncontrados.length} antecedente(s)</span>
                     </div>
                     <small>Esta persona quedará marcada con historial.</small>
                   </div>
@@ -1944,7 +1944,7 @@ function InvestigacionFormPage() {
                 }}
               >
                 {antecedentesEncontrados.length > 0 ? (
-                  <span><i className="fas fa-exclamation-circle"></i> Agregar con Antecedentes</span>
+                  <span><i className="fas fa-exclamation-circle"></i> Agregar con Antecedente(s)</span>
                 ) : "Agregar Involucrado"}
               </button>
 

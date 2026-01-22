@@ -373,6 +373,8 @@ def buscar_empleado_view(request):
         except Profile.DoesNotExist:
             pass
 
+        empleado_data['antecedentes'] = lista_antecedentes
+
         return Response(empleado_data)
 
     except Exception as e:
