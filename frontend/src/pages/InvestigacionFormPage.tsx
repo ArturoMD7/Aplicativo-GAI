@@ -458,10 +458,10 @@ function InvestigacionFormPage() {
     const rawValue = montoText.replace(/[^0-9.]/g, '');
     const value = parseFloat(rawValue);
 
-    if (value > 20000000) {
+    if (value > 1) {
       Swal.fire({
         title: 'Confirmar Monto',
-        text: `La cantidad ingresada (${montoText}) es superior a 20,000,000. ¿Es correcta?`,
+        text: `La cantidad ingresada (${montoText}). ¿Es correcta?`,
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
@@ -745,6 +745,15 @@ function InvestigacionFormPage() {
       return;
     }
 
+    if (formState.involucrados.length === 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Faltan datos',
+        text: 'Debe agregar al menos un personal reportado (involucrado) para guardar la investigación.'
+      });
+      return;
+    }
+
     setLoading(true);
     setError('');
     setSuccess('');
@@ -777,13 +786,22 @@ function InvestigacionFormPage() {
 
       if (isEditMode) {
         await apiClient.put(`/api/investigaciones/investigaciones/${id}/`, dataToSubmit);
-        setSuccess('Investigación actualizada exitosamente.');
+        await Swal.fire({
+          icon: 'success',
+          title: 'Actualizada',
+          text: 'Investigación actualizada exitosamente.'
+        });
       } else {
-        await apiClient.post('/api/investigaciones/investigaciones/', dataToSubmit);
-        setSuccess('Investigación creada exitosamente. Redirigiendo...');
+        const res = await apiClient.post('/api/investigaciones/investigaciones/', dataToSubmit);
+        const nuevoReporte = res.data.numero_reporte || 'Asignado';
+        await Swal.fire({
+          icon: 'success',
+          title: 'Creada',
+          text: `Se guardó la investigación. Reporte: ${nuevoReporte}`
+        });
       }
 
-      setTimeout(() => navigate('/investigaciones'), 1500);
+      navigate('/investigaciones');
 
     } catch (err: any) {
       console.error('Error completo:', err.response?.data);
@@ -896,22 +914,7 @@ function InvestigacionFormPage() {
                 </div>
               </div>
 
-              <div className="admin-form-group">
-                <label>Número de Reporte</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-hashtag"></i>
-                  <input
-                    type="text"
-                    value={formState.numero_reporte || 'No asignado'}
-                    readOnly
-                    className="admin-readonly-field"
-                  />
-                </div>
-              </div>
-            </div>
 
-
-            <div className="admin-form-row">
               <div className="admin-form-group">
                 <label> Posible Conducta *</label>
                 <div className="admin-input-with-icon">
@@ -930,7 +933,23 @@ function InvestigacionFormPage() {
                 </div>
               </div>
 
+              {/*
+              <div className="admin-form-group">
+                <label>Número de Reporte</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-hashtag"></i>
+                  <input
+                    type="text"
+                    value={formState.numero_reporte || 'No asignado'}
+                    readOnly
+                    className="admin-readonly-field"
+                  />
+                </div>
+              </div>
+              */}
+            </div>
 
+            <div className="admin-form-row">
 
               {formState.conductas === 'OTRAS CONDUCTAS' && (
                 <div className="admin-form-group" style={{ gridColumn: '1 / -1' }}>
