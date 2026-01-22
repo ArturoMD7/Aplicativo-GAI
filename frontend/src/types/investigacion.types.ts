@@ -45,6 +45,7 @@ export interface Involucrado extends BasePersona {
   jornada: string;
   sindicato: string;
   seccion_sindical: string;
+  fuente?: string;
 }
 
 export interface Testigo extends BasePersona {
@@ -57,7 +58,6 @@ export interface Testigo extends BasePersona {
 export interface InvestigacionFormState {
   montoeconomico: number | null;
   conductas: string;
-  subconducta: string;
   id?: number;
   nombre_corto: string;
   descripcion_general: string;
@@ -136,7 +136,6 @@ export interface InvestigacionListado {
   involucrados: string[];
   estatus: 'Abierta' | 'Seguimiento' | 'Concluida' | 'ABIERTA' | 'SEGUIMIENTO' | 'CONCLUIDA' | 'ENVIADA_A_CONCLUIR';
   conductas: string;
-  subconducta?: string;
   detalles_conducta?: string;
 }
 
@@ -163,11 +162,13 @@ export interface EmpleadoBuscado {
   jornada: string;
   sindicato: string;
   seccion_sindical: string;
+  fuente?: string;
 }
 
 export interface InvolucradoForm {
   ficha: string;
   nombre: string;
+  fuente: string;
   nivel: string;
   categoria: string;
   puesto: string;

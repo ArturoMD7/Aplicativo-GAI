@@ -269,24 +269,28 @@ def opciones_view(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def buscar_empleado_view(request):
-    """Buscar empleado y sus antecedentes"""
     serializer = EmpleadoBusquedaSerializer(data=request.query_params)
-    
+
     if not serializer.is_valid():
         return Response(serializer.errors, status=400)
-    
+
     ficha_buscada = serializer.validated_data['ficha']
-    
+
     try:
-        empleado_data = {}
-        
+        empleado_data = None
+
         with connections['pemex'].cursor() as cursor:
-            cursor.execute(
-                "SELECT ficha, nombres, nivel_plaza, catego, mc_stext, edad, antig, rfc + homoclave as rfc, curp, direccion_coduni, grupo, jorna, sec_sin FROM [00_tablero_dg] WHERE ficha = %s", 
-                [ficha_buscada]
-            )
+
+            cursor.execute("""
+                SELECT ficha, nombres, nivel_plaza, catego, mc_stext, edad, antig,
+                       rfc + homoclave as rfc, curp, direccion_coduni,
+                       grupo, jorna, sec_sin
+                FROM [00_tablero_dg]
+                WHERE ficha = %s
+            """, [ficha_buscada])
+
             row = cursor.fetchone()
-            
+
             if row:
                 empleado_data = {
                     'ficha': row[0],
@@ -302,16 +306,45 @@ def buscar_empleado_view(request):
                     'regimen': row[10],
                     'jornada': row[11],
                     'seccion_sindical': row[12],
+                    'sindicato': "STPRM" if row[12] else "",
+                    'fuente': 'Activos'
                 }
-                if row[12] is not None:
-                    empleado_data['sindicato'] = "STPRM"
-                else:
-                    empleado_data['sindicato'] = ""
-            else:
-                return Response({'error': 'Empleado no encontrado'}, status=404)
-        
+
+            if not empleado_data:
+                cursor.execute("""
+                    SELECT ficha, nombres, nivel_plaza, catego, edad, 
+                           rfc + homoclave as rfc, curp,
+                           grupo, jorna
+                    FROM [ultimo_contrato_activo]
+                    WHERE ficha = %s
+                """, [ficha_buscada])
+
+                row = cursor.fetchone()
+
+                if row:
+                    empleado_data = {
+                        'ficha': row[0],
+                        'nombre': row[1],
+                        'nivel': row[2],
+                        'categoria': row[3],
+                        'puesto': "No disponible",
+                        'edad': row[4],
+                        'antiguedad': "0",
+                        'rfc': row[5],
+                        'curp': row[6],
+                        'direccion': "No disponible",
+                        'regimen': row[7],
+                        'jornada': row[8],
+                        'seccion_sindical': "No",
+                        'sindicato': "No",
+                        'fuente': 'Ultimo contrato'
+                    }
+
+        if not empleado_data:
+            return Response({'error': 'Empleado no encontrado'}, status=404)
+
         lista_antecedentes = []
-        
+
         historicos = InvestigacionHistorico.objects.filter(ficha=ficha_buscada)
         for h in historicos:
             desc = f"{h.motivo_investigacion or ''} - {h.observaciones or ''} (Sanción: {h.sancion_aplicada or 'N/A'})"
@@ -332,11 +365,12 @@ def buscar_empleado_view(request):
             })
 
         empleado_data['antecedentes'] = lista_antecedentes
-        
+
         return Response(empleado_data)
-                
+
     except Exception as e:
         return Response({'error': str(e)}, status=500)
+
 
 @api_view(['GET'])
 @permission_classes([AllowAny])

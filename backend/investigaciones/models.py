@@ -73,8 +73,6 @@ class Investigacion(UppercaseMixin,models.Model):
 
     detalles_conducta = models.TextField(null=True, blank=True)
 
-    subconducta = models.CharField(max_length=100, null=True, blank=True)
-    
     SINDICATO_CHOICES = [
         ('STPRM', 'STPRM'),
         ('UNTYPP', 'UNTYPP'),

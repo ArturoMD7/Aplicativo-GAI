@@ -324,18 +324,6 @@ function InvestigacionDetailsPage() {
             </div>
           </div>
 
-          <div className="admin-form-group">
-            <label>Subconducta</label>
-            <div className="admin-input-with-icon">
-              <i className="fas fa-list-ul"></i>
-              <input
-                type="text"
-                value={investigacion.subconducta || 'No especificada'}
-                readOnly
-                className="admin-readonly-field"
-              />
-            </div>
-          </div>
 
           <div className="admin-form-group">
             <label>Detalles de la Conducta</label>
@@ -584,18 +572,7 @@ function InvestigacionDetailsPage() {
             </div>
           </div>
 
-          <div className="admin-form-group">
-            <label>Antecedentes</label>
-            <div className="admin-input-with-icon">
-              <i className="fas fa-history"></i>
-              <textarea
-                value={investigacion.antecedentes || 'Sin antecedentes'}
-                readOnly
-                className="admin-readonly-field admin-textarea"
-                rows={3}
-              />
-            </div>
-          </div>
+         
         </section>
 
         {/* SECCIÓN 6: PERSONAS INVOLUCRADAS */}

@@ -10,7 +10,7 @@ import { saveAs } from 'file-saver';
 import '../styles/InvestigacionPage.css';
 import DocumentosModals from '../components/Modals/DocumentosModals';
 import Swal from 'sweetalert2';
-import { GERENCIA_CHOICES, subconductasMap, CONDUCTAS_POSIBLES } from '../data/investigacionConstants';
+import { GERENCIA_CHOICES, CONDUCTAS_POSIBLES } from '../data/investigacionConstants';
 
 type SortConfig = {
   key: keyof InvestigacionListado | null;
@@ -29,7 +29,6 @@ function SeguimientoListPage() {
   // Filters
   const [selectedGerencia, setSelectedGerencia] = useState('');
   const [selectedConducta, setSelectedConducta] = useState('');
-  const [selectedSubconducta, setSelectedSubconducta] = useState('');
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'ascending' });
 
   // Estados para el Modal de Documentos
@@ -87,15 +86,6 @@ function SeguimientoListPage() {
     return 'gravedad-default';
   };
 
-  const availableSubconductas = useMemo(() => {
-    if (!selectedConducta) return [];
-    return subconductasMap[selectedConducta] || [];
-  }, [selectedConducta]);
-
-  // Reset subconducta when conducta changes
-  useEffect(() => {
-    setSelectedSubconducta('');
-  }, [selectedConducta]);
 
   const filteredInvestigaciones = investigaciones.filter((inv) => {
     const texto = searchTerm.toLowerCase();
@@ -104,9 +94,8 @@ function SeguimientoListPage() {
     );
     const matchesGerencia = selectedGerencia ? inv.gerencia_responsable === selectedGerencia : true;
     const matchesConducta = selectedConducta ? inv.conductas === selectedConducta : true;
-    const matchesSubconducta = selectedSubconducta ? inv.subconducta === selectedSubconducta : true;
 
-    return searchMatch && matchesGerencia && matchesConducta && matchesSubconducta;
+    return searchMatch && matchesGerencia && matchesConducta;
   });
 
   // Sorting Logic
@@ -251,15 +240,6 @@ function SeguimientoListPage() {
           </select>
         </div>
 
-        {selectedConducta && availableSubconductas.length > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <FiFilter style={{ color: '#666', marginRight: '5px' }} />
-            <select value={selectedSubconducta} onChange={(e) => setSelectedSubconducta(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}>
-              <option value="">Todas las Subconductas</option>
-              {availableSubconductas.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-        )}
       </div>
 
       {loading && <div className="loading-message">Cargando...</div>}

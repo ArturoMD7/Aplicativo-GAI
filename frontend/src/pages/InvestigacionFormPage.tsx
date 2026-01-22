@@ -20,7 +20,6 @@ const initialState: InvestigacionFormState = {
   nombre_corto: '',
   montoeconomico: null,
   conductas: '',
-  subconducta: '',
   descripcion_general: '',
   direccion: '',
   procedencia: '',
@@ -100,6 +99,7 @@ interface InvolucradoForm {
   jornada: string;
   sindicato: string;
   seccion_sindical: string;
+  fuente: string;
 }
 
 interface TestigoForm {
@@ -113,8 +113,6 @@ interface TestigoForm {
 }
 
 type TipoPersona = 'contactos' | 'investigadores' | 'involucrados' | 'testigos' | 'reportantes';
-
-import { subconductasMap } from '../data/investigacionConstants';
 
 function InvestigacionFormPage() {
   const { id } = useParams<{ id: string }>();
@@ -149,7 +147,7 @@ function InvestigacionFormPage() {
   });
 
   const [involucradoActual, setInvolucradoActual] = useState<InvolucradoForm>({
-    ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
+    ficha: '', nombre: '', nivel: '', categoria: '', puesto: '', fuente: '',
     edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: '', regimen: '', jornada: '', sindicato: '', seccion_sindical: ''
   });
 
@@ -418,7 +416,6 @@ function InvestigacionFormPage() {
       setFormState(prev => ({
         ...prev,
         conductas: value,
-        subconducta: '',
         detalles_conducta: value === 'OTRAS CONDUCTAS' ? prev.detalles_conducta : '',
         gravedad: value === 'HOSTIGAMIENTO O ACOSO SEXUAL' ? 'ALTA' : prev.gravedad
       }));
@@ -595,7 +592,8 @@ function InvestigacionFormPage() {
             regimen: empleado.regimen || '',
             jornada: empleado.jornada || '',
             sindicato: empleado.sindicato || '',
-            seccion_sindical: empleado.seccion_sindical || ''
+            seccion_sindical: empleado.seccion_sindical || '',
+            fuente: empleado.fuente || ''
           }));
           break;
 
@@ -706,7 +704,7 @@ function InvestigacionFormPage() {
     });
 
     setInvolucradoActual({
-      ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
+      ficha: '', nombre: '', fuente: '', nivel: '', categoria: '', puesto: '',
       edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: '', regimen: '', jornada: '', sindicato: '', seccion_sindical: ''
     });
     setAntecedentesEncontrados([]);
@@ -924,7 +922,7 @@ function InvestigacionFormPage() {
                     required
                   >
                     <option value="">Seleccione...</option>
-                    {Object.keys(subconductasMap).map(conducta => (
+                    {opciones?.conductas.map(conducta => (
                       <option key={conducta} value={conducta}>{conducta}</option>
                     ))}
                   </select>
@@ -952,26 +950,6 @@ function InvestigacionFormPage() {
                   <small className="admin-field-hint">
                     Carácteres actuales: {formState.detalles_conducta?.length || 0} / 100 mínimo
                   </small>
-                </div>
-              )}
-
-              {subconductasMap[formState.conductas] && subconductasMap[formState.conductas].length > 0 && (
-                <div className="admin-form-group">
-                  <label>Detalle de Conducta *</label>
-                  <div className="admin-input-with-icon">
-                    <i className="fas fa-list-ul"></i>
-                    <select
-                      name="subconducta"
-                      value={formState.subconducta}
-                      onChange={handleChange}
-                      required
-                    >
-                      <option value="">Seleccione detalle...</option>
-                      {subconductasMap[formState.conductas].map(sub => (
-                        <option key={sub} value={sub}>{sub}</option>
-                      ))}
-                    </select>
-                  </div>
                 </div>
               )}
             </div>
@@ -1275,7 +1253,7 @@ function InvestigacionFormPage() {
             </div>
 
             <div className="admin-form-group">
-              <label>Relatoria de los hechos</label>
+              <label>Breve Relatoria de Hechos *</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-sticky-note"></i>
                 <input
@@ -1284,20 +1262,6 @@ function InvestigacionFormPage() {
                   onChange={handleChange}
                   maxLength={300}
                   placeholder="Observaciones generales (máximo 300 caracteres)"
-                />
-              </div>
-            </div>
-
-            <div className="admin-form-group">
-              <label>Antecedentes</label>
-              <div className="admin-input-with-icon">
-                <i className="fas fa-history"></i>
-                <input
-                  name="antecedentes"
-                  value={formState.antecedentes}
-                  onChange={handleChange}
-                  maxLength={150}
-                  placeholder="Antecedentes del evento (máximo 150 caracteres)"
                 />
               </div>
             </div>
@@ -1385,7 +1349,7 @@ function InvestigacionFormPage() {
             }
 
             <div className="admin-form-group">
-              <label>Gerencia Responsable *</label>
+              <label>Gerencia Jurisdiccional SCH *</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-briefcase"></i>
                 <select name="gerencia_responsable" value={formState.gerencia_responsable} onChange={handleChange} required>
@@ -1394,52 +1358,6 @@ function InvestigacionFormPage() {
                 </select>
               </div>
             </div>
-
-            {
-              formState.responsable_ficha && (
-                <div className="gerente-info-container" style={{ gridColumn: '1 / -1', background: '#f0f4f8', padding: '15px', borderRadius: '8px', marginTop: '10px' }}>
-                  <h4 style={{ marginBottom: '10px', fontSize: '0.9rem' }}>Datos del Responsable (Nivel 44)</h4>
-                  <div className="admin-form-row">
-                    <div className="admin-form-group">
-                      <label>Nombre del Responsable</label>
-                      <input type="text" value={formState.responsable_nombre} readOnly className="admin-readonly-field" />
-                    </div>
-
-                  </div>
-                  <div className="admin-form-row">
-                    <div className="admin-form-group">
-                      <label>Ficha</label>
-                      <input type="text" value={formState.responsable_ficha} readOnly className="admin-readonly-field" />
-                    </div>
-                    <div className="admin-form-group">
-
-                      <label>Extensión Responsable *</label>
-                      <input
-                        type="text"
-                        className="admin-input"
-                        value={formState.responsable_extension}
-                        onChange={handleChange}
-                        placeholder="Extensión"
-                      />
-                    </div>
-
-
-                  </div>
-
-                  <div className="admin-form-group">
-                    <label>Email Responsable *</label>
-                    <input
-                      type="text"
-                      className="admin-input"
-                      value={formState.responsable_email}
-                      onChange={handleChange}
-                      placeholder="Ingrese email"
-                    />
-                  </div>
-
-                </div>
-              )
-            }
           </section >
 
           {/* --- SECCIÓN 4: GERENCIA RESPONSABLE --- */}
@@ -1874,7 +1792,12 @@ function InvestigacionFormPage() {
                 </div>
 
               </div>
-
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Fuente</label>
+                  <input type="text" value={involucradoActual.fuente} readOnly className="admin-readonly-field" />
+                </div>
+              </div>
               <div className="admin-form-row">
                 <div className="admin-form-group">
                   <label>Nombre</label>

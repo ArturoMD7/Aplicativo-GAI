@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
 import { saveAs } from 'file-saver';
 import '../styles/InvestigacionPage.css';
 
-import { GERENCIA_CHOICES, subconductasMap, CONDUCTAS_POSIBLES } from '../data/investigacionConstants';
+import { CONDUCTAS_POSIBLES, GERENCIA_CHOICES } from '../data/investigacionConstants';
 
 type SortConfig = {
   key: keyof InvestigacionListado | null;
@@ -30,7 +30,6 @@ function InvestigacionListPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedGerencia, setSelectedGerencia] = useState('');
   const [selectedSancion, setSelectedSancion] = useState('');
-  const [selectedSubconducta, setSelectedSubconducta] = useState('');
   const [showMenu, setShowMenu] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'ascending' });
   const [userRole, setUserRole] = useState<string>('');
@@ -78,16 +77,6 @@ function InvestigacionListPage() {
     fetchInvestigaciones();
     fetchInvestigaciones();
   }, []);
-
-  const availableSubconductas = useMemo(() => {
-    if (!selectedSancion) return [];
-    return subconductasMap[selectedSancion] || [];
-  }, [selectedSancion]);
-
-  // Reset subconducta when conducta changes
-  useEffect(() => {
-    setSelectedSubconducta('');
-  }, [selectedSancion]);
 
   const getSemaforoColor = (semaforo: string) => {
     const colors: Record<string, string> = {
@@ -188,9 +177,8 @@ function InvestigacionListPage() {
     );
     const matchesGerencia = selectedGerencia ? inv.gerencia_responsable === selectedGerencia : true;
     const matchesSancion = selectedSancion ? inv.conductas === selectedSancion : true;
-    const matchesSubconducta = selectedSubconducta ? inv.subconducta === selectedSubconducta : true;
 
-    return matchesSearch && matchesGerencia && matchesSancion && matchesSubconducta;
+    return matchesSearch && matchesGerencia && matchesSancion;
   });
 
   const formatDate = (str: string) => {
@@ -365,15 +353,6 @@ function InvestigacionListPage() {
           </select>
         </div>
 
-        {selectedSancion && availableSubconductas.length > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
-            <FiFilter style={{ color: '#666', marginRight: '5px' }} />
-            <select value={selectedSubconducta} onChange={(e) => setSelectedSubconducta(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}>
-              <option value="">Todas las Subconductas</option>
-              {availableSubconductas.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-        )}
       </div>
 
 
