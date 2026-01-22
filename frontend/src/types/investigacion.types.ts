@@ -163,6 +163,7 @@ export interface EmpleadoBuscado {
   sindicato: string;
   seccion_sindical: string;
   fuente?: string;
+  email?: string;
 }
 
 export interface InvolucradoForm {

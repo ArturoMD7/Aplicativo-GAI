@@ -384,6 +384,7 @@ class AntecedenteSerializer(serializers.Serializer):
 class EmpleadoBusquedaSerializer(serializers.Serializer):
     ficha = serializers.CharField(max_length=20, required=True)
     nombre = serializers.CharField(max_length=100, read_only=True)
+    email = serializers.EmailField(read_only=True)
     nivel = serializers.CharField(max_length=50, read_only=True)
     categoria = serializers.CharField(max_length=50, read_only=True)
     puesto = serializers.CharField(max_length=100, read_only=True)

@@ -562,6 +562,7 @@ function InvestigacionFormPage() {
             nombre: empleado.nombre,
             categoria: empleado.categoria,
             puesto: empleado.puesto,
+            email: empleado.email || '',
             no_constancia: datosInvestigadorAutorizado ? datosInvestigadorAutorizado.no_constancia : ''
           }));
 

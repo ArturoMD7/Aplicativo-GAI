@@ -9,6 +9,7 @@ from django.utils import timezone
 from datetime import date
 from .permissions import IsAdminOrReadOnly
 from .models import Investigacion, Involucrado, InvestigacionHistorico, DocumentoInvestigacion, CatalogoInvestigador
+from login_register.models import Profile
 from .serializers import (
     InvestigacionSerializer, InvestigacionListSerializer, 
     EmpleadoBusquedaSerializer, OpcionesSerializer,
@@ -364,7 +365,13 @@ def buscar_empleado_view(request):
                 'referencia': inv.investigacion.numero_reporte
             })
 
-        empleado_data['antecedentes'] = lista_antecedentes
+        # Buscar email en cuentas de usuario
+        try:
+            profile = Profile.objects.get(ficha=ficha_buscada)
+            if profile.user.email:
+                empleado_data['email'] = profile.user.email
+        except Profile.DoesNotExist:
+            pass
 
         return Response(empleado_data)
 
