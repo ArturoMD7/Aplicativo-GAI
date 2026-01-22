@@ -12,6 +12,7 @@ import type {
 } from '../types/investigacion.types';
 import '../styles/InvestigacionaDetails.css';
 import ButtonIcon from '../components/Buttons/ButtonIcon';
+import CustomConductaSelect from '../components/Inputs/CustomConductaSelect';
 import { FiEdit } from 'react-icons/fi';
 import { FaArrowLeft } from "react-icons/fa";
 import Swal from 'sweetalert2';
@@ -120,24 +121,23 @@ function InvestigacionFormPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [userRole, setUserRole] = useState<string>('');
 
-  // Diccionario de descripciones para las conductas (Tooltips)
   const conductaDescriptions: { [key: string]: string } = {
-    'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS': 'Incumplimiento de normas, procedimientos internos o instrucciones de trabajo',
-    'FALTAS INJUSTIFICADAS / ABANDONO DE LABORES': 'Faltas, abandono de labores, inasistencia',
-    'NEGLIGENCIA EN EL DESEMPEÑO DE FUNCIONES': 'Descuido, falta de cuidado o diligencia en el trabajo',
-    'ACOSO LABORAL (MOBBING)': 'Hostigamiento laboral, maltrato psicológico o verbal sistemático',
-    'ACTITUD INDEBIDA': 'Comportamiento irrespetuoso, agresivo o inapropiado',
-    'DESOBEDIENCIA': 'Negativa a obedecer órdenes o instrucciones del superior',
-    'ALTERACIÓN DEL ORDEN Y DISCIPLINA': 'Riñas, escándalos, juegos de azar o distracciones',
-    'SUSTRACCIÓN O ROBO DE BIENES': 'Robo, hurto o apropiación indebida de bienes de la empresa',
-    'USO INDEBIDO DE BIENES, HERRAMIENTAS O RECURSOS': 'Uso personal o no autorizado de activos de la empresa',
-    'HOSTIGAMIENTO O ACOSO SEXUAL': 'Insinuaciones, tocamientos o agresiones de naturaleza sexual',
-    'CONCURRENCIA EN ESTADO INCONVENIENTE': 'Alcohol, drogas o enervantes',
-    'DIVULGACIÓN O USO INDEBIDO DE INFORMACIÓN': 'Revelación de secretos industriales o información confidencial',
-    'OCASIONAR DAÑOS O PERJUICIOS': 'Daño intencional o accidental a instalaciones o equipos',
-    'SUSPENSIÓN UNILATERAL DE LABORES': 'Paro de labores no autorizado',
-    'DISCRIMINACIÓN': 'Trato desigual por género, raza, religión, etc.',
-    'ACCIDENTE DE TRABAJO': 'Incidentes que resulten en lesiones o daños materiales',
+    'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS': 'Incumplimiento de normas,  Incumplimiento de procedimientos operativos,Incumplimiento de lineamientos internos, Incumplimiento de instrucciones generales, Incumplimiento de cláusulas contractuales',
+    'FALTAS INJUSTIFICADAS / ABANDONO DE LABORES': 'Faltas injustificadas, Abandono de labores, Inasistencias reiteradas, Omisión de presentarse al centro de trabajo',
+    'NEGLIGENCIA EN EL DESEMPEÑO DE FUNCIONES': 'Omisiones en el desarrollo de funciones, Ejecución deficiente de tareas asignadas, Falta de cuidado o diligencia, Negligencia operativa sin dolo',
+    'ACOSO LABORAL (MOBBING)': ' Acoso laboral, Hostigamiento laboral no sexual,Conductas sistemáticas de presión o intimidación',
+    'ACTITUD INDEBIDA': ' Actitud indebida, Conducta inapropiada, Faltas al respeto, Comportamiento contrario a la convivencia laboral',
+    'DESOBEDIENCIA': ' Desobediencia a instrucciones superiores, Negativa a acatar órdenes directas, Incumplimiento de instrucciones operativas, Resistencia injustificada a la autoridad',
+    'ALTERACIÓN DEL ORDEN Y DISCIPLINA': ' Alteración del orden, Riñas o confrontaciones, Escándalos o conductas disruptivas, Afectación a la disciplina del centro de trabajo',
+    'SUSTRACCIÓN O ROBO DE BIENES': ' Sustracción, Robo, Sustracción de equipo mobiliario, Pérdida de bienes imputable, Uso indebido con ánimo de apropiación',
+    'USO INDEBIDO DE BIENES, HERRAMIENTAS O RECURSOS': ' Uso indebido de útiles y/o herramientas, Uso no autorizado de bienes de la empresa, Uso personal de recursos sin apropiación',
+    'HOSTIGAMIENTO O ACOSO SEXUAL': ' Hostigamiento sexual, Acoso sexual, Conductas de connotación sexual, Violencia digital de índole sexual',
+    'CONCURRENCIA EN ESTADO INCONVENIENTE': ' Concurrir en estado de ebriedad, Presentarse bajo el influjo de alcohol, Presentarse bajo efectos de sustancias prohibidas',
+    'DIVULGACIÓN O USO INDEBIDO DE INFORMACIÓN': ' Divulgación de información confidencial, Uso indebido de información, Acceso no autorizado a información',
+    'OCASIONAR DAÑOS O PERJUICIOS': ' Daños a bienes de la empresa, Daños a instalaciones, Perjuicios ocasionados por acción u omisión',
+    'SUSPENSIÓN UNILATERAL DE LABORES': ' Suspensión de labores, Paro injustificado, Negativa injustificada a prestar servicios',
+    'DISCRIMINACIÓN': ' Discriminación laboral,Trato diferenciado injustificado',
+    'ACCIDENTE DE TRABAJO': ' Accidente de trabajo, Incidente con posible responsabilidad laboral',
     'OTRAS CONDUCTAS': '',
     'CLÁUSULA 253 CCT': ''
   };
@@ -937,25 +937,25 @@ function InvestigacionFormPage() {
 
               <div className="admin-form-group">
                 <label> Posible Conducta *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-exclamation-triangle"></i>
-                  <select
-                    name="conductas"
-                    value={formState.conductas}
-                    onChange={handleChange}
-                    required
-                  >
-                    <option value="">Seleccione...</option>
-                    {opciones?.conductas.map(conducta => (
-                      <option
-                        key={conducta}
-                        value={conducta}
-                        title={conductaDescriptions[conducta] || ''}
-                      >
-                        {conducta}
-                      </option>
-                    ))}
-                  </select>
+                <div className="admin-input-with-icon" style={{ padding: 0, border: 'none' }}>
+                  <i className="fas" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', zIndex: 10, color: '#666' }}></i>
+                  <div style={{ marginLeft: '0' }}>
+                    <CustomConductaSelect
+                      value={formState.conductas}
+                      onChange={(val) => {
+                        const fakeEvent = {
+                          target: {
+                            name: 'conductas',
+                            value: val,
+                            type: 'select-one'
+                          }
+                        } as React.ChangeEvent<HTMLSelectElement>;
+                        handleChange(fakeEvent);
+                      }}
+                      options={opciones?.conductas || []}
+                      descriptions={conductaDescriptions}
+                    />
+                  </div>
                 </div>
               </div>
 
