@@ -13,4 +13,5 @@ export interface LogListado {
   investigacion: number | null;
   investigacion_numero: number | null;
   user_profile_ficha: number | null;
+  computer_name: string;
 }

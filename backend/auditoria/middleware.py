@@ -3,6 +3,7 @@ import json
 import re
 import logging
 import time
+import socket  # <--- Importante para resolución de nombres
 from django.utils.deprecation import MiddlewareMixin
 from django.contrib.auth.models import AnonymousUser
 from .models import ActivityLog
@@ -33,7 +34,6 @@ class ActivityLoggingMiddleware(MiddlewareMixin):
             if self._should_exclude_path(current_path):
                 return response
 
-            
             action_mapping = {
                 'GET': 'READ',
                 'POST': 'CREATE', 
@@ -51,6 +51,10 @@ class ActivityLoggingMiddleware(MiddlewareMixin):
             if self._is_duplicate_log(request, action):
                 return response
             
+            # Obtener IP y Nombre del Equipo
+            ip_address = self._get_client_ip(request)
+            computer_name = self._get_hostname(ip_address)
+
             # Crear registro
             try:
                 log_entry = ActivityLog.objects.create(
@@ -59,7 +63,8 @@ class ActivityLoggingMiddleware(MiddlewareMixin):
                     endpoint=current_path,
                     method=request.method,
                     description=description,
-                    ip_address=self._get_client_ip(request),
+                    ip_address=ip_address,
+                    computer_name=computer_name,
                     user_agent=request.META.get('HTTP_USER_AGENT', ''),
                     investigacion=investigacion
                 )
@@ -67,7 +72,7 @@ class ActivityLoggingMiddleware(MiddlewareMixin):
                 import traceback
                 traceback.print_exc()
         else:
-            print(f"[DEBUG-RESPONSE] Usuario no autenticado: {request.user}")
+            pass
             
         return response
 
@@ -108,7 +113,6 @@ class ActivityLoggingMiddleware(MiddlewareMixin):
             '/api/user/change-password/',
             '/api/token/refresh',
             '/api/token/verify',
-            #'/api/token/',
             '/api/auditoria/activity-logs/',  
         ]
         
@@ -180,14 +184,33 @@ class ActivityLoggingMiddleware(MiddlewareMixin):
                 if investigacion_id:
                     return Investigacion.objects.get(id=investigacion_id)
         except (Investigacion.DoesNotExist, ValueError, AttributeError) as e:
-            print(f"[DEBUG] Error obteniendo investigación desde response: {e}")
+            pass
         
         return None
 
     def _get_client_ip(self, request):
+        """Obtiene la IP del cliente"""
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         if x_forwarded_for:
             ip = x_forwarded_for.split(',')[0]
         else:
             ip = request.META.get('REMOTE_ADDR')
         return ip
+
+    def _get_hostname(self, ip):
+        """
+        Intenta resolver el nombre del host mediante la IP.
+        Usa un timeout corto para evitar bloquear el request si el DNS es lento.
+        """
+        if not ip:
+            return None
+        try:
+            original_timeout = socket.getdefaulttimeout()
+            socket.setdefaulttimeout(0.5)
+            
+            hostname = socket.gethostbyaddr(ip)[0]
+            
+            socket.setdefaulttimeout(original_timeout)
+            return hostname
+        except Exception:
+            return None

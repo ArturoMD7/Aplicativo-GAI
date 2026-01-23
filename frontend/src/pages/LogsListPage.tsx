@@ -113,7 +113,8 @@ function LogListPage() {
       'Fecha': new Date(inv.timestamp).toLocaleDateString(),
       'Hora': new Date(inv.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       'Investigacion': inv.investigacion_numero,
-      'Ficha': inv.user_profile_ficha
+      'Ficha': inv.user_profile_ficha,
+      'Nombre Equipo': inv.computer_name
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -184,6 +185,9 @@ function LogListPage() {
                 <th onClick={() => handleSort('ip_address')} className="sortable-header">
                   Direccion IP {renderSortIcon('ip_address')}
                 </th>
+                <th onClick={() => handleSort('computer_name')} className="sortable-header">
+                  Nombre Equipo {renderSortIcon('computer_name')}
+                </th>
                 <th onClick={() => handleSort('timestamp')} className="sortable-header">
                   Fecha y Hora {renderSortIcon('timestamp')}
                 </th>
@@ -201,6 +205,7 @@ function LogListPage() {
                   <td>{inv.action_display}</td>
                   <td className="text-muted">{inv.description}</td>
                   <td className="text-muted">{inv.ip_address}</td>
+                  <td>{inv.computer_name}</td>
                   <td>
                     {new Date(inv.timestamp).toLocaleDateString()} {' '}
                     <span className="text-muted" style={{ fontSize: '0.85em' }}>

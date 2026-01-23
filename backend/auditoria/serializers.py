@@ -22,7 +22,7 @@ class ActivityLogSerializer(serializers.ModelSerializer):
         model = ActivityLog
         fields = [
             'id', 'user', 'user_name', 'username', 'action', 'action_display', 
-            'endpoint', 'method', 'description', 'ip_address', 'user_agent',
+            'endpoint', 'method', 'description', 'ip_address', 'computer_name', 'user_agent',
             'timestamp', 'investigacion', 'investigacion_numero', 'investigacion_nombre', 'user_profile_ficha'
         ]
         read_only_fields = fields

@@ -26,6 +26,7 @@ class ActivityLog(models.Model):
     method = models.CharField(max_length=10)
     description = models.TextField(blank=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
+    computer_name = models.CharField(max_length=255, blank=True, null=True, help_text="Nombre de host resuelto por DNS")
     user_agent = models.TextField(blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     
