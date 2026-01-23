@@ -283,6 +283,7 @@ function InvestigacionFormPage() {
   };
 
   const [antecedentesEncontrados, setAntecedentesEncontrados] = useState<any[]>([]);
+  const [listaInvestigadores, setListaInvestigadores] = useState<{ ficha: string; nombre: string }[]>([]);
 
   // --- Cargar datos ---
   useEffect(() => {
@@ -290,10 +291,11 @@ function InvestigacionFormPage() {
 
     const fetchDatosIniciales = async () => {
       try {
-        const [opcionesRes, centrosTrabajoRes, centrosCoduniRes] = await Promise.all([
+        const [opcionesRes, centrosTrabajoRes, centrosCoduniRes, investigadoresRes] = await Promise.all([
           apiClient.get('/api/investigaciones/opciones/'),
           apiClient.get('/api/investigaciones/centros-trabajo/'),
-          apiClient.get('/api/investigaciones/centros-coduni/')
+          apiClient.get('/api/investigaciones/centros-coduni/'),
+          apiClient.get('/api/investigaciones/listar-investigadores/').catch(() => ({ data: [] }))
         ]);
 
         if (!isMounted) return;
@@ -301,6 +303,7 @@ function InvestigacionFormPage() {
         setOpciones(opcionesRes.data);
         setCentrosTrabajo(centrosTrabajoRes.data);
         setCentrosCoduni(centrosCoduniRes.data);
+        setListaInvestigadores(investigadoresRes.data);
       } catch (err) {
         console.error('Error cargando datos iniciales:', err);
         setError('No se pudieron cargar los datos iniciales.');
@@ -677,10 +680,6 @@ function InvestigacionFormPage() {
       alert(`Error al buscar empleado: ${err.response?.data?.error || 'Empleado no encontrado'}`);
     }
   };
-
-  // --- Handlers para agregar personas ---
-
-
 
   const agregarContacto = () => {
     if (!contactoActual.ficha || !contactoActual.nombre) {
@@ -1566,7 +1565,7 @@ function InvestigacionFormPage() {
                     <h3>Investigadores</h3>
                     <div className="admin-form-group">
                       <label>Ficha</label>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', flexDirection: 'column', width: '100%' }}>
 
                         <input
                           type="text"
@@ -1576,6 +1575,32 @@ function InvestigacionFormPage() {
                           onKeyDown={(e) => handleEnterBusqueda(e, investigadorActual.ficha, 'investigador')}
                           placeholder="Ingrese ficha y presione Enter o Tab"
                         />
+
+                        {/* SELECTOR ADICIONAL DE INVESTIGADORES */}
+                        <div style={{ width: '100%' }}>
+                          <label style={{ fontSize: '0.85rem', color: '#666', marginBottom: '5px', display: 'block' }}>
+                            O seleccionar por nombre:
+                          </label>
+                          <select
+                            className="admin-input"
+                            value="" // Siempre vacio para funcionar como "selector de accion"
+                            onChange={(e) => {
+                              const fichaSeleccionada = e.target.value;
+                              if (fichaSeleccionada) {
+                                // Actualizamos estado y disparamos búsqueda
+                                setInvestigadorActual(prev => ({ ...prev, ficha: fichaSeleccionada }));
+                                buscarEmpleado(fichaSeleccionada, 'investigador');
+                              }
+                            }}
+                          >
+                            <option value="">-- Seleccionar Investigador --</option>
+                            {listaInvestigadores.map((inv) => (
+                              <option key={inv.ficha} value={inv.ficha}>
+                                {inv.nombre} ({inv.ficha})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
 
                       </div>
 

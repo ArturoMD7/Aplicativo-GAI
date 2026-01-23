@@ -280,6 +280,39 @@ def validar_investigador_view(request):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def listar_investigadores_view(request):
+    """
+    Devuelve lista de investigadores activos {ficha, nombre}
+    Filtrado por región si el usuario es Supervisor
+    """
+    user = request.user
+    queryset = CatalogoInvestigador.objects.filter(activo=True)
+
+    # Lógica de filtrado regional
+    if not (user.is_superuser or user.groups.filter(name__in=['Admin', 'AdminCentral']).exists()):
+        groups = list(user.groups.values_list('name', flat=True))
+        
+        supervisor_roles = [g for g in groups if g.startswith('Supervisor')]
+        if supervisor_roles:
+            role = supervisor_roles[0]
+            region = role.replace('Supervisor', '')
+          
+            try:
+                operador_group_name = f'Operador{region}'
+                users_operadores = User.objects.filter(groups__name=operador_group_name)
+                fichas_operadores = Profile.objects.filter(user__in=users_operadores).values_list('ficha', flat=True)
+                
+                queryset = queryset.filter(ficha__in=fichas_operadores)
+            except Exception as e:
+                # Si falla algo en la logica de grupos, retornamos vacio por seguridad
+                print(f"Error filtrando investigadores por region: {e}")
+                queryset = queryset.none()
+
+    data = queryset.values('ficha', 'nombre').order_by('nombre')
+    return Response(list(data))
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def opciones_view(request):
     """Obtener todas las opciones para listas desplegables"""
     opciones = {
