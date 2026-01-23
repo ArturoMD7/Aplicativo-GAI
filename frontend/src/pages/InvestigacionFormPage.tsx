@@ -1846,7 +1846,7 @@ function InvestigacionFormPage() {
                   <input type="text" value={involucradoActual.fuente} readOnly className="admin-readonly-field" />
                 </div>
                 <div className="admin-form-group">
-                  <label>Termino</label>
+                  <label>Fecha de Término</label>
                   {(() => {
                     let isExceeded = false;
                     if (formState.fecha_prescripcion && involucradoActual.termino) {
