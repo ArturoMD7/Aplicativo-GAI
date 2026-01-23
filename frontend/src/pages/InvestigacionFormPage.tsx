@@ -100,6 +100,7 @@ interface InvolucradoForm {
   jornada: string;
   sindicato: string;
   seccion_sindical: string;
+  termino: string;
   fuente: string;
 }
 
@@ -169,7 +170,7 @@ function InvestigacionFormPage() {
   });
 
   const [involucradoActual, setInvolucradoActual] = useState<InvolucradoForm>({
-    ficha: '', nombre: '', nivel: '', categoria: '', puesto: '', fuente: '',
+    ficha: '', nombre: '', nivel: '', categoria: '', puesto: '', fuente: '', termino: '',
     edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: '', regimen: '', jornada: '', sindicato: '', seccion_sindical: ''
   });
 
@@ -614,7 +615,8 @@ function InvestigacionFormPage() {
             jornada: empleado.jornada || '',
             sindicato: empleado.sindicato || '',
             seccion_sindical: empleado.seccion_sindical || '',
-            fuente: empleado.fuente || ''
+            fuente: empleado.fuente || '',
+            termino: empleado.termino || ''
           }));
           break;
 
@@ -725,7 +727,7 @@ function InvestigacionFormPage() {
     });
 
     setInvolucradoActual({
-      ficha: '', nombre: '', fuente: '', nivel: '', categoria: '', puesto: '',
+      ficha: '', nombre: '', fuente: '', nivel: '', categoria: '', puesto: '', termino: '',
       edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: '', regimen: '', jornada: '', sindicato: '', seccion_sindical: ''
     });
     setAntecedentesEncontrados([]);
@@ -1842,6 +1844,45 @@ function InvestigacionFormPage() {
                 <div className="admin-form-group">
                   <label>Fuente</label>
                   <input type="text" value={involucradoActual.fuente} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Termino</label>
+                  {(() => {
+                    let isExceeded = false;
+                    if (formState.fecha_prescripcion && involucradoActual.termino) {
+                      try {
+                        const [pYear, pMonth, pDay] = formState.fecha_prescripcion.split('-').map(Number);
+                        const fechaPres = new Date(pYear, pMonth - 1, pDay);
+
+                        const [tDay, tMonth, tYear] = involucradoActual.termino.split('/').map(Number);
+                        const fechaTerm = new Date(tYear, tMonth - 1, tDay);
+
+                        if (fechaPres > fechaTerm) {
+                          isExceeded = true;
+                        }
+                      } catch (e) {
+                        // Ignore parse errors
+                      }
+                    }
+
+                    return (
+                      <>
+                        <input
+                          type="text"
+                          value={involucradoActual.termino}
+                          readOnly
+                          className="admin-readonly-field"
+                          style={isExceeded ? { border: '2px solid #dc3545', color: '#dc3545', fontWeight: 'bold' } : {}}
+                        />
+                        {isExceeded && (
+                          <small style={{ color: '#dc3545', display: 'block', marginTop: '5px', fontWeight: '600' }}>
+                            <i className="fas fa-exclamation-circle" style={{ marginRight: '5px' }}></i>
+                            ¡Atención! La prescripción excede el término de contrato
+                          </small>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
               <div className="admin-form-row">

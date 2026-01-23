@@ -46,6 +46,7 @@ export interface Involucrado extends BasePersona {
   sindicato: string;
   seccion_sindical: string;
   fuente?: string;
+  termino?: string;
 }
 
 export interface Testigo extends BasePersona {
@@ -163,6 +164,7 @@ export interface EmpleadoBuscado {
   sindicato: string;
   seccion_sindical: string;
   fuente?: string;
+  termino?: string;
   email?: string;
 }
 
@@ -170,6 +172,7 @@ export interface InvolucradoForm {
   ficha: string;
   nombre: string;
   fuente: string;
+  termino: string;
   nivel: string;
   categoria: string;
   puesto: string;

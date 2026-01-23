@@ -303,7 +303,7 @@ def buscar_empleado_view(request):
             cursor.execute("""
                 SELECT ficha, nombres, nivel_plaza, catego, mc_stext, edad, antig,
                        rfc + homoclave as rfc, curp, direccion_coduni,
-                       grupo, jorna, sec_sin
+                       grupo, jorna, sec_sin, termino
                 FROM [00_tablero_dg]
                 WHERE ficha = %s
             """, [ficha_buscada])
@@ -311,6 +311,7 @@ def buscar_empleado_view(request):
             row = cursor.fetchone()
 
             if row:
+                termino_raw = str(row[13])
                 empleado_data = {
                     'ficha': row[0],
                     'nombre': row[1],
@@ -325,6 +326,8 @@ def buscar_empleado_view(request):
                     'regimen': row[10],
                     'jornada': row[11],
                     'seccion_sindical': row[12],
+                    'termino_raw': termino_raw,
+                    'termino': f"{termino_raw[6:8]}/{termino_raw[4:6]}/{termino_raw[:4]}",  
                     'sindicato': "STPRM" if row[12] else "",
                     'fuente': 'Activos'
                 }
@@ -333,7 +336,7 @@ def buscar_empleado_view(request):
                 cursor.execute("""
                     SELECT ficha, nombres, nivel_plaza, catego, edad, 
                            rfc + homoclave as rfc, curp,
-                           grupo, jorna
+                           grupo, jorna, fec_term
                     FROM [ultimo_contrato_activo]
                     WHERE ficha = %s
                 """, [ficha_buscada])
@@ -341,6 +344,7 @@ def buscar_empleado_view(request):
                 row = cursor.fetchone()
 
                 if row:
+                    termino_raw = str(row[9])
                     empleado_data = {
                         'ficha': row[0],
                         'nombre': row[1],
@@ -354,6 +358,8 @@ def buscar_empleado_view(request):
                         'direccion': "No disponible",
                         'regimen': row[7],
                         'jornada': row[8],
+                        'termino_raw': termino_raw,
+                        'termino': f"{termino_raw[6:8]}/{termino_raw[4:6]}/{termino_raw[:4]}",
                         'seccion_sindical': "No",
                         'sindicato': "No",
                         'fuente': 'Ultimo contrato'

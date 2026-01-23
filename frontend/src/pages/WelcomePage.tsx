@@ -27,7 +27,8 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend
+  Legend,
+  LabelList
 } from 'recharts';
 import '../styles/WelcomePage.css';
 import type { InvestigacionListado } from '../types/investigacion.types';
@@ -465,6 +466,18 @@ function WelcomePage() {
             </div>
           </div>
 
+          {/* Cálculo del Total en Vista */}
+          {(() => {
+            const currentData = activeChart === 'month' ? dataByMonth : activeChart === 'region' ? dataByRegion : dataByConduct;
+            const totalInView = currentData.reduce((acc, item) => acc + item.enProceso + item.completed, 0);
+
+            return (
+              <div style={{ textAlign: 'center', marginBottom: '10px', fontSize: '1.1rem', color: '#555' }}>
+                <strong>Hay en total: {totalInView}</strong>
+              </div>
+            );
+          })()}
+
           <div style={{ width: '100%', height: 400 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -476,8 +489,12 @@ function WelcomePage() {
                 <YAxis allowDecimals={false} />
                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(0,0,0,0.05)' }} />
                 <Legend iconType="circle" />
-                <Bar dataKey="enProceso" name="En Proceso" stackId="a" fill="#f39c12" barSize={50} />
-                <Bar dataKey="completed" name="Concluidas" stackId="a" fill="#2ecc71" barSize={50} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="enProceso" name="En Proceso" stackId="a" fill="#f39c12" barSize={50}>
+                  <LabelList dataKey="enProceso" position="center" fill="#fff" style={{ fontWeight: 'bold' }} formatter={(val: any) => val > 0 ? val : ''} />
+                </Bar>
+                <Bar dataKey="completed" name="Concluidas" stackId="a" fill="#2ecc71" barSize={50} radius={[4, 4, 0, 0]}>
+                  <LabelList dataKey="completed" position="center" fill="#fff" style={{ fontWeight: 'bold' }} formatter={(val: any) => val > 0 ? val : ''} />
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
