@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiEdit, FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiFileText, FiTrendingUp, FiClock, FiEye } from 'react-icons/fi'; // Importar FiFileText y FiClock
+import { FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiTrendingUp, FiEye, FiClock, FiFileText } from 'react-icons/fi';
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import Pagination from '../components/Pagination';
 import * as XLSX from 'xlsx';
@@ -11,6 +11,8 @@ import '../styles/InvestigacionPage.css';
 
 import DocumentosModals from '../components/Modals/DocumentosModals';
 import Swal from 'sweetalert2';
+import CustomConductaSelect from '../components/Inputs/CustomConductaSelect';
+import { FiX } from 'react-icons/fi';
 
 function FinalizacionListPage() {
   const [investigaciones, setInvestigaciones] = useState<InvestigacionListado[]>([]);
@@ -27,18 +29,56 @@ function FinalizacionListPage() {
   const [selectedReporteNum, setSelectedReporteNum] = useState('');
   const [statusFilter, setStatusFilter] = useState<'PENDING' | 'COMPLETED'>('PENDING');
 
+  // Estados para Modal de Conclusión (Reconsideración)
+  const [isConcluirModalOpen, setIsConcluirModalOpen] = useState(false);
+  const [dataConcluir, setDataConcluir] = useState({
+    id: 0,
+    reconsideracion: false,
+    ficha: '',
+    sancion: ''
+  });
+
+  const conductaDescriptions: { [key: string]: string } = {
+    'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS': 'Incumplimiento de normas,  Incumplimiento de procedimientos operativos,Incumplimiento de lineamientos internos, Incumplimiento de instrucciones generales, Incumplimiento de cláusulas contractuales',
+    'FALTAS INJUSTIFICADAS / ABANDONO DE LABORES': 'Faltas injustificadas, Abandono de labores, Inasistencias reiteradas, Omisión de presentarse al centro de trabajo',
+    'NEGLIGENCIA EN EL DESEMPEÑO DE FUNCIONES': 'Omisiones en el desarrollo de funciones, Ejecución deficiente de tareas asignadas, Falta de cuidado o diligencia, Negligencia operativa sin dolo',
+    'ACOSO LABORAL (MOBBING)': ' Acoso laboral, Hostigamiento laboral no sexual,Conductas sistemáticas de presión o intimidación',
+    'ACTITUD INDEBIDA': ' Actitud indebida, Conducta inapropiada, Faltas al respeto, Comportamiento contrario a la convivencia laboral',
+    'DESOBEDIENCIA': ' Desobediencia a instrucciones superiores, Negativa a acatar órdenes directas, Incumplimiento de instrucciones operativas, Resistencia injustificada a la autoridad',
+    'ALTERACIÓN DEL ORDEN Y DISCIPLINA': ' Alteración del orden, Riñas o confrontaciones, Escándalos o conductas disruptivas, Afectación a la disciplina del centro de trabajo',
+    'SUSTRACCIÓN O ROBO DE BIENES': ' Sustracción, Robo, Sustracción de equipo mobiliario, Pérdida de bienes imputable, Uso indebido con ánimo de apropiación',
+    'USO INDEBIDO DE BIENES, HERRAMIENTAS O RECURSOS': ' Uso indebido de útiles y/o herramientas, Uso no autorizado de bienes de la empresa, Uso personal de recursos sin apropiación',
+    'HOSTIGAMIENTO O ACOSO SEXUAL': ' Hostigamiento sexual, Acoso sexual, Conductas de connotación sexual, Violencia digital de índole sexual',
+    'CONCURRENCIA EN ESTADO INCONVENIENTE': ' Concurrir en estado de ebriedad, Presentarse bajo el influjo de alcohol, Presentarse bajo efectos de sustancias prohibidas',
+    'DIVULGACIÓN O USO INDEBIDO DE INFORMACIÓN': ' Divulgación de información confidencial, Uso indebido de información, Acceso no autorizado a información',
+    'OCASIONAR DAÑOS O PERJUICIOS': ' Daños a bienes de la empresa, Daños a instalaciones, Perjuicios ocasionados por acción u omisión',
+    'SUSPENSIÓN UNILATERAL DE LABORES': ' Suspensión de labores, Paro injustificado, Negativa injustificada a prestar servicios',
+    'DISCRIMINACIÓN': ' Discriminación laboral,Trato diferenciado injustificado',
+    'ACCIDENTE DE TRABAJO': ' Accidente de trabajo, Incidente con posible responsabilidad laboral',
+    'OTRAS CONDUCTAS': '',
+    'CLÁUSULA 253 CCT': ''
+  };
+
+  const [opciones, setOpciones] = useState<{ conductas: string[] } | null>(null);
+
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const fetchInvestigaciones = async () => {
+    const fetchDatos = async () => {
       setLoading(true);
       try {
-        const response = await apiClient.get('/api/investigaciones/investigaciones/');
-        const filtered = response.data.filter((inv: any) =>
+        const [investigacionesRes, opcionesRes] = await Promise.all([
+          apiClient.get('/api/investigaciones/investigaciones/'),
+          apiClient.get('/api/investigaciones/opciones/')
+        ]);
+
+        const filtered = investigacionesRes.data.filter((inv: any) =>
           ['ENVIADA_A_CONCLUIR', 'Enviada a Concluir', 'CONCLUIDA', 'Concluida'].includes(inv.estatus)
         );
         setInvestigaciones(filtered);
+        setOpciones(opcionesRes.data);
+
       } catch (err) {
         setError('No se pudo cargar la lista de seguimiento.');
         console.error('Error fetching data:', err);
@@ -46,7 +86,7 @@ function FinalizacionListPage() {
         setLoading(false);
       }
     };
-    fetchInvestigaciones();
+    fetchDatos();
   }, []);
 
   const handleFinalizar = async (id: number) => {
@@ -100,31 +140,44 @@ function FinalizacionListPage() {
         }
       }
 
-      // 2. Proceder a concluir (Si existía o si se acaba de subir)
-      const result = await Swal.fire({
-        title: '¿Concluir investigación?',
-        text: "La investigación se marcará como CONCLUIDA.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, concluir',
-        cancelButtonText: 'Cancelar'
+      // 2. Abrir Modal de Conclusión en lugar de Swal directo
+      setDataConcluir({
+        id: id,
+        reconsideracion: false,
+        ficha: '',
+        sancion: ''
       });
+      setIsConcluirModalOpen(true);
 
-      if (result.isConfirmed) {
-        await apiClient.patch(`/api/investigaciones/investigaciones/${id}/`, { estatus: 'CONCLUIDA' });
 
-        setInvestigaciones(prev => prev.map(item =>
-          item.id === id ? { ...item, estatus: 'CONCLUIDA' } : item
-        ));
-
-        Swal.fire('¡Concluida!', 'La investigación ha sido concluida exitosamente.', 'success');
-      }
 
     } catch (err: any) {
       console.error("Error en proceso de conclusión:", err);
       Swal.fire('Error', 'Ocurrió un error al procesar la solicitud.', 'error');
+    }
+  };
+
+  const handleConfirmConcluir = async () => {
+    try {
+      const payload = {
+        estatus: 'CONCLUIDA',
+        reconsideracion: dataConcluir.reconsideracion,
+        ficha_reconsideracion: dataConcluir.reconsideracion ? dataConcluir.ficha : null,
+        sancion_definitiva: dataConcluir.reconsideracion ? dataConcluir.sancion : null
+      };
+
+      await apiClient.patch(`/api/investigaciones/investigaciones/${dataConcluir.id}/`, payload);
+
+      setInvestigaciones((prev: InvestigacionListado[]) => prev.map((item: InvestigacionListado) =>
+        item.id === dataConcluir.id ? { ...item, estatus: 'CONCLUIDA' } : item
+      ));
+
+      setIsConcluirModalOpen(false);
+      Swal.fire('¡Concluida!', 'La investigación ha sido concluida exitosamente.', 'success');
+
+    } catch (err) {
+      console.error(err);
+      Swal.fire('Error', 'No se pudo concluir la investigación', 'error');
     }
   };
 
@@ -349,6 +402,104 @@ function FinalizacionListPage() {
         investigacionId={selectedInvestigacionId}
         numeroReporte={selectedReporteNum}
       />
+
+      {/* MODAL DE CONCLUSIÓN */}
+      {isConcluirModalOpen && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+          backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'white', padding: '30px', borderRadius: '12px',
+            width: '600px', maxWidth: '90%', boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
+            position: 'relative', display: 'flex', flexDirection: 'column', gap: '20px'
+          }}>
+            <button
+              onClick={() => setIsConcluirModalOpen(false)}
+              style={{
+                position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none',
+                cursor: 'pointer', fontSize: '1.2rem', color: '#666'
+              }}
+            >
+              <FiX />
+            </button>
+
+            <h2 style={{ margin: 0, color: '#2c3e50', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
+              <FiCheckCircle style={{ marginRight: '10px', color: '#28a745' }} />
+              Concluir Investigación
+            </h2>
+
+            <p style={{ color: '#555', lineHeight: '1.5' }}>
+              Al concluir la investigación, esta pasará al estatus <strong>CONCLUIDA</strong> y no se podrán realizar más cambios.
+            </p>
+
+            <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '8px', border: '1px solid #e9ecef' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.05rem', fontWeight: '500', cursor: 'pointer', marginBottom: '15px' }}>
+                <input
+                  type="checkbox"
+                  checked={dataConcluir.reconsideracion}
+                  onChange={(e) => setDataConcluir(prev => ({ ...prev, reconsideracion: e.target.checked }))}
+                  style={{ width: '20px', height: '20px', accentColor: '#840016' }}
+                />
+                ¿Se realizó Reconsideración?
+              </label>
+
+              {dataConcluir.reconsideracion && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '15px', paddingLeft: '10px', borderLeft: '3px solid #840016' }}>
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
+                      Ficha que autoriza:
+                    </label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={dataConcluir.ficha}
+                      onChange={(e) => setDataConcluir(prev => ({ ...prev, ficha: e.target.value }))}
+                      placeholder="Ej. 123456"
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
+                      Sanción Definitiva:
+                    </label>
+                    {/* Usamos el CustomSelect reutilizable */}
+                    <CustomConductaSelect
+                      value={dataConcluir.sancion}
+                      onChange={(val) => setDataConcluir(prev => ({ ...prev, sancion: val }))}
+                      options={opciones?.conductas || []}
+                      descriptions={conductaDescriptions}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+              <button
+                onClick={() => setIsConcluirModalOpen(false)}
+                style={{
+                  padding: '10px 20px', borderRadius: '6px', border: '1px solid #ccc',
+                  background: 'white', color: '#555', cursor: 'pointer', fontWeight: '500'
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmConcluir}
+                style={{
+                  padding: '10px 20px', borderRadius: '6px', border: 'none',
+                  background: '#28a745', color: 'white', cursor: 'pointer', fontWeight: '600',
+                  display: 'flex', alignItems: 'center', gap: '5px'
+                }}
+              >
+                <FiCheckCircle /> Confirmar Conclusión
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

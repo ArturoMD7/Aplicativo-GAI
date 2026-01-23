@@ -34,7 +34,14 @@ type SidebarProps = {
 
 function Sidebar({ onLogout }: SidebarProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string>('');
   const location = useLocation();
+
+  React.useEffect(() => {
+    const role = localStorage.getItem('userRole') || '';
+    // Normalizar a minúsculas para comparación segura
+    setUserRole(role.toLowerCase());
+  }, []);
 
   const handleMouseEnter = () => {
     setIsOpen(true);
@@ -47,6 +54,13 @@ function Sidebar({ onLogout }: SidebarProps) {
   const isActiveLink = (href: string) => {
     return location.pathname === href;
   };
+
+  const filteredNavItems = navItems.filter(item => {
+    if (item.label === 'Usuarios' || item.label === 'Logs') {
+      return ['admin', 'admincentral'].includes(userRole);
+    }
+    return true;
+  });
 
   return (
     <div
@@ -63,7 +77,7 @@ function Sidebar({ onLogout }: SidebarProps) {
       {/* Navegación principal */}
       <nav className="sidebar-nav">
         <ul className="sidebar-links">
-          {navItems.map((item) => (
+          {filteredNavItems.map((item) => (
             <li key={item.label} className="nav-item">
               <Link
                 to={item.href}

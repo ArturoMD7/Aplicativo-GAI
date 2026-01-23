@@ -61,7 +61,7 @@ def activity_stats(request):
         'top_users': list(ActivityLog.objects.filter(
             timestamp__gte=last_30_days
         ).values(
-            'user__id', 'user__username', 'user__first_name', 'user__last_name'
+            'user__id', 'user__username', 'user__first_name', 'user__last_name', 'user__profile__ficha'
         ).annotate(
             total=Count('id')
         ).order_by('-total')[:10]),

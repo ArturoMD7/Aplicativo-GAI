@@ -12,15 +12,18 @@ class ActivityLogSerializer(serializers.ModelSerializer):
         source='investigacion.nombre_corto', 
         read_only=True
     )
-    
+    user_profile_ficha = serializers.CharField(
+        source='user.profile.ficha', 
+        read_only=True
+    )    
     action_display = serializers.CharField(source='get_action_display', read_only=True)
 
     class Meta:
         model = ActivityLog
         fields = [
-            'id', 'user', 'user_name', 'username', 'action', 'action_display',
+            'id', 'user', 'user_name', 'username', 'action', 'action_display', 
             'endpoint', 'method', 'description', 'ip_address', 'user_agent',
-            'timestamp', 'investigacion', 'investigacion_numero', 'investigacion_nombre'
+            'timestamp', 'investigacion', 'investigacion_numero', 'investigacion_nombre', 'user_profile_ficha'
         ]
         read_only_fields = fields
 

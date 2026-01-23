@@ -112,7 +112,8 @@ function LogListPage() {
       'Dirección IP': inv.ip_address,
       'Fecha': new Date(inv.timestamp).toLocaleDateString(),
       'Hora': new Date(inv.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      'Investigacion': inv.investigacion
+      'Investigacion': inv.investigacion_numero,
+      'Ficha': inv.user_profile_ficha
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -171,6 +172,9 @@ function LogListPage() {
                 <th onClick={() => handleSort('user_name')} className="sortable-header">
                   Usuario {renderSortIcon('user_name')}
                 </th>
+                <th onClick={() => handleSort('user_profile_ficha')} className="sortable-header">
+                  Ficha {renderSortIcon('user_profile_ficha')}
+                </th>
                 <th onClick={() => handleSort('action_display')} className="sortable-header">
                   Accion {renderSortIcon('action_display')}
                 </th>
@@ -193,6 +197,7 @@ function LogListPage() {
                 <tr key={inv.id}>
                   <td style={{ fontWeight: 700, color: '#840016' }}>{inv.id}</td>
                   <td style={{ fontWeight: 500 }}>{inv.user_name}</td>
+                  <td>{inv.user_profile_ficha}</td>
                   <td>{inv.action_display}</td>
                   <td className="text-muted">{inv.description}</td>
                   <td className="text-muted">{inv.ip_address}</td>
@@ -202,7 +207,7 @@ function LogListPage() {
                       {new Date(inv.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </td>
-                  <td>{inv.investigacion || <span className="text-muted">-</span>}</td>
+                  <td>{inv.investigacion_numero || <span className="text-muted">-</span>}</td>
                 </tr>
               ))}
             </tbody>
