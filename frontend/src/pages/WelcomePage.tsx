@@ -473,7 +473,7 @@ function WelcomePage() {
 
             return (
               <div style={{ textAlign: 'center', marginBottom: '10px', fontSize: '1.1rem', color: '#555' }}>
-                <strong>Hay en total: {totalInView}</strong>
+                <strong>Total: {totalInView}</strong>
               </div>
             );
           })()}

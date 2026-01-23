@@ -578,6 +578,35 @@ function InvestigacionFormPage() {
           break;
 
         case 'investigador':
+          if (datosInvestigadorAutorizado) {
+            const userRoleUpper = userRole.toUpperCase();
+            const isRegionalSupervisor = userRoleUpper.startsWith('SUPERVISOR') &&
+              !userRoleUpper.includes('ADMIN');
+
+            if (isRegionalSupervisor) {
+              const regionUsuario = userRoleUpper.replace('SUPERVISOR', '');
+              const investigadorGroups = (datosInvestigadorAutorizado.groups || []) as string[];
+
+              const perteneceARegion = investigadorGroups.some(g => {
+                const gUpper = g.toUpperCase();
+                return gUpper.includes(`OPERADOR${regionUsuario}`);
+              });
+
+              if (!perteneceARegion) {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Restricción de Región',
+                  text: `No puede asignar investigadores de otra región. Usted es ${regionUsuario} y el investigador no tiene el perfil Operador${regionUsuario}.`
+                });
+
+                setInvestigadorActual({
+                  ficha: '', nombre: '', categoria: '', puesto: '', extension: '', email: '', no_constancia: ''
+                });
+                return;
+              }
+            }
+          }
+
           setInvestigadorActual(prev => ({
             ...prev,
             nombre: empleado.nombre,

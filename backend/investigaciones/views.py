@@ -259,9 +259,18 @@ def validar_investigador_view(request):
     try:
         investigador = CatalogoInvestigador.objects.get(ficha=ficha, activo=True)
         
+        # Obtener grupos del usuario asociado a la ficha
+        groups = []
+        try:
+            profile = Profile.objects.get(ficha=ficha)
+            groups = list(profile.user.groups.values_list('name', flat=True))
+        except Profile.DoesNotExist:
+            pass
+
         return Response({
             'es_investigador': True,
             'no_constancia': investigador.no_constancia,
+            'groups': groups
         })
     except CatalogoInvestigador.DoesNotExist:
         return Response({
