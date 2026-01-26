@@ -229,10 +229,7 @@ function WelcomePage() {
     }
     return sortableItems;
   }, [baseDataList, sortConfig]);
-
-  // --- PREPARACIÓN DE DATOS PARA GRÁFICAS APILADAS ---
-
-  // 1. Por Mes (YYYY-MM)
+  
   const dataByMonth = useMemo(() => {
     const grouped: Record<string, { name: string, enProceso: number, completed: number }> = {};
 

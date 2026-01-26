@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import apiClient from '../api/apliClient';
+import apiClient from '../../api/apliClient';
 import type {
   InvestigacionFormState,
   OpcionesDropdowns,
@@ -9,10 +9,10 @@ import type {
   Involucrado,
   Testigo,
   EmpleadoBuscado
-} from '../types/investigacion.types';
-import '../styles/InvestigacionaDetails.css';
-import ButtonIcon from '../components/Buttons/ButtonIcon';
-import CustomConductaSelect from '../components/Inputs/CustomConductaSelect';
+} from '../../types/investigacion.types';
+import '../../styles/InvestigacionaDetails.css';
+import ButtonIcon from '../Buttons/ButtonIcon';
+import CustomConductaSelect from '../Inputs/CustomConductaSelect';
 import { FiEdit } from 'react-icons/fi';
 import { FaArrowLeft } from "react-icons/fa";
 import Swal from 'sweetalert2';
@@ -116,8 +116,21 @@ interface TestigoForm {
 
 type TipoPersona = 'contactos' | 'investigadores' | 'involucrados' | 'testigos' | 'reportantes';
 
-function InvestigacionFormPage() {
-  const { id } = useParams<{ id: string }>();
+interface InvestigacionFormProps {
+  id?: string;
+  isEmbedded?: boolean;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
+  id: propId,
+  isEmbedded = false,
+  onSuccess,
+  onCancel
+}) => {
+  const { id: paramId } = useParams<{ id: string }>();
+  const id = propId || paramId;
   const navigate = useNavigate();
   const [isEditMode, setIsEditMode] = useState(false);
   const [userRole, setUserRole] = useState<string>('');
@@ -851,7 +864,12 @@ function InvestigacionFormPage() {
         });
       }
 
-      navigate('/investigaciones');
+
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate('/investigaciones');
+      }
 
     } catch (err: any) {
       console.error('Error completo:', err.response?.data);
@@ -906,26 +924,28 @@ function InvestigacionFormPage() {
   if (loading) return <div className="admin-register-container">Guardando...</div>;
 
   return (
-    <div className="admin-register-container">
-      <div className="admin-register-header">
-        <h1>{isEditMode ? 'Editar' : 'Crear'} Registro de Investigación</h1>
-        <p>Complete la información requerida para {isEditMode ? 'actualizar' : 'crear'} el registro</p>
+    <div className={isEmbedded ? "" : "admin-register-container"}>
+      {!isEmbedded && (
+        <div className="admin-register-header">
+          <h1>{isEditMode ? 'Editar' : 'Crear'} Registro de Investigación</h1>
+          <p>Complete la información requerida para {isEditMode ? 'actualizar' : 'crear'} el registro</p>
 
-        {!isEditMode && (
-          <div className={`time-counter ${timeLeft <= 5 * 60 ? 'time-warning' : ''} ${showTimeoutWarning ? 'time-critical' : ''}`}>
-            <div className="time-counter-header">
-              <i className="fas fa-clock"></i>
-              <span>Tiempo restante: {formatTime(timeLeft)}</span>
-            </div>
-            {showTimeoutWarning && (
-              <div className="timeout-warning">
-                <i className="fas fa-exclamation-triangle"></i>
-                <span>¡Atención! Solo quedan 2 minutos para completar el formulario</span>
+          {!isEditMode && (
+            <div className={`time-counter ${timeLeft <= 5 * 60 ? 'time-warning' : ''} ${showTimeoutWarning ? 'time-critical' : ''}`}>
+              <div className="time-counter-header">
+                <i className="fas fa-clock"></i>
+                <span>Tiempo restante: {formatTime(timeLeft)}</span>
               </div>
-            )}
-          </div>
-        )}
-      </div>
+              {showTimeoutWarning && (
+                <div className="timeout-warning">
+                  <i className="fas fa-exclamation-triangle"></i>
+                  <span>¡Atención! Solo quedan 2 minutos para completar el formulario</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="admin-register-form-container">
         <form onSubmit={handleSubmit}>
@@ -2200,13 +2220,117 @@ function InvestigacionFormPage() {
               )}
             </div>
 
+            {/* Testigos */}
+            <div className="admin-personas-section">
+              <h3>Testigos</h3>
+              <div className="admin-form-group">
+                <label>Ficha</label>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                  <input
+                    type="text"
+                    className="admin-input"
+                    value={testigoActual.ficha}
+                    onChange={(e) => setTestigoActual(prev => ({ ...prev, ficha: e.target.value }))}
+                    onKeyDown={(e) => handleEnterBusqueda(e, testigoActual.ficha, 'testigo')}
+                    placeholder="Ingrese ficha y presione Enter o Tab"
+                    style={{ flex: 1 }}
+                  />
 
+
+                </div>
+              </div>
+
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Nombre</label>
+                  <input type="text" value={testigoActual.nombre} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Nivel</label>
+                  <input type="text" value={testigoActual.nivel} readOnly className="admin-readonly-field" />
+                </div>
+              </div>
+
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Categoría</label>
+                  <input type="text" value={testigoActual.categoria} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Puesto</label>
+                  <input type="text" value={testigoActual.puesto} readOnly className="admin-readonly-field" />
+                </div>
+              </div>
+
+              <div className="admin-form-group">
+                <label>Dirección</label>
+                <input type="text" value={testigoActual.direccion} readOnly className="admin-readonly-field" />
+              </div>
+
+              <div className="admin-form-group">
+                <div className="admin-checkbox-container">
+                  <input
+                    type="checkbox"
+                    checked={testigoActual.subordinacion}
+                    onChange={(e) => setTestigoActual(prev => ({ ...prev, subordinacion: e.target.checked }))}
+                    id="subordinacion_check"
+                  />
+                  <label htmlFor="subordinacion_check">Subordinación</label>
+                </div>
+              </div>
+
+              <button type="button" onClick={agregarTestigo} className="admin-submit-button" style={{ maxWidth: '200px' }}>
+                Agregar Testigo
+              </button>
+
+              {/* Lista de testigos agregados */}
+              {formState.testigos.length > 0 && (
+                <div style={{ marginTop: '20px', width: '100%' }}>
+                  <h4 style={{ marginBottom: '15px', color: '#333' }}>Testigos Agregados:</h4>
+
+                  <div className="admin-personas-grid" style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                    gap: '20px'
+                  }}>
+                    {formState.testigos.map((testigo, index) => (
+                      <div key={index} className="admin-persona-card">
+                        <div className="admin-persona-header">
+                          <h4>{testigo.nombre}</h4>
+                          <span className="admin-ficha">Ficha: {testigo.ficha}</span>
+                        </div>
+                        <div className="admin-persona-details">
+                          <div className="admin-detail-row">
+                            <span className="admin-label">Nivel:</span>
+                            <span className="admin-value">{testigo.nivel}</span>
+                          </div>
+                          <div className="admin-detail-row">
+                            <span className="admin-label">Subordinación:</span>
+                            <span className={`admin-badge ${testigo.subordinacion ? 'admin-badge-warning' : 'admin-badge-secondary'}`}>
+                              {testigo.subordinacion ? 'Sí' : 'No'}
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => eliminarPersona('testigos', index)}
+                          className="admin-back-button"
+                          style={{ marginTop: '10px', padding: '5px 10px', fontSize: '12px' }}
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </section >
 
           <div className="admin-form-actions">
             <button
               type="button"
-              onClick={() => navigate('/investigaciones')}
+              onClick={() => onCancel ? onCancel() : navigate('/investigaciones')}
               className="admin-back-button"
             >
               Cancelar
@@ -2226,4 +2350,5 @@ function InvestigacionFormPage() {
   );
 }
 
-export default InvestigacionFormPage;
+
+export { InvestigacionForm };
