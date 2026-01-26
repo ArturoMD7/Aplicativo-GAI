@@ -580,7 +580,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
                 Swal.fire({
                   icon: 'error',
                   title: 'Restricción de Región',
-                  text: `No puede asignar investigadores de otra región. Usted es ${regionUsuario} y el investigador no tiene el perfil Operador${regionUsuario}.`
+                  text: `No puede asignar investigadores de otra región.`
                 });
 
                 setInvestigadorActual({

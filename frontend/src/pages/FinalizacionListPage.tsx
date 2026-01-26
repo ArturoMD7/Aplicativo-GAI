@@ -431,7 +431,7 @@ function FinalizacionListPage() {
             </h2>
 
             <p style={{ color: '#555', lineHeight: '1.5' }}>
-              Al concluir la investigación, esta pasará al estatus <strong>CONCLUIDA</strong> y no se podrán realizar más cambios.
+              Al concluir la investigación, esta pasará al estatus <strong>CONCLUIDA</strong> y no se podrán realizar más cambios. 
             </p>
 
             <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '8px', border: '1px solid #e9ecef' }}>
@@ -475,6 +475,10 @@ function FinalizacionListPage() {
                 </div>
               )}
             </div>
+
+            <p style={{ color: '#555', lineHeight: '1.5' }}>
+              En caso contrario pulse <strong>Confirmar Conclusión</strong>.
+            </p>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
               <button
