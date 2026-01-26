@@ -130,11 +130,12 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         model = Investigacion
         fields = [
             # Información básica
-            'id', 'numero_reporte', 'nombre_corto', 'descripcion_general', 
+            'id', 'numero_reporte', 'nombre_corto', 
             
             # Sección 1: Registro de Investigación
-            'direccion', 'procedencia', 'regimen', 'sindicato', 
-            'centro', 'area_depto', 'gravedad', 'conductas', 'detalles_conducta', 'montoeconomico',
+            # Sección 1: Registro de Investigación
+            'procedencia', 'sindicato', 
+            'gravedad', 'conductas', 'detalles_conducta', 'montoeconomico',
             
             # Sección 2: Conocimiento de Hechos
             'fecha_reporte', 'fecha_conocimiento_hechos', 'fecha_prescripcion',
@@ -189,14 +190,6 @@ class InvestigacionSerializer(serializers.ModelSerializer):
     def validate(self, data):
         """Validaciones generales"""
         errors = {}
-
-        # Validar que si régimen es Sindicalizado o Ambos, debe tener sindicato
-        regimen = data.get('regimen', getattr(self.instance, 'regimen', None))
-        sindicato = data.get('sindicato', getattr(self.instance, 'sindicato', None))
-        
-        if regimen in ['Sindicalizado', 'Ambos'] and not sindicato:
-            errors['sindicato'] = "Este campo es requerido cuando el régimen es Sindicalizado o Ambos"
-
         # Validar fechas
         fecha_conocimiento = data.get('fecha_conocimiento_hechos')
         fecha_reporte = data.get('fecha_reporte')
@@ -340,8 +333,8 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Investigacion
         fields = [
-            'id', 'numero_reporte', 'nombre_corto', 'procedencia', 'descripcion_general',
-            'direccion', 'gravedad', 'fecha_reporte', 'fecha_prescripcion',
+            'id', 'numero_reporte', 'nombre_corto', 'procedencia',
+            'gravedad', 'fecha_reporte', 'fecha_prescripcion',
             'gerencia_responsable', 'created_by_name', 'dias_restantes',
             'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos', 'investigadores', 'involucrados', 'reportantes',
             'estatus', 'conductas', 'detalles_conducta'

@@ -338,19 +338,6 @@ function InvestigacionDetailsPage() {
             </div>
           </div>
 
-          <div className="admin-form-group">
-            <label>Descripción General</label>
-            <div className="admin-input-with-icon">
-              <i className="fas fa-file-alt"></i>
-              <textarea
-                value={investigacion.descripcion_general}
-                readOnly
-                className="admin-readonly-field admin-textarea"
-                rows={3}
-              />
-            </div>
-          </div>
-
           <div className="admin-form-row">
             <div className="admin-form-group">
               <label>Relevancia</label>
@@ -378,85 +365,6 @@ function InvestigacionDetailsPage() {
               </div>
             </div>
           </div>
-        </section>
-
-        {/* SECCIÓN 2: UBICACIÓN ORGANIZACIONAL */}
-        <section className="admin-form-section">
-          <h2 className="admin-section-title">
-            <i className="fas fa-building"></i>
-            Ubicación Organizacional
-          </h2>
-
-          <div className="admin-form-row">
-            <div className="admin-form-group">
-              <label>Dirección</label>
-              <div className="admin-input-with-icon">
-                <i className="fas fa-sitemap"></i>
-                <input
-                  type="text"
-                  value={investigacion.direccion}
-                  readOnly
-                  className="admin-readonly-field"
-                />
-              </div>
-            </div>
-
-            <div className="admin-form-group">
-              <label>Centro</label>
-              <div className="admin-input-with-icon">
-                <i className="fas fa-industry"></i>
-                <input
-                  type="text"
-                  value={investigacion.centro}
-                  readOnly
-                  className="admin-readonly-field"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="admin-form-row">
-            <div className="admin-form-group">
-              <label>Área/Departamento</label>
-              <div className="admin-input-with-icon">
-                <i className="fas fa-layer-group"></i>
-                <input
-                  type="text"
-                  value={investigacion.area_depto}
-                  readOnly
-                  className="admin-readonly-field"
-                />
-              </div>
-            </div>
-
-            <div className="admin-form-group">
-              <label>Régimen</label>
-              <div className="admin-input-with-icon">
-                <i className="fas fa-users"></i>
-                <input
-                  type="text"
-                  value={investigacion.regimen}
-                  readOnly
-                  className="admin-readonly-field"
-                />
-              </div>
-            </div>
-          </div>
-
-          {investigacion.sindicato && (
-            <div className="admin-form-group">
-              <label>Sindicato</label>
-              <div className="admin-input-with-icon">
-                <i className="fas fa-handshake"></i>
-                <input
-                  type="text"
-                  value={investigacion.sindicato}
-                  readOnly
-                  className="admin-readonly-field"
-                />
-              </div>
-            </div>
-          )}
         </section>
 
         {/* SECCIÓN 4: GERENCIA RESPONSABLE */}
@@ -512,11 +420,6 @@ function InvestigacionDetailsPage() {
               </div>
             </div>
           )}
-
-          <div className="admin-personas-section">
-            <h3>Contactos</h3>
-            {renderPersonas(investigacion.contactos || [], 'contactos')}
-          </div>
 
           <div className="admin-personas-section">
             <h3>Investigadores</h3>
@@ -592,10 +495,6 @@ function InvestigacionDetailsPage() {
             {renderPersonas(investigacion.involucrados || [], 'involucrados')}
           </div>
 
-          <div className="admin-personas-section">
-            <h3>Testigos</h3>
-            {renderPersonas(investigacion.testigos || [], 'testigos')}
-          </div>
         </section>
 
         {/* SECCIÓN 7: EXPEDIENTE DIGITAL */}

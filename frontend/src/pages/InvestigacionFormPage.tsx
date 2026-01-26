@@ -21,7 +21,6 @@ const initialState: InvestigacionFormState = {
   nombre_corto: '',
   montoeconomico: null,
   conductas: '',
-  descripcion_general: '',
   direccion: '',
   procedencia: '',
   regimen: '',
@@ -102,6 +101,7 @@ interface InvolucradoForm {
   seccion_sindical: string;
   termino: string;
   fuente: string;
+  centro_trabajo: string;
 }
 
 interface TestigoForm {
@@ -151,8 +151,7 @@ function InvestigacionFormPage() {
   const [opciones, setOpciones] = useState<OpcionesDropdowns | null>(null);
 
   const [centrosTrabajo, setCentrosTrabajo] = useState<string[]>([]);
-  const [centrosCoduni, setCentrosCoduni] = useState<string[]>([]);
-  const [areasCoduni, setAreasCoduni] = useState<string[]>([]);
+
   const [showPdfModal, setShowPdfModal] = useState(false);
   const [showMontoEconomico, setShowMontoEconomico] = useState(false);
   const [montoText, setMontoText] = useState('');
@@ -170,7 +169,7 @@ function InvestigacionFormPage() {
   });
 
   const [involucradoActual, setInvolucradoActual] = useState<InvolucradoForm>({
-    ficha: '', nombre: '', nivel: '', categoria: '', puesto: '', fuente: '', termino: '',
+    ficha: '', nombre: '', nivel: '', categoria: '', puesto: '', fuente: '', termino: '', centro_trabajo: '',
     edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: '', regimen: '', jornada: '', sindicato: '', seccion_sindical: ''
   });
 
@@ -291,10 +290,9 @@ function InvestigacionFormPage() {
 
     const fetchDatosIniciales = async () => {
       try {
-        const [opcionesRes, centrosTrabajoRes, centrosCoduniRes, investigadoresRes] = await Promise.all([
+        const [opcionesRes, centrosTrabajoRes, investigadoresRes] = await Promise.all([
           apiClient.get('/api/investigaciones/opciones/'),
           apiClient.get('/api/investigaciones/centros-trabajo/'),
-          apiClient.get('/api/investigaciones/centros-coduni/'),
           apiClient.get('/api/investigaciones/listar-investigadores/').catch(() => ({ data: [] }))
         ]);
 
@@ -302,7 +300,6 @@ function InvestigacionFormPage() {
 
         setOpciones(opcionesRes.data);
         setCentrosTrabajo(centrosTrabajoRes.data);
-        setCentrosCoduni(centrosCoduniRes.data);
         setListaInvestigadores(investigadoresRes.data);
       } catch (err) {
         console.error('Error cargando datos iniciales:', err);
@@ -324,9 +321,7 @@ function InvestigacionFormPage() {
         }
 
         // Cargar áreas para el centro si existe
-        if (investigacionData.centro) {
-          await cargarAreasPorCentro(investigacionData.centro);
-        }
+
       } catch (err) {
         console.error('Error cargando investigación:', err);
         setError('No se pudo cargar la investigación.');
@@ -351,11 +346,7 @@ function InvestigacionFormPage() {
     };
   }, [id]);
 
-  useEffect(() => {
-    if (isEditMode && formState.centro) {
-      cargarAreasPorCentro(formState.centro);
-    }
-  }, [isEditMode, formState.centro]);
+
 
   /*
   useEffect(() => {
@@ -403,17 +394,7 @@ function InvestigacionFormPage() {
         }
       }
     }
-    else if (name === 'regimen') {
-      setFormState(prev => ({
-        ...prev,
-        regimen: value,
-        sindicato: (value === 'Sindicalizado' || value === 'Ambos') ? prev.sindicato : null
-      }));
-    }
-    else if (name === 'centro') {
-      setFormState(prev => ({ ...prev, centro: value, area_depto: '' }));
-      cargarAreasPorCentro(value);
-    }
+
     else if (name === 'fecha_conocimiento_hechos') {
       let nuevaFechaPrescripcion = formState.fecha_prescripcion;
       if (value) {
@@ -503,20 +484,7 @@ function InvestigacionFormPage() {
     }
   };
 
-  const cargarAreasPorCentro = async (centro: string) => {
-    if (!centro) {
-      setAreasCoduni([]);
-      return;
-    }
 
-    try {
-      const response = await apiClient.get(`/api/investigaciones/areas-por-centro/?centro=${encodeURIComponent(centro)}`);
-      setAreasCoduni(response.data);
-    } catch (err) {
-      console.error('Error al cargar áreas:', err);
-      setAreasCoduni([]);
-    }
-  };
 
   const handleEnterBusqueda = (
     e: React.KeyboardEvent<HTMLInputElement>,
@@ -648,6 +616,7 @@ function InvestigacionFormPage() {
             sindicato: empleado.sindicato || '',
             seccion_sindical: empleado.seccion_sindical || '',
             fuente: empleado.fuente || '',
+            centro_trabajo: empleado.centro_trabajo || '',
             termino: empleado.termino || ''
           }));
           break;
@@ -747,15 +716,19 @@ function InvestigacionFormPage() {
 
       const implicaGravedadAlta = !isNaN(nivelNumero) && nivelNumero >= 41;
       const nuevaGravedad = implicaGravedadAlta ? 'ALTA' : prev.gravedad;
+
+      const shouldAutofillCentro = prev.involucrados.length === 0;
+
       return {
         ...prev,
         involucrados: [...prev.involucrados, nuevoInvolucrado],
-        gravedad: nuevaGravedad
+        gravedad: nuevaGravedad,
+        centro_trabajo: shouldAutofillCentro ? (nuevoInvolucrado.centro_trabajo || prev.centro_trabajo) : prev.centro_trabajo
       };
     });
 
     setInvolucradoActual({
-      ficha: '', nombre: '', fuente: '', nivel: '', categoria: '', puesto: '', termino: '',
+      ficha: '', nombre: '', fuente: '', nivel: '', categoria: '', puesto: '', termino: '', centro_trabajo: '',
       edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: '', regimen: '', jornada: '', sindicato: '', seccion_sindical: ''
     });
     setAntecedentesEncontrados([]);
@@ -826,7 +799,6 @@ function InvestigacionFormPage() {
     try {
       const dataToSubmit = {
         ...formState,
-        descripcion_general: formState.descripcion_general || 'Sin descripción general',
         lugar: formState.lugar || 'Por definir',
         centro_trabajo: formState.centro_trabajo || 'Por definir',
         fecha_evento: formState.fecha_evento || formState.fecha_conocimiento_hechos,
@@ -1317,7 +1289,7 @@ function InvestigacionFormPage() {
                     list="centros-trabajo"
                     required
                     maxLength={100}
-                    placeholder="Escriba o seleccione el centro de trabajo"
+                    placeholder="Escriba el centro de trabajo o agrega un involucrado para autocompletar"
                   />
                   <datalist id="centros-trabajo">
                     {centrosTrabajo.map(centro => (
@@ -1342,87 +1314,7 @@ function InvestigacionFormPage() {
               </div>
             </div>
 
-            {/* --- SECCIÓN 3: UBICACIÓN ORGANIZACIONAL --- */}
-            <h2 className="admin-section-title">
-              <i className="fas fa-building"></i>
-              Ubicación Organizacional
-            </h2>
 
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label>Dirección *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-sitemap"></i>
-                  <select name="direccion" value={formState.direccion} onChange={handleChange} required>
-                    <option value="">Seleccione...</option>
-                    {opciones?.direcciones.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div className="admin-form-group">
-                <label>Centro *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-industry"></i>
-                  <input
-                    type="text"
-                    name="centro"
-                    value={formState.centro}
-                    onChange={handleChange}
-                    list="centros-coduni"
-                    required
-                    maxLength={100}
-                    placeholder="Escriba o seleccione el centro (CODUNI)"
-                  />
-                  <datalist id="centros-coduni">
-                    {centrosCoduni.map(centro => (
-                      <option key={centro} value={centro} />
-                    ))}
-                  </datalist>
-                </div>
-              </div>
-            </div>
-
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label>Área/Departamento *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-layer-group"></i>
-                  <select name="area_depto" value={formState.area_depto} onChange={handleChange} required>
-                    <option value="">Seleccione...</option>
-                    {areasCoduni.map(area => (
-                      <option key={area} value={area}>{area}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="admin-form-group">
-                <label>Régimen *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-users"></i>
-                  <select name="regimen" value={formState.regimen} onChange={handleChange} required>
-                    <option value="">Seleccione...</option>
-                    {opciones?.regimenes.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            {
-              (formState.regimen === 'Sindicalizado' || formState.regimen === 'Ambos') && (
-                <div className="admin-form-group">
-                  <label>Sindicato *</label>
-                  <div className="admin-input-with-icon">
-                    <i className="fas fa-handshake"></i>
-                    <select name="sindicato" value={formState.sindicato || ''} onChange={handleChange} required>
-                      <option value="">Seleccione...</option>
-                      {opciones?.sindicatos.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                    </select>
-                  </div>
-                </div>
-              )
-            }
 
             <div className="admin-form-group">
               <label>Gerencia Jurisdiccional SCH *</label>
@@ -1983,9 +1875,15 @@ function InvestigacionFormPage() {
                 </div>
               </div>
 
-              <div className="admin-form-group">
-                <label>Dirección</label>
-                <input type="text" value={involucradoActual.direccion} readOnly className="admin-readonly-field" />
+              <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Dirección</label>
+                  <input type="text" value={involucradoActual.direccion} readOnly className="admin-readonly-field" />
+                </div>
+                <div className="admin-form-group">
+                  <label>Centro de Trabajo</label>
+                  <input type="text" value={involucradoActual.centro_trabajo} readOnly className="admin-readonly-field" />
+                </div>
               </div>
 
               <div className="admin-form-row">

@@ -372,7 +372,6 @@ function InvestigacionListPage() {
                 <th style={{ textAlign: 'center' }}>Semáforo</th>
                 <th onClick={() => requestSort('numero_reporte')} style={{ cursor: 'pointer' }}>No. Reporte {getSortIcon('numero_reporte')}</th>
                 <th onClick={() => requestSort('nombre_corto')} style={{ cursor: 'pointer' }}>Documento de Origen {getSortIcon('nombre_corto')}</th>
-                <th onClick={() => requestSort('direccion')} style={{ cursor: 'pointer' }}>Dirección {getSortIcon('direccion')}</th>
                 <th>Investigadores</th>
                 <th>Personal Reportado</th>
                 <th onClick={() => requestSort('procedencia')} style={{ cursor: 'pointer' }}>Procedencia {getSortIcon('procedencia')}</th>
@@ -402,7 +401,7 @@ function InvestigacionListPage() {
                   </td>
 
                   <td style={{ fontWeight: 500 }}>{inv.nombre_corto}</td>
-                  <td className="text-muted">{inv.direccion}</td>
+                  
                   <td>
                     {renderInvestigadores(inv.investigadores)}
                   </td>

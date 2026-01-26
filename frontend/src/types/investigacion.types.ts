@@ -46,6 +46,7 @@ export interface Involucrado extends BasePersona {
   sindicato: string;
   seccion_sindical: string;
   fuente?: string;
+  centro_trabajo: string;
   termino?: string;
 }
 
@@ -61,7 +62,6 @@ export interface InvestigacionFormState {
   conductas: string;
   id?: number;
   nombre_corto: string;
-  descripcion_general: string;
 
   // Sección 1
   direccion: string;
@@ -120,7 +120,6 @@ export interface InvestigacionListado {
   numero_reporte: string;
   procedencia: string;
   nombre_corto: string;
-  descripcion_general: string;
   gravedad: string;
   gerencia_responsable: string;
   fecha_prescripcion: string;
@@ -164,6 +163,7 @@ export interface EmpleadoBuscado {
   sindicato: string;
   seccion_sindical: string;
   fuente?: string;
+  centro_trabajo: string;
   termino?: string;
   email?: string;
 }
@@ -172,6 +172,7 @@ export interface InvolucradoForm {
   ficha: string;
   nombre: string;
   fuente: string;
+  centro_trabajo: string;
   termino: string;
   nivel: string;
   categoria: string;

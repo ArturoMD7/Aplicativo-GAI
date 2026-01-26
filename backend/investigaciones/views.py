@@ -138,8 +138,7 @@ def get_investigaciones_for_user(user, query_params=None):
 
         if gravedad:
             queryset = queryset.filter(gravedad=gravedad)
-        if direccion:
-            queryset = queryset.filter(direccion=direccion)
+
         if gerencia:
             queryset = queryset.filter(gerencia_responsable=gerencia)
         if estado:
@@ -316,9 +315,9 @@ def listar_investigadores_view(request):
 def opciones_view(request):
     """Obtener todas las opciones para listas desplegables"""
     opciones = {
-        'direcciones': [choice[0] for choice in Investigacion.DIRECCION_CHOICES],
+        'direcciones': [],
         'procedencias': [choice[0] for choice in Investigacion.PROCEDENCIA_CHOICES],
-        'regimenes': [choice[0] for choice in Investigacion.REGIMEN_CHOICES],
+        'regimenes': [],
         'sindicatos': [choice[0] for choice in Investigacion.SINDICATO_CHOICES],
         'gravedades': [choice[0] for choice in Investigacion.GRAVEDAD_CHOICES],
         'gerencias': [choice[0] for choice in Investigacion.GERENCIA_CHOICES],
@@ -345,7 +344,7 @@ def buscar_empleado_view(request):
             cursor.execute("""
                 SELECT ficha, nombres, nivel_plaza, catego, mc_stext, edad, antig,
                        rfc + homoclave as rfc, curp, direccion_coduni,
-                       grupo, jorna, sec_sin, termino
+                       grupo, jorna, sec_sin, termino, cve_desc_centro
                 FROM [00_tablero_dg]
                 WHERE ficha = %s
             """, [ficha_buscada])
@@ -371,6 +370,7 @@ def buscar_empleado_view(request):
                     'termino_raw': termino_raw,
                     'termino': f"{termino_raw[6:8]}/{termino_raw[4:6]}/{termino_raw[:4]}",  
                     'sindicato': "STPRM" if row[12] else "",
+                    'centro_trabajo': row[14],
                     'fuente': 'Activos'
                 }
 
@@ -378,7 +378,7 @@ def buscar_empleado_view(request):
                 cursor.execute("""
                     SELECT ficha, nombres, nivel_plaza, catego, edad, 
                            rfc + homoclave as rfc, curp,
-                           grupo, jorna, fec_term
+                           grupo, jorna, fec_term, cve_desc_centro
                     FROM [ultimo_contrato_activo]
                     WHERE ficha = %s
                 """, [ficha_buscada])
@@ -404,6 +404,7 @@ def buscar_empleado_view(request):
                         'termino': f"{termino_raw[6:8]}/{termino_raw[4:6]}/{termino_raw[:4]}",
                         'seccion_sindical': "No",
                         'sindicato': "No",
+                        'centro_trabajo': row[10],
                         'fuente': 'Ultimo contrato'
                     }
 
@@ -565,11 +566,7 @@ def estadisticas_view(request):
         por_conductas[sancion] = queryset.filter(conductas=sancion).count()
     
     # Estadísticas por dirección
-    por_direccion = {}
-    for direccion in [choice[0] for choice in Investigacion.DIRECCION_CHOICES]:
-        count = queryset.filter(direccion=direccion).count()
-        if count > 0:
-            por_direccion[direccion] = count
+
     
     # Estadísticas por gerencia
     por_gerencia = {}
@@ -584,7 +581,7 @@ def estadisticas_view(request):
         'investigaciones_por_vencer': investigaciones_por_vencer,
         'investigaciones_vencidas': investigaciones_vencidas,
         'por_gravedad': por_gravedad,
-        'por_direccion': por_direccion,
+
         'por_gerencia': por_gerencia,
     }
     

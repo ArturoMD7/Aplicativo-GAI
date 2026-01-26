@@ -16,8 +16,10 @@ class UppercaseMixin:
 class Investigacion(UppercaseMixin,models.Model):
     # Sección 1: Registro de Investigación
     nombre_corto = models.CharField(max_length=50)
-    descripcion_general = models.CharField(max_length=140)
+    """
     
+    
+
     DIRECCION_CHOICES = [
         ('DIRECCIÓN DE ADMINISTRACIÓN Y SERVICIOS', 'DIRECCIÓN DE ADMINISTRACIÓN Y SERVICIOS'),
         ('DIRECCIÓN DE COMERCIALIZACIÓN', 'DIRECCIÓN DE COMERCIALIZACIÓN'),
@@ -30,7 +32,7 @@ class Investigacion(UppercaseMixin,models.Model):
         ('DIRECCIÓN GENERAL', 'DIRECCIÓN GENERAL'),
         ('DIRECCIÓN JURÍDICA', 'DIRECCIÓN JURÍDICA'),
     ]
-    direccion = models.CharField(max_length=100, choices=DIRECCION_CHOICES)
+    direccion = models.CharField(max_length=100, choices=DIRECCION_CHOICES) """
     
     PROCEDENCIA_CHOICES = [
         ('ANÓNIMO', 'ANÓNIMO'),
@@ -42,13 +44,14 @@ class Investigacion(UppercaseMixin,models.Model):
     ]
     procedencia = models.CharField(max_length=30, choices=PROCEDENCIA_CHOICES)
     
+    """
     REGIMEN_CHOICES = [
         ('CONFIANZA', 'CONFIANZA'),
         ('SINDICALIZADO', 'SINDICALIZADO'),
         ('AMBOS', 'AMBOS'),
     ]
     regimen = models.CharField(max_length=15, choices=REGIMEN_CHOICES)
-
+    """
     CONDUCTAS_CHOICES = [
         ('INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS', 'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS'),
         ('FALTAS INJUSTIFICADAS / ABANDONO DE LABORES', 'FALTAS INJUSTIFICADAS / ABANDONO DE LABORES'),
@@ -79,10 +82,11 @@ class Investigacion(UppercaseMixin,models.Model):
         ('PETROMEX', 'PETROMEX'),
     ]
     sindicato = models.CharField(max_length=10, choices=SINDICATO_CHOICES, null=True, blank=True)
+    """
     
     centro = models.CharField(max_length=100)  
     area_depto = models.CharField(max_length=100)  
-    
+    """
     GRAVEDAD_CHOICES = [
         ('ALTA', 'ALTA'),
         ('MEDIA', 'MEDIA'),
