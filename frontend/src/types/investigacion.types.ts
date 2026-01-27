@@ -50,10 +50,12 @@ export interface Involucrado extends BasePersona {
   termino?: string;
 }
 
-export interface Testigo extends BasePersona {
-  nivel: string;
-  direccion: string;
-  subordinacion: boolean;
+export interface Testigo extends Partial<BasePersona> {
+  nombre: string;
+  nivel?: string;
+  direccion?: string;
+  subordinacion?: boolean;
+  es_externo?: boolean;
 }
 
 // El tipo para el formulario de creación/edición

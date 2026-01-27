@@ -114,6 +114,7 @@ interface TestigoForm {
   puesto: string;
   direccion: string;
   subordinacion: boolean;
+  es_externo: boolean;
 }
 
 type TipoPersona = 'contactos' | 'investigadores' | 'involucrados' | 'testigos' | 'reportantes';
@@ -190,7 +191,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
 
   const [testigoActual, setTestigoActual] = useState<TestigoForm>({
     ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
-    direccion: '', subordinacion: false
+    direccion: '', subordinacion: false, es_externo: false
   });
 
   const [loading, setLoading] = useState(false);
@@ -750,9 +751,16 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
   };
 
   const agregarTestigo = () => {
-    if (!testigoActual.ficha || !testigoActual.nombre) {
-      alert('Complete la ficha y busque el empleado antes de agregar');
-      return;
+    if (testigoActual.es_externo) {
+      if (!testigoActual.nombre) {
+        alert('El nombre es obligatorio para testigos externos');
+        return;
+      }
+    } else {
+      if (!testigoActual.ficha || !testigoActual.nombre) {
+        alert('Complete la ficha y busque el empleado antes de agregar');
+        return;
+      }
     }
 
     setFormState(prev => ({
@@ -762,7 +770,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
 
     setTestigoActual({
       ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
-      direccion: '', subordinacion: false
+      direccion: '', subordinacion: false, es_externo: false
     });
   };
 
@@ -2161,54 +2169,77 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
               Testigos
             </h2>
 
-
-
             {/* Testigos */}
             <div className="admin-personas-section">
               <h3></h3>
               <div className="admin-form-group">
-                <label>Ficha</label>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <div className="admin-checkbox-container" style={{ marginBottom: '15px' }}>
+                  <input
+                    type="checkbox"
+                    checked={testigoActual.es_externo}
+                    onChange={(e) => setTestigoActual(prev => ({ ...prev, es_externo: e.target.checked, ficha: '', nivel: '', categoria: '', puesto: '', direccion: '' }))}
+                    id="externo_check"
+                  />
+                  <label htmlFor="externo_check">¿Es Testigo Externo?</label>
+                </div>
+              </div>
+
+              {!testigoActual.es_externo ? (
+                <>
+                  <div className="admin-form-group">
+                    <label>Ficha</label>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={testigoActual.ficha}
+                        onChange={(e) => setTestigoActual(prev => ({ ...prev, ficha: e.target.value }))}
+                        onKeyDown={(e) => handleEnterBusqueda(e, testigoActual.ficha, 'testigo')}
+                        placeholder="Ingrese ficha y presione Enter o Tab"
+                        style={{ flex: 1 }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Nombre</label>
+                      <input type="text" value={testigoActual.nombre} readOnly className="admin-readonly-field" />
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Nivel</label>
+                      <input type="text" value={testigoActual.nivel} readOnly className="admin-readonly-field" />
+                    </div>
+                  </div>
+
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Categoría</label>
+                      <input type="text" value={testigoActual.categoria} readOnly className="admin-readonly-field" />
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Puesto</label>
+                      <input type="text" value={testigoActual.puesto} readOnly className="admin-readonly-field" />
+                    </div>
+                  </div>
+
+                  <div className="admin-form-group">
+                    <label>Dirección</label>
+                    <input type="text" value={testigoActual.direccion} readOnly className="admin-readonly-field" />
+                  </div>
+                </>
+              ) : (
+                <div className="admin-form-group">
+                  <label>Nombre Completo *</label>
                   <input
                     type="text"
                     className="admin-input"
-                    value={testigoActual.ficha}
-                    onChange={(e) => setTestigoActual(prev => ({ ...prev, ficha: e.target.value }))}
-                    onKeyDown={(e) => handleEnterBusqueda(e, testigoActual.ficha, 'testigo')}
-                    placeholder="Ingrese ficha y presione Enter o Tab"
-                    style={{ flex: 1 }}
+                    value={testigoActual.nombre}
+                    onChange={(e) => setTestigoActual(prev => ({ ...prev, nombre: e.target.value.toUpperCase() }))}
+                    placeholder="Ingrese el nombre del testigo externo"
                   />
-
-
                 </div>
-              </div>
-
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Nombre</label>
-                  <input type="text" value={testigoActual.nombre} readOnly className="admin-readonly-field" />
-                </div>
-                <div className="admin-form-group">
-                  <label>Nivel</label>
-                  <input type="text" value={testigoActual.nivel} readOnly className="admin-readonly-field" />
-                </div>
-              </div>
-
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Categoría</label>
-                  <input type="text" value={testigoActual.categoria} readOnly className="admin-readonly-field" />
-                </div>
-                <div className="admin-form-group">
-                  <label>Puesto</label>
-                  <input type="text" value={testigoActual.puesto} readOnly className="admin-readonly-field" />
-                </div>
-              </div>
-
-              <div className="admin-form-group">
-                <label>Dirección</label>
-                <input type="text" value={testigoActual.direccion} readOnly className="admin-readonly-field" />
-              </div>
+              )}
 
               <div className="admin-form-group">
                 <div className="admin-checkbox-container">

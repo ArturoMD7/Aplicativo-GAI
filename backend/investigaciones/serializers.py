@@ -99,14 +99,14 @@ class TestigoSerializer(serializers.ModelSerializer):
         model = Testigo
         fields = [
             'id', 'ficha', 'nombre', 'nivel', 'categoria', 'puesto',
-            'direccion', 'subordinacion'
+            'direccion', 'subordinacion', 'es_externo'
         ]
         read_only_fields = ['id']
 
-    def validate_ficha(self, value):
-        if not value.strip():
-            raise serializers.ValidationError("La ficha es requerida")
-        return value
+    def validate(self, data):
+        if not data.get('es_externo', False) and not data.get('ficha', '').strip():
+             raise serializers.ValidationError({"ficha": "La ficha es requerida para testigos internos"})
+        return data
 
 # Serializer principal para Investigacion
 class InvestigacionSerializer(serializers.ModelSerializer):

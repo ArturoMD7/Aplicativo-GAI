@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import type { InvestigacionFormState } from '../types/investigacion.types';
-import { FiEdit, FiFileText, FiDownload, FiEye, FiPaperclip, FiDollarSign } from 'react-icons/fi';
+import { FiEdit, FiFileText, FiDownload, FiEye, FiPaperclip, FiDollarSign, FiClock, FiCheckCircle } from 'react-icons/fi';
 import { FaArrowLeft } from "react-icons/fa";
 import { saveAs } from 'file-saver';
 import Swal from 'sweetalert2';
@@ -214,7 +214,7 @@ function InvestigacionDetailsPage() {
         <p>Información completa del registro de investigación</p>
       </div>
 
-      <div className="admin-register-form-container">
+      <div className="admin-register-form-container" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
 
         {/* SECCIÓN 3: FECHAS IMPORTANTES */}
         <section className="admin-form-section">
@@ -474,9 +474,28 @@ function InvestigacionDetailsPage() {
               />
             </div>
           </div>
-
-         
         </section>
+
+        {/* SECCIÓN CONDICIONAL: ANTECEDENTES (Seguimiento o posterior) */}
+        {['SEGUIMIENTO', 'ENVIADA_A_CONCLUIR', 'CONCLUIDA'].includes((investigacion as any).estatus?.toUpperCase() || '') && (
+          <section className="admin-form-section">
+            <h2 className="admin-section-title">
+              <FiClock style={{ marginRight: '10px' }} />
+              Antecedentes
+            </h2>
+            <div className="admin-form-group">
+              <div className="admin-input-with-icon">
+                <i className="fas fa-history" style={{ top: '15px' }}></i>
+                <textarea
+                  value={investigacion.antecedentes || 'Sin antecedentes registrados.'}
+                  readOnly
+                  className="admin-readonly-field admin-textarea"
+                  rows={4}
+                />
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* SECCIÓN 6: PERSONAS INVOLUCRADAS */}
         <section className="admin-form-section">
@@ -497,6 +516,75 @@ function InvestigacionDetailsPage() {
 
         </section>
 
+        {/* SECCIÓN CONDICIONAL: RESOLUCIÓN FINAL (Solo concluidas) */}
+        {(investigacion as any).estatus?.toUpperCase() === 'CONCLUIDA' && (
+          <section className="admin-form-section" style={{ borderLeft: '5px solid #28a745' }}>
+            <h2 className="admin-section-title" style={{ color: '#28a745' }}>
+              <FiCheckCircle style={{ marginRight: '10px' }} />
+              Resolución Final
+            </h2>
+
+            <div className="admin-form-row">
+              <div className="admin-form-group">
+                <label>Conducta Definitiva</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-gavel"></i>
+                  <input
+                    type="text"
+                    value={(investigacion as any).conducta_definitiva || 'No registrada'}
+                    readOnly
+                    className="admin-readonly-field"
+                  />
+                </div>
+              </div>
+
+              <div className="admin-form-group">
+                <label>Sanción Definitiva</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-balance-scale"></i>
+                  <input
+                    type="text"
+                    value={(investigacion as any).sancion_definitiva || 'No registrada'}
+                    readOnly
+                    className="admin-readonly-field"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {(investigacion as any).dias_suspension && (
+              <div className="admin-form-group">
+                <label>Días de Suspensión</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-calendar-times"></i>
+                  <input
+                    type="text"
+                    value={(investigacion as any).dias_suspension}
+                    readOnly
+                    className="admin-readonly-field"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="admin-form-group" style={{ marginTop: '15px', padding: '15px', background: '#f8f9fa', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                <strong style={{ minWidth: '150px' }}>¿Reconsideración?</strong>
+                <span className={`admin-badge ${(investigacion as any).reconsideracion ? 'admin-badge-warning' : 'admin-badge-secondary'}`}>
+                  {(investigacion as any).reconsideracion ? 'SÍ' : 'NO'}
+                </span>
+              </div>
+              {(investigacion as any).reconsideracion && (investigacion as any).ficha_reconsideracion && (
+                <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginTop: '10px' }}>
+                  <strong style={{ minWidth: '150px' }}>Autorizó (Ficha):</strong>
+                  <span>{(investigacion as any).ficha_reconsideracion}</span>
+                </div>
+              )}
+            </div>
+
+          </section>
+        )}
+
         {/* SECCIÓN 7: EXPEDIENTE DIGITAL */}
         {documentos.length > 0 && (
           <section className="admin-form-section">
@@ -504,6 +592,7 @@ function InvestigacionDetailsPage() {
               <FiPaperclip />
               Expediente Digital
             </h2>
+            {/* ... (Existing Documents Code) ... */}
             <div style={{
               display: 'flex',
               flexDirection: 'column',
@@ -643,6 +732,7 @@ function InvestigacionDetailsPage() {
 
         </div>
       </div>
+
     </div>
   );
 }

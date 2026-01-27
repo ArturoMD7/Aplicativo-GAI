@@ -212,13 +212,14 @@ class Reportante(UppercaseMixin, models.Model):
 
 class Testigo(UppercaseMixin, models.Model):
     investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='testigos')
-    ficha = models.CharField(max_length=20)
+    ficha = models.CharField(max_length=20, null=True, blank=True)
     nombre = models.CharField(max_length=100)
-    nivel = models.CharField(max_length=50)
-    categoria = models.CharField(max_length=50)
-    puesto = models.CharField(max_length=100)
-    direccion = models.CharField(max_length=200)
+    nivel = models.CharField(max_length=50, null=True, blank=True)
+    categoria = models.CharField(max_length=50, null=True, blank=True)
+    puesto = models.CharField(max_length=100, null=True, blank=True)
+    direccion = models.CharField(max_length=200, null=True, blank=True)
     subordinacion = models.BooleanField(default=False)
+    es_externo = models.BooleanField(default=False)
 
 
 class InvestigacionHistorico(UppercaseMixin, models.Model):
