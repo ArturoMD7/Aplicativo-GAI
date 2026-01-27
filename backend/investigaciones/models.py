@@ -283,7 +283,13 @@ class DocumentoInvestigacion(models.Model):
     TIPO_DOC_CHOICES = [
         ('Reporte', 'Reporte para investigación'),
         ('Citatorio', 'Citatorio'),
+        ('Citatorio_Reportado', 'Citatorio Reportado'),
+        ('Citatorio_Ratificante', 'Citatorio Ratificante'),
+        ('Citatorio_Testigo', 'Citatorio Testigo'),
         ('Acta', 'Acta'),
+        ('Acta_Comparecencia_Ratificante', 'Acta Comparecencia Ratificante'),
+        ('Acta_Testigo', 'Acta Testigo'),
+        ('Acta_Investigacion', 'Acta de Investigación (Reportados)'),
         ('Pruebas', 'Pruebas'),
         ('Dictamen', 'Dictamen'),
         ('Resultado', 'Resultado de la investigación'),

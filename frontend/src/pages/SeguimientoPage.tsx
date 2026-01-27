@@ -24,6 +24,11 @@ const TIPOS_DOCUMENTOS = [
   'Pruebas'
 ];
 
+const SUBTIPOS_DOCUMENTOS = {
+  'Citatorio': ['Reportado', 'Ratificante', 'Testigo'],
+  'Acta': ['Comparecencia Ratificante', 'Testigo', 'Investigación (Reportados)']
+};
+
 
 interface Documento {
   id: number;
@@ -49,6 +54,7 @@ function SeguimientoPage() {
   // Estado para subida de archivo
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [tipoDoc, setTipoDoc] = useState('Reporte');
+  const [subTipoDoc, setSubTipoDoc] = useState('');
   const [descripcionDoc, setDescripcionDoc] = useState('');
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -120,9 +126,20 @@ function SeguimientoPage() {
     e.preventDefault();
     if (!selectedFile || !id) return;
 
+    let tipoFinal = tipoDoc;
+    if (tipoDoc === 'Citatorio' && subTipoDoc) {
+      tipoFinal = `Citatorio_${subTipoDoc}`;
+    } else if (tipoDoc === 'Acta' && subTipoDoc) {
+      if (subTipoDoc === 'Investigación (Reportados)') {
+        tipoFinal = 'Acta_Investigacion';
+      } else {
+        tipoFinal = `Acta_${subTipoDoc.replace(' ', '_')}`;
+      }
+    }
+
     const formData = new FormData();
     formData.append('investigacion_id', id);
-    formData.append('tipo', tipoDoc);
+    formData.append('tipo', tipoFinal);
     formData.append('archivo', selectedFile);
     formData.append('descripcion', descripcionDoc);
 
@@ -146,6 +163,7 @@ function SeguimientoPage() {
 
       removeSelectedFile();
       setDescripcionDoc('');
+      setSubTipoDoc('');
       const resDocs = await apiClient.get(`/api/investigaciones/documentos/?investigacion_id=${id}`);
       setDocumentos(resDocs.data);
     } catch (error) {
@@ -437,14 +455,38 @@ function SeguimientoPage() {
                       <select
                         className="admin-input"
                         value={tipoDoc}
-                        onChange={(e) => setTipoDoc(e.target.value)}
+                        onChange={(e) => {
+                          setTipoDoc(e.target.value);
+                          setSubTipoDoc('');
+                        }}
                         style={{ padding: '12px', background: 'white' }}
                       >
                         {TIPOS_DOCUMENTOS.map(tipo => (
                           <option key={tipo} value={tipo}>{tipo}</option>
                         ))}
                       </select>
+                      {(tipoDoc === 'Citatorio' || tipoDoc === 'Acta') && (
+                        <div className="admin-form-group">
+                          <label>Subtipo de {tipoDoc}</label>
+                          <select
+                            className="admin-input"
+                            value={subTipoDoc}
+                            onChange={(e) => setSubTipoDoc(e.target.value)}
+                            style={{ padding: '12px', background: 'white' }}
+                            required
+                          >
+                            <option value="">Seleccione una opción</option>
+                            {SUBTIPOS_DOCUMENTOS[tipoDoc as keyof typeof SUBTIPOS_DOCUMENTOS].map(sub => (
+                              <option key={sub} value={sub}>{sub}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+
                     </div>
+
+
 
                     <div className="admin-form-group">
                       <label>Descripción (Opcional)</label>
