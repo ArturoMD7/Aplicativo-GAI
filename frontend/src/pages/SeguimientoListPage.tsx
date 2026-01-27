@@ -78,6 +78,20 @@ function SeguimientoListPage() {
     }
   };
 
+  const handleEditClick = async (inv: InvestigacionListado) => {
+    try {
+      await apiClient.post('/api/auditoria/create-log/', {
+        action: 'UPDATE',
+        description: `Abrió expediente de seguimiento`,
+        investigacion_id: inv.id,
+        endpoint: `/investigaciones/seguimiento/${inv.id}`
+      });
+    } catch (e) {
+      console.error("No se pudo registrar log de seguimiento", e);
+    }
+    navigate(`/investigaciones/seguimiento/${inv.id}`, { state: { from: location.pathname } });
+  };
+
   const getGravedadClass = (gravedad: string | null | undefined): string => {
     const normalized = gravedad ? String(gravedad).toLowerCase().trim() : '';
     if (normalized.includes('alta')) return 'gravedad-alta';
@@ -253,7 +267,6 @@ function SeguimientoListPage() {
                 <th style={{ width: '60px', textAlign: 'center' }}>Docs</th>
                 <th onClick={() => requestSort('numero_reporte')} style={{ cursor: 'pointer' }}>No. Reporte {getSortIcon('numero_reporte')}</th>
                 <th onClick={() => requestSort('nombre_corto')} style={{ cursor: 'pointer' }}>Documento de Origen {getSortIcon('nombre_corto')}</th>
-                <th onClick={() => requestSort('direccion')} style={{ cursor: 'pointer' }}>Dirección {getSortIcon('direccion')}</th>
                 <th>Investigadores</th>
                 <th>Personal Reportado</th>
                 <th onClick={() => requestSort('procedencia')} style={{ cursor: 'pointer' }}>Procedencia {getSortIcon('procedencia')}</th>
@@ -296,7 +309,6 @@ function SeguimientoListPage() {
                   </td>
 
                   <td style={{ fontWeight: 500 }}>{inv.nombre_corto}</td>
-                  <td className="text-muted">{inv.direccion}</td>
 
                   <td>{renderInvestigadores(inv.investigadores)}</td>
                   <td>{renderInvolucrados(inv.involucrados)}</td>
@@ -325,7 +337,7 @@ function SeguimientoListPage() {
                     <div className="action-buttons" style={{ justifyContent: 'center' }}>
                       <ButtonIcon
                         variant="edit"
-                        onClick={() => navigate(`/investigaciones/seguimiento/${inv.id}`, { state: { from: location.pathname } })}
+                        onClick={() => handleEditClick(inv)}
                         icon={<FiEdit />}
                         title="Gestionar Expediente"
                         size="medium"

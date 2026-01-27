@@ -9,4 +9,5 @@ router.register(r'activity-logs', views.ActivityLogViewSet, basename='activity-l
 urlpatterns = [
     path('', include(router.urls)),
     path('stats/', views.activity_stats, name='activity-stats'),
+    path('create-log/', views.create_log, name='create-log'),
 ]

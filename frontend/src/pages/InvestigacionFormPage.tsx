@@ -1068,27 +1068,34 @@ function InvestigacionFormPage() {
                 <i className="fas fa-bullhorn" style={{ marginRight: '8px' }}></i>
                 Personal Reportado
               </h3>
-              <div className="admin-form-group">
-                <label>Ficha</label>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-
-                  <input
-                    type="text"
-                    className="admin-input"
-                    value={involucradoActual.ficha}
-                    onChange={(e) => setInvolucradoActual(prev => ({ ...prev, ficha: e.target.value }))}
-                    onKeyDown={(e) => handleEnterBusqueda(e, involucradoActual.ficha, 'involucrado')}
-                    placeholder="Ingrese ficha y presione Enter o Tab"
-                  />
-
-                </div>
-
-              </div>
               <div className="admin-form-row">
+                <div className="admin-form-group">
+                  <label>Ficha</label>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={involucradoActual.ficha}
+                      onChange={(e) => setInvolucradoActual(prev => ({ ...prev, ficha: e.target.value }))}
+                      onKeyDown={(e) => handleEnterBusqueda(e, involucradoActual.ficha, 'involucrado')}
+                      placeholder="Ingrese ficha y presione Enter o Tab"
+                    />
+                  </div>
+                </div>
                 <div className="admin-form-group">
                   <label>Fuente</label>
                   <input type="text" value={involucradoActual.fuente} readOnly className="admin-readonly-field" />
                 </div>
+
+              </div>
+              <div className="admin-form-row">
+
+                <div className="admin-form-group">
+                  <label>Régimen</label>
+                  <input type="text" value={involucradoActual.regimen} readOnly className="admin-readonly-field" />
+                </div>
+
                 <div className="admin-form-group">
                   <label>Fecha de Término</label>
                   {(() => {
@@ -1185,10 +1192,7 @@ function InvestigacionFormPage() {
               </div>
 
               <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Régimen</label>
-                  <input type="text" value={involucradoActual.regimen} readOnly className="admin-readonly-field" />
-                </div>
+
                 <div className="admin-form-group">
                   <label>Jornada</label>
                   <input type="text" value={involucradoActual.jornada} readOnly className="admin-readonly-field" />
@@ -1666,7 +1670,7 @@ function InvestigacionFormPage() {
           {/* --- SECCIÓN 4: GERENCIA RESPONSABLE --- */}
           {(['Admin', 'AdminCentral'].includes(userRole) || userRole.startsWith('Supervisor')) && (
             < section className="admin-form-section"
-            style={{ gridColumn: '1 / -1' }} >
+              style={{ gridColumn: '1 / -1' }} >
               {/* <h2 className="admin-section-title">
               <i className="fas fa-user-tie"></i>
               Gerencia Responsable

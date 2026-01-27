@@ -46,6 +46,9 @@ class ActivityLoggingMiddleware(MiddlewareMixin):
             
             description = self._get_description(request, action, response)
             
+            if not description: # Si _get_description retorna None, no logueamos
+                return response
+            
             investigacion = self._get_investigacion_from_request(request, response)
             
             if self._is_duplicate_log(request, action):
@@ -114,7 +117,9 @@ class ActivityLoggingMiddleware(MiddlewareMixin):
             '/api/token/refresh',
             '/api/token/verify',
             '/api/auditoria/activity-logs/',  
-        ]
+            '/api/auditoria/create-log/',
+            '/api/investigaciones/opciones/',
+    ]
         
         for pattern in excluded_patterns:
             if path.startswith(pattern):
@@ -130,7 +135,7 @@ class ActivityLoggingMiddleware(MiddlewareMixin):
         if investigacion_match:
             investigacion_id = investigacion_match.group(1)
             if request.method == 'GET':
-                return f'Consultó detalle de investigación #{investigacion_id}'
+                return f'Consultó detalle de investigación'
             elif request.method in ['PUT', 'PATCH']:
                 return f'Actualizó investigación #{investigacion_id}'
             elif request.method == 'DELETE':
@@ -161,10 +166,13 @@ class ActivityLoggingMiddleware(MiddlewareMixin):
                 return methods.get(request.method, f'{action} en {endpoint_pattern}')
         
         if '/api/investigaciones/' in path:
-            if request.method == 'GET':
-                return 'Consultó datos del sistema de investigaciones'
-            elif request.method == 'POST':
-                return 'Realizó operación en sistema de investigaciones'
+            # Excluir logs genéricos si no coinciden con una regla anterior
+            return None
+            
+            # if request.method == 'GET':
+            #     return 'Consultó datos del sistema de investigaciones'
+            # elif request.method == 'POST':
+            #     return 'Realizó operación en sistema de investigaciones'
         
         return f"{action} en {path}"
 

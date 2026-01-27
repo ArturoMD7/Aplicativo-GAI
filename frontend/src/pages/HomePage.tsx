@@ -8,7 +8,9 @@ import Sidebar from '../components/Sidebar/Sidebar';
 import '../styles/HomePage.css';
 import { FiUser } from 'react-icons/fi';
 
+
 // 2. Importa tus nuevas páginas
+import ProtectedRoute from '../components/ProtectedRoute';
 import WelcomePage from './WelcomePage';
 import UsersPage from './auth/UserPage';
 import RegisterPage from './auth/RegisterPage';
@@ -86,25 +88,21 @@ function HomePage({ onLogout }: HomePageProps) {
 
         <main className="main-content">
           <Routes>
-            {/* Ruta principal (bienvenida) */}
             <Route path="/" element={<WelcomePage />} />
 
-            {/* Ruta del Panel de Usuarios */}
-            <Route path="/users" element={<UsersPage />} />
+            <Route element={<ProtectedRoute allowedRoles={['admin', 'admincentral']} />}>
+              <Route path="/users" element={<UsersPage />} />
+              <Route path="/logs" element={<LogListPage />} />
+              <Route
+                path="/admin/register-user"
+                element={<RegisterPage onSwitchToLogin={() => { }} />}
+              />
+              <Route path="/admin/edit-user/:userId" element={<EditUserPage />} />
+            </Route>
 
-            {/* Ruta para que el Admin cree usuarios */}
-            <Route
-              path="/admin/register-user"
-              element={<RegisterPage onSwitchToLogin={() => {
-              }} />}
-            />
-
-            {/* El dashboard/listado de investigaciones */}
             <Route path="/investigaciones" element={<InvestigacionListPage />} />
-            <Route path="/logs" element={<LogListPage />} />
             <Route path="/settings" element={<Settings />} />
 
-            <Route path="/admin/edit-user/:userId" element={<EditUserPage />} />
             <Route path="/admin/user-info/:userId" element={<UserInfoPage />} />
 
             <Route path="/investigaciones/nuevo" element={<InvestigacionFormPage />} />

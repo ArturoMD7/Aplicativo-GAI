@@ -75,3 +75,45 @@ def activity_stats(request):
     
     serializer = ActivityStatsSerializer(stats)
     return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def create_log(request):
+    """
+    Endpoint para crear logs manualmente desde el frontend.
+    """
+    action = request.data.get('action')
+    description = request.data.get('description')
+    investigacion_id = request.data.get('investigacion_id')
+    
+    if not action or not description:
+        return Response({'error': 'Action and description are required'}, status=400)
+
+    try:
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+            
+        computer_name = "Desconocido"
+        try:
+             import socket
+             computer_name = socket.gethostbyaddr(ip)[0] 
+        except:
+             pass
+
+        ActivityLog.objects.create(
+            user=request.user,
+            action=action,
+            endpoint=request.data.get('endpoint', request.path),
+            method=request.method, 
+            description=description,
+            investigacion_id=investigacion_id,
+            ip_address=ip,
+            computer_name=computer_name,
+            user_agent=request.META.get('HTTP_USER_AGENT', '')
+        )
+        return Response({'status': 'ok'})
+    except Exception as e:
+        return Response({'error': str(e)}, status=500)

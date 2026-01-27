@@ -16,6 +16,7 @@ from .serializers import (
     EstadisticasSerializer,
     DocumentoInvestigacionSerializer
 )
+from auditoria.models import ActivityLog
 
 class DocumentoInvestigacionViewSet(viewsets.ModelViewSet):
     queryset = DocumentoInvestigacion.objects.all()
@@ -335,6 +336,36 @@ def buscar_empleado_view(request):
         return Response(serializer.errors, status=400)
 
     ficha_buscada = serializer.validated_data['ficha']
+
+    # --- LOGGING START ---
+    try:
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        
+        computer_name = "Desconocido"
+        try:
+             import socket
+             computer_name = socket.gethostbyaddr(ip)[0] 
+             pass
+        except:
+             pass
+
+        ActivityLog.objects.create(
+            user=request.user,
+            action='SEARCH',
+            endpoint='/api/investigaciones/buscar-empleado/',
+            method=request.method,
+            description=f"Búsqueda de empleado ficha: {ficha_buscada}",
+            ip_address=ip,
+            computer_name=computer_name, 
+            user_agent=request.META.get('HTTP_USER_AGENT', '')
+        )
+    except Exception as e:
+        print(f"Error creating activity log: {e}")
+
 
     try:
         empleado_data = None

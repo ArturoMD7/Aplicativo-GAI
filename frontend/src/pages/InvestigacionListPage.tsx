@@ -156,6 +156,20 @@ function InvestigacionListPage() {
     }
   };
 
+  const handleEditClick = async (inv: InvestigacionListado) => {
+    try {
+      await apiClient.post('/api/auditoria/create-log/', {
+        action: 'UPDATE',
+        description: `Abrió formulario de edición para el reporte`,
+        investigacion_id: inv.id,
+        endpoint: `/investigaciones/editar/${inv.id}`
+      });
+    } catch (e) {
+      console.error("No se pudo registrar log de edición", e);
+    }
+    navigate(`/investigaciones/editar/${inv.id}`);
+  };
+
   const getGravedadClass = (gravedad: string | null | undefined): string => {
     const normalized = gravedad ? String(gravedad).toLowerCase().trim() : '';
 
@@ -401,7 +415,7 @@ function InvestigacionListPage() {
                   </td>
 
                   <td style={{ fontWeight: 500 }}>{inv.nombre_corto}</td>
-                  
+
                   <td>
                     {renderInvestigadores(inv.investigadores)}
                   </td>
@@ -446,7 +460,7 @@ function InvestigacionListPage() {
                       />
                       <ButtonIcon
                         variant="edit"
-                        to={`/investigaciones/editar/${inv.id}`}
+                        onClick={() => handleEditClick(inv)}
                         icon={<FiEdit />}
                         title="Editar"
                         size="medium"

@@ -114,7 +114,9 @@ function LogListPage() {
       'Hora': new Date(inv.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       'Investigacion': inv.investigacion_numero,
       'Ficha': inv.user_profile_ficha,
-      'Nombre Equipo': inv.computer_name
+      'Nombre Equipo': inv.computer_name,
+      'Ficha Reportado': inv.reportados_ficha,
+      'Nombre Reportado': inv.reportados_nombre
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -171,16 +173,19 @@ function LogListPage() {
                   No. Log {renderSortIcon('id')}
                 </th>
                 <th onClick={() => handleSort('user_name')} className="sortable-header">
-                  Usuario {renderSortIcon('user_name')}
+                  Nombre Usuario {renderSortIcon('user_name')}
                 </th>
                 <th onClick={() => handleSort('user_profile_ficha')} className="sortable-header">
-                  Ficha {renderSortIcon('user_profile_ficha')}
-                </th>
-                <th onClick={() => handleSort('action_display')} className="sortable-header">
-                  Accion {renderSortIcon('action_display')}
+                  Ficha Usuario {renderSortIcon('user_profile_ficha')}
                 </th>
                 <th onClick={() => handleSort('description')} className="sortable-header">
-                  Descripción {renderSortIcon('description')}
+                  Acción {renderSortIcon('description')}
+                </th>
+                <th onClick={() => handleSort('reportados_ficha')} className="sortable-header">
+                  Ficha Reportado {renderSortIcon('reportados_ficha')}
+                </th>
+                <th onClick={() => handleSort('reportados_nombre')} className="sortable-header">
+                  Nombre Reportado {renderSortIcon('reportados_nombre')}
                 </th>
                 <th onClick={() => handleSort('ip_address')} className="sortable-header">
                   Direccion IP {renderSortIcon('ip_address')}
@@ -202,8 +207,9 @@ function LogListPage() {
                   <td style={{ fontWeight: 700, color: '#840016' }}>{inv.id}</td>
                   <td style={{ fontWeight: 500 }}>{inv.user_name}</td>
                   <td>{inv.user_profile_ficha}</td>
-                  <td>{inv.action_display}</td>
                   <td className="text-muted">{inv.description}</td>
+                  <td className="text-muted">{inv.reportados_ficha}</td>
+                  <td className="text-muted">{inv.reportados_nombre}</td>
                   <td className="text-muted">{inv.ip_address}</td>
                   <td>{inv.computer_name}</td>
                   <td>

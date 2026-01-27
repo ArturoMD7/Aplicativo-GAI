@@ -12,6 +12,7 @@ class ActivityLog(models.Model):
         ('LOGOUT', 'Cerrar sesión'),
         ('DOWNLOAD', 'Descargar'),
         ('EXPORT', 'Exportar'),
+        ('SEARCH', 'Búsqueda'),
     ]
 
     user = models.ForeignKey(
