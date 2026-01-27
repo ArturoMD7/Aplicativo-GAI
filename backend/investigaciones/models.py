@@ -72,7 +72,21 @@ class Investigacion(UppercaseMixin,models.Model):
         ('OTRAS CONDUCTAS', 'OTRAS CONDUCTAS'),
         ('CLÁUSULA 253 CCT', 'CLÁUSULA 253 CCT'),
     ]
-    conductas = models.CharField(max_length=65, choices=CONDUCTAS_CHOICES, default='OTRAS FALTAS')
+    conductas = models.CharField(max_length=65, choices=CONDUCTAS_CHOICES, default='OTRAS CONDUCTAS')
+    conducta_definitiva = models.CharField(max_length=65, choices=CONDUCTAS_CHOICES, null=True, blank=True)
+
+    SANCION_CHOICES = [
+        ('AMONESTACIÓN', 'AMONESTACIÓN'),
+        ('EXHORTO', 'EXHORTO'),
+        ('IMPEDIMENTO (NO ACEPTACIÓN AL SERVICIO)', 'IMPEDIMENTO (NO ACEPTACIÓN AL SERVICIO)'),
+        ('RESPONSABILIDAD ECONÓMICA', 'RESPONSABILIDAD ECONÓMICA'),
+        ('RESCISIÓN DEL CONTRATO', 'RESCISIÓN DEL CONTRATO'),
+        ('SUSPENSIÓN DE LABORES', 'SUSPENSIÓN DE LABORES'),
+        ('SIN RESPONSABILIDAD', 'SIN RESPONSABILIDAD'),
+    ]
+    sancion = models.CharField(max_length=50, choices=SANCION_CHOICES, null=True, blank=True)
+
+    dias_suspension = models.IntegerField(null=True, blank=True)
 
     detalles_conducta = models.TextField(null=True, blank=True)
 

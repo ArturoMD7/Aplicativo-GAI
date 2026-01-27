@@ -135,7 +135,7 @@ class InvestigacionSerializer(serializers.ModelSerializer):
             # Sección 1: Registro de Investigación
             # Sección 1: Registro de Investigación
             'procedencia', 'sindicato', 
-            'gravedad', 'conductas', 'detalles_conducta', 'montoeconomico',
+            'gravedad', 'conductas', 'detalles_conducta', 'montoeconomico', 'sancion', 'dias_suspension',
             
             # Sección 2: Conocimiento de Hechos
             'fecha_reporte', 'fecha_conocimiento_hechos', 'fecha_prescripcion',
@@ -150,7 +150,7 @@ class InvestigacionSerializer(serializers.ModelSerializer):
             'antecedentes',
             
             # Sección 5: Reconsideracion
-            'reconsideracion', 'ficha_reconsideracion', 'sancion_definitiva',
+            'reconsideracion', 'ficha_reconsideracion', 'sancion_definitiva', 'conducta_definitiva',
             
             # Relaciones
             'contactos', 'investigadores', 'involucrados', 'testigos', 'reportantes',
@@ -162,8 +162,9 @@ class InvestigacionSerializer(serializers.ModelSerializer):
             'documentos', 'estatus',
         ]
         read_only_fields = [
-            'id', 'created_by', 'created_at', 'updated_at', 
-            'numero_reporte', 'fecha_prescripcion', 'dias_restantes', 'semaforo'
+            'id', 'created_by', 'created_at', 'updated_at', 'semaforo',
+            'numero_reporte', 'fecha_prescripcion', 'dias_restantes',
+            'conducta_definitiva', 'sancion_definitiva', 'reconsideracion', 'ficha_reconsideracion'
         ]
 
     def get_dias_restantes(self, obj):
@@ -337,7 +338,7 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
             'gravedad', 'fecha_reporte', 'fecha_prescripcion',
             'gerencia_responsable', 'created_by_name', 'dias_restantes',
             'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos', 'investigadores', 'involucrados', 'reportantes',
-            'estatus', 'conductas', 'detalles_conducta'
+            'estatus', 'conductas', 'detalles_conducta', 'sancion', 'conducta_definitiva', 'sancion_definitiva'
         ]
 
     def get_dias_restantes(self, obj):
@@ -415,6 +416,10 @@ class OpcionesSerializer(serializers.Serializer):
         read_only=True
     )
     gerencias = serializers.ListField(
+        child=serializers.CharField(),
+        read_only=True
+    )
+    sancion = serializers.ListField(
         child=serializers.CharField(),
         read_only=True
     )

@@ -35,7 +35,11 @@ function FinalizacionListPage() {
     id: 0,
     reconsideracion: false,
     ficha: '',
-    sancion: ''
+    sancion: '',
+    conducta: '',
+    dias_suspension: '', // New state for suspension days
+    sancion_actual: '',
+    conducta_actual: ''
   });
 
   const conductaDescriptions: { [key: string]: string } = {
@@ -59,7 +63,7 @@ function FinalizacionListPage() {
     'CLÁUSULA 253 CCT': ''
   };
 
-  const [opciones, setOpciones] = useState<{ conductas: string[] } | null>(null);
+  const [opciones, setOpciones] = useState<{ conductas: string[]; sancion: string[] } | null>(null);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -90,16 +94,12 @@ function FinalizacionListPage() {
   }, []);
 
   const handleFinalizar = async (id: number) => {
-    // 1. Obtener detalles para tener numero_reporte y docs (o hacer fetch de docs)
-    // Para simplificar, asumimos que debemos verificar los docs.
-    // Como la tabla no tiene docs cargados, haremos una consulta rápida.
     try {
       const docsRes = await apiClient.get(`/api/investigaciones/documentos/?investigacion_id=${id}`);
       const docs = docsRes.data;
       const notificacion = docs.find((d: any) => d.tipo === 'NotificacionConclusion');
 
       if (!notificacion) {
-        // Si no existe, pedir adjuntarlo
         const { value: file } = await Swal.fire({
           title: 'Notificación Requerida',
           text: 'Para concluir la investigación, debes adjuntar el archivo de Notificación de Conclusión.',
@@ -117,39 +117,33 @@ function FinalizacionListPage() {
         });
 
         if (file) {
-          // Subir archivo
           const formData = new FormData();
           formData.append('archivo', file);
           formData.append('tipo', 'NotificacionConclusion');
           formData.append('investigacion_id', id.toString());
           formData.append('descripcion', 'Notificación adjuntada al concluir');
-
-          try {
-            await apiClient.post('/api/investigaciones/documentos/', formData, {
-              headers: { 'Content-Type': 'multipart/form-data' }
-            });
-            // Si funciona, proceder a concluir
-          } catch (uploadError) {
-            console.error("Error subiendo archivo:", uploadError);
-            Swal.fire('Error', 'No se pudo subir el archivo. La investigación no se concluyó.', 'error');
-            return;
-          }
+          await apiClient.post('/api/investigaciones/documentos/', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
         } else {
-          // Canceló la subida
           return;
         }
       }
+
+      const investigacion = investigaciones.find(inv => inv.id === id);
 
       // 2. Abrir Modal de Conclusión en lugar de Swal directo
       setDataConcluir({
         id: id,
         reconsideracion: false,
         ficha: '',
-        sancion: ''
+        sancion: investigacion?.sancion || '',
+        conducta: investigacion?.conductas || '',
+        dias_suspension: investigacion?.dias_suspension ? String(investigacion.dias_suspension) : '',
+        sancion_actual: investigacion?.sancion || 'No registrada',
+        conducta_actual: investigacion?.conductas || 'No registrada'
       });
       setIsConcluirModalOpen(true);
-
-
 
     } catch (err: any) {
       console.error("Error en proceso de conclusión:", err);
@@ -163,10 +157,12 @@ function FinalizacionListPage() {
         estatus: 'CONCLUIDA',
         reconsideracion: dataConcluir.reconsideracion,
         ficha_reconsideracion: dataConcluir.reconsideracion ? dataConcluir.ficha : null,
-        sancion_definitiva: dataConcluir.reconsideracion ? dataConcluir.sancion : null
+        sancion_definitiva: dataConcluir.reconsideracion ? dataConcluir.sancion : null,
+        conducta_definitiva: dataConcluir.reconsideracion ? dataConcluir.conducta : null,
+        dias_suspension: (dataConcluir.reconsideracion && dataConcluir.sancion === 'SUSPENSIÓN DE LABORES') ? dataConcluir.dias_suspension : null
       };
 
-      await apiClient.patch(`/api/investigaciones/investigaciones/${dataConcluir.id}/`, payload);
+      await apiClient.patch(`/api/investigaciones/investigaciones/${dataConcluir.id}/concluir/`, payload);
 
       setInvestigaciones((prev: InvestigacionListado[]) => prev.map((item: InvestigacionListado) =>
         item.id === dataConcluir.id ? { ...item, estatus: 'CONCLUIDA' } : item
@@ -250,6 +246,7 @@ function FinalizacionListPage() {
 
   return (
     <div className="admin-page">
+      {/* (Keeping existing JSX for table...) */}
       <div className="page-header">
         <h1><FiCheckCircle /> Bandeja de Finalización</h1>
         <div className="header-actions">
@@ -293,7 +290,6 @@ function FinalizacionListPage() {
           <table className="investigacion-table">
             <thead>
               <tr>
-                {/* 1. Nueva columna al inicio para el botón de documentos */}
                 <th style={{ width: '60px', textAlign: 'center' }}>Docs</th>
                 <th>No. Reporte</th>
                 <th>Documento</th>
@@ -307,7 +303,6 @@ function FinalizacionListPage() {
             <tbody>
               {currentItems.map((inv) => (
                 <tr key={inv.id}>
-                  {/* 2. Botón en la primera columna */}
                   <td style={{ textAlign: 'center', borderLeft: '4px solid #17a2b8' }}>
                     <button
                       onClick={() => handleOpenDocs(inv.id, inv.numero_reporte)}
@@ -317,7 +312,7 @@ function FinalizacionListPage() {
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
-                        color: '#840016', // Color guinda PEMEX
+                        color: '#840016',
                         fontSize: '1.2rem',
                         display: 'flex',
                         alignItems: 'center',
@@ -412,8 +407,9 @@ function FinalizacionListPage() {
         }}>
           <div style={{
             backgroundColor: 'white', padding: '30px', borderRadius: '12px',
-            width: '600px', maxWidth: '90%', boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
-            position: 'relative', display: 'flex', flexDirection: 'column', gap: '20px'
+            width: '900px', maxWidth: '95%', boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
+            position: 'relative', display: 'flex', flexDirection: 'column', gap: '20px',
+            maxHeight: '90vh', overflowY: 'auto'
           }}>
             <button
               onClick={() => setIsConcluirModalOpen(false)}
@@ -430,33 +426,44 @@ function FinalizacionListPage() {
               Concluir Investigación
             </h2>
 
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', background: '#f8f9fa', padding: '15px', borderRadius: '8px' }}>
+              <div>
+                <label style={{ fontSize: '0.9rem', color: '#666', fontWeight: 'bold' }}>Conducta Reportada:</label>
+                <p style={{ margin: '5px 0', fontSize: '0.95rem' }}>{dataConcluir.conducta_actual}</p>
+              </div>
+              <div>
+                <label style={{ fontSize: '0.9rem', color: '#666', fontWeight: 'bold' }}>Sanción Determinada:</label>
+                <p style={{ margin: '5px 0', fontSize: '0.95rem' }}>{dataConcluir.sancion_actual}</p>
+              </div>
+            </div>
+
             <p style={{ color: '#555', lineHeight: '1.5' }}>
-              Al concluir la investigación, esta pasará al estatus <strong>CONCLUIDA</strong> y no se podrán realizar más cambios. 
+              Al concluir la investigación, esta pasará al estatus <strong>CONCLUIDA</strong>.
             </p>
 
-            <div style={{ background: '#f8f9fa', padding: '20px', borderRadius: '8px', border: '1px solid #e9ecef' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.05rem', fontWeight: '500', cursor: 'pointer', marginBottom: '15px' }}>
+            <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ddd' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.05rem', fontWeight: 'bold', cursor: 'pointer', marginBottom: '20px', color: '#840016' }}>
                 <input
                   type="checkbox"
                   checked={dataConcluir.reconsideracion}
                   onChange={(e) => setDataConcluir(prev => ({ ...prev, reconsideracion: e.target.checked }))}
                   style={{ width: '20px', height: '20px', accentColor: '#840016' }}
                 />
-                ¿Se realizó Reconsideración?
+                ¿Se instruyó Reconsideración?
               </label>
 
               {dataConcluir.reconsideracion && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', marginTop: '15px', paddingLeft: '10px', borderLeft: '3px solid #840016' }}>
-                  <div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', paddingLeft: '10px', borderLeft: '3px solid #840016' }}>
+
+                  <div style={{ position: 'relative', zIndex: 10 }}>
                     <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
-                      Ficha que autoriza:
+                      Conducta Definitiva:
                     </label>
-                    <input
-                      type="text"
-                      className="admin-input"
-                      value={dataConcluir.ficha}
-                      onChange={(e) => setDataConcluir(prev => ({ ...prev, ficha: e.target.value }))}
-                      placeholder="Ej. 123456"
+                    <CustomConductaSelect
+                      value={dataConcluir.conducta}
+                      onChange={(val) => setDataConcluir(prev => ({ ...prev, conducta: val }))}
+                      options={opciones?.conductas || []}
+                      descriptions={conductaDescriptions}
                     />
                   </div>
 
@@ -464,21 +471,50 @@ function FinalizacionListPage() {
                     <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
                       Sanción Definitiva:
                     </label>
-                    {/* Usamos el CustomSelect reutilizable */}
-                    <CustomConductaSelect
+                    <select
+                      className="admin-input"
                       value={dataConcluir.sancion}
-                      onChange={(val) => setDataConcluir(prev => ({ ...prev, sancion: val }))}
-                      options={opciones?.conductas || []}
-                      descriptions={conductaDescriptions}
+                      onChange={(e) => setDataConcluir(prev => ({ ...prev, sancion: e.target.value }))}
+                      style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+                    >
+                      <option value="">Seleccione...</option>
+                      {opciones?.sancion?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                    </select>
+                  </div>
+
+                  {dataConcluir.sancion === 'SUSPENSIÓN DE LABORES' && (
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
+                        Días de Suspensión (Definitiva):
+                      </label>
+                      <input
+                        type="number"
+                        className="admin-input"
+                        value={dataConcluir.dias_suspension}
+                        onChange={(e) => setDataConcluir(prev => ({ ...prev, dias_suspension: e.target.value }))}
+                        placeholder="Ej. 3"
+                        min="1"
+                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
+                      Ficha que autoriza Reconsideración:
+                    </label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={dataConcluir.ficha}
+                      onChange={(e) => setDataConcluir(prev => ({ ...prev, ficha: e.target.value }))}
+                      placeholder="Ej. 123456"
+                      style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
                     />
                   </div>
                 </div>
               )}
             </div>
-
-            <p style={{ color: '#555', lineHeight: '1.5' }}>
-              En caso contrario pulse <strong>Confirmar Conclusión</strong>.
-            </p>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
               <button

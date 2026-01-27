@@ -51,6 +51,8 @@ const initialState: InvestigacionFormState = {
   responsable_extension: '',
   responsable_email: '',
   detalles_conducta: '',
+  sancion: '',
+  dias_suspension: null,
 };
 
 interface ContactoForm {
@@ -960,21 +962,41 @@ function InvestigacionFormPage() {
                   </div>
                 </div>
               </div>
-
-              {/*
+            </div>
+            <div className="admin-form-row">
               <div className="admin-form-group">
-                <label>Número de Reporte</label>
+                <label>Sanción *</label>
                 <div className="admin-input-with-icon">
-                  <i className="fas fa-hashtag"></i>
-                  <input
-                    type="text"
-                    value={formState.numero_reporte || 'No asignado'}
-                    readOnly
-                    className="admin-readonly-field"
-                  />
+                  <i className="fas fa-balance-scale"></i>
+                  <select name="sancion" value={formState.sancion} onChange={handleChange} required>
+                    <option value="">Seleccione...</option>
+                    {opciones?.sancion?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
                 </div>
               </div>
-              */}
+              <div className="admin-form-group">
+                {formState.sancion === 'SUSPENSIÓN DE LABORES' && (
+                  <div className="admin-form-group">
+                    <label>Días de Suspensión *</label>
+                    <div className="admin-input-with-icon">
+                      <i className="fas fa-calendar-alt"></i>
+                      <input
+                        type="number"
+                        name="dias_suspension"
+                        value={formState.dias_suspension || ''}
+                        onChange={handleChange}
+                        required={formState.sancion === 'SUSPENSIÓN DE LABORES'}
+                        min="1"
+                        max="8"
+                        placeholder="Ingrese el número de días"
+                      />
+                    </div>
+                    <small className="admin-field-hint">
+                      Ingrese el número de días de suspensión (1-8)
+                    </small>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="admin-form-row">

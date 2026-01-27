@@ -53,7 +53,7 @@ const CONDUCTAS_POSIBLES = [
   'NEGLIGENCIA EN EL DESARROLLO DE FUNCIONES', 'DISCRIMINACION', 'ACOSO LABORAL O MOBBING', 'ACOSO Y/O HOSTIGAMIENTO SEXUAL',
   'CONCURRIR CON EFECTOS DE ESTUPEFACIENTES Y/O EDO DE EBRIEDAD', 'INCUMPLIMIENTO DE NORMAS DE TRABAJO Y/O PROCEDIMIENTOS DE TRABAJO',
   'USO INDEBIDO DE UTILES Y/O HERRAMIENTAS DE TRABAJO', 'CLAUSULA 253 CCT', 'ACTOS DE CORRUPCION', 'MERCADO ILICITO DE COMBUSTIBLES',
-  'OTRAS FALTAS'
+  'OTRAS CONDUCTAS'
 ];
 
 type SortConfig = {
@@ -229,7 +229,7 @@ function WelcomePage() {
     }
     return sortableItems;
   }, [baseDataList, sortConfig]);
-  
+
   const dataByMonth = useMemo(() => {
     const grouped: Record<string, { name: string, enProceso: number, completed: number }> = {};
 

@@ -48,6 +48,25 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
 
+    @action(detail=True, methods=['patch'])
+    def concluir(self, request, pk=None):
+        investigacion = self.get_object()
+        
+        # Actualizar datos
+        investigacion.estatus = request.data.get('estatus', 'CONCLUIDA')
+        investigacion.reconsideracion = request.data.get('reconsideracion', False)
+        investigacion.ficha_reconsideracion = request.data.get('ficha_reconsideracion')
+        investigacion.sancion_definitiva = request.data.get('sancion_definitiva')
+        investigacion.conducta_definitiva = request.data.get('conducta_definitiva')
+        
+        dias = request.data.get('dias_suspension')
+        if dias is not None and dias != '':
+             investigacion.dias_suspension = dias
+
+        investigacion.save()
+        
+        return Response({'status': 'investigacion concluida'})
+
     def generar_numero_reporte(self, gerencia_responsable):
         """Genera número de reporte automático basado en la gerencia"""
         hoy = timezone.now()
@@ -323,6 +342,7 @@ def opciones_view(request):
         'gravedades': [choice[0] for choice in Investigacion.GRAVEDAD_CHOICES],
         'gerencias': [choice[0] for choice in Investigacion.GERENCIA_CHOICES],
         'conductas': [choice[0] for choice in Investigacion.CONDUCTAS_CHOICES],
+        'sancion': [choice[0] for choice in Investigacion.SANCION_CHOICES],
     }
     serializer = OpcionesSerializer(opciones)
     return Response(serializer.data)
@@ -593,7 +613,7 @@ def estadisticas_view(request):
     'NEGLIGENCIA EN EL DESARROLLO DE FUNCIONES', 'DISCRIMINACION', 'ACOSO LABORAL O MOBBING', 'ACOSO Y/O HOSTIGAMIENTO SEXUAL',
     'CONCURRIR CON EFECTOS DE ESTUPEFACIENTES Y/O EDO DE EBRIEDAD', 'INCUMPLIMIENTO DE NORMAS DE TRABAJO Y/O PROCEDIMIENTOS DE TRABAJO',
     'USO INDEBIDO DE UTILES Y/O HERRAMIENTAS DE TRABAJO', 'CLAUSULA 253 CCT', 'ACTOS DE CORRUPCION', 'MERCADO ILICITO DE COMBUSTIBLES',
-    'OTRAS FALTAS']:
+    'OTRAS CONDUCTAS']:
         por_conductas[sancion] = queryset.filter(conductas=sancion).count()
     
     # Estadísticas por dirección

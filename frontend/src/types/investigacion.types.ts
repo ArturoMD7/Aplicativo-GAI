@@ -102,6 +102,8 @@ export interface InvestigacionFormState {
   involucrados: Involucrado[];
   testigos: Testigo[];
   detalles_conducta?: string;
+  sancion?: string;
+  dias_suspension?: number | null;
 }
 
 export interface OpcionesDropdowns {
@@ -112,6 +114,7 @@ export interface OpcionesDropdowns {
   sindicatos: string[];
   gravedades: string[];
   gerencias: string[];
+  sancion: string[];
 }
 
 export interface InvestigacionListado {
@@ -137,6 +140,10 @@ export interface InvestigacionListado {
   estatus: 'Abierta' | 'Seguimiento' | 'Concluida' | 'ABIERTA' | 'SEGUIMIENTO' | 'CONCLUIDA' | 'ENVIADA_A_CONCLUIR';
   conductas: string;
   detalles_conducta?: string;
+  sancion?: string;
+  conducta_definitiva?: string;
+  sancion_definitiva?: string;
+  dias_suspension?: number;
 }
 
 export interface Antecedente {
