@@ -56,7 +56,39 @@ function SeguimientoListPage() {
     fetchInvestigaciones();
   }, []);
 
-  const handleFinalizacion = async (id: number) => {
+  const handleFinalizacion = async (inv: InvestigacionListado) => {
+    if (inv.conductas && inv.conductas.toLowerCase().includes('acoso sexual')) {
+      try {
+        const resDocs = await apiClient.get(`/api/investigaciones/documentos/?investigacion_id=${inv.id}`);
+        const documentos = resDocs.data;
+
+        const tieneEvidencia = documentos.some((d: any) =>
+          d.tipo === 'Evidencia de medidas preventivas' ||
+          d.nombre_archivo.toLowerCase().includes('evidencia de medidas preventivas')
+        );
+
+        if (!tieneEvidencia) {
+          Swal.fire({
+            title: 'Falta Documentación',
+            html: `
+              Esta investigación es por <strong>Hostigamiento o Acoso Sexual</strong>.<br/><br/>
+              No se puede enviar a finalización sin adjuntar el archivo: <br/>
+              <b>"Evidencia de medidas preventivas"</b>.
+            `,
+            icon: 'warning',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#840016'
+          });
+          return;
+        }
+
+      } catch (error) {
+        console.error("Error validando documentos:", error);
+        Swal.fire('Error', 'No se pudo validar la documentación. Intente de nuevo.', 'error');
+        return;
+      }
+    }
+
     const result = await Swal.fire({
       title: '¿Pasar a Finalización?',
       text: "La investigación pasará a la bandeja de Finalización y desaparecerá de esta lista.",
@@ -68,8 +100,8 @@ function SeguimientoListPage() {
 
     if (result.isConfirmed) {
       try {
-        await apiClient.patch(`/api/investigaciones/investigaciones/${id}/`, { estatus: 'ENVIADA_A_CONCLUIR' });
-        setInvestigaciones(prev => prev.filter(item => item.id !== id));
+        await apiClient.patch(`/api/investigaciones/investigaciones/${inv.id}/`, { estatus: 'ENVIADA_A_CONCLUIR' });
+        setInvestigaciones(prev => prev.filter(item => item.id !== inv.id));
         Swal.fire('Listo', 'La investigación se movió a finalización.', 'success');
       } catch (err: any) {
         console.error("Error al cambiar estatus:", err.response?.data || err);
@@ -345,7 +377,7 @@ function SeguimientoListPage() {
 
                       <ButtonIcon
                         variant="view"
-                        onClick={() => handleFinalizacion(inv.id)}
+                        onClick={() => handleFinalizacion(inv)}
                         icon={<FiTrendingUp />}
                         title="Pasar a Finalizar"
                         size="medium"

@@ -21,7 +21,8 @@ const TIPOS_DOCUMENTOS = [
   'Dictamen',
   'Resultado',
   'Anexo',
-  'Pruebas'
+  'Pruebas',
+  'Evidencia de medidas preventivas'
 ];
 
 const SUBTIPOS_DOCUMENTOS = {
@@ -423,15 +424,34 @@ function SeguimientoPage() {
             gridTemplateColumns: '1fr 1.5fr',
             gap: '30px'
           }}>
-            {/* COLUMNA IZQUIERDA: Formulario de Subida + RECONSIDERACION */}
             <div className="admin-form-section">
-
-
-
-
               <h2 className="admin-section-title">
                 <FiUploadCloud /> Subir Documento
               </h2>
+
+              {investigacion?.conductas?.toLowerCase().includes('acoso sexual') && (
+                <div style={{
+                  background: '#fff3cd',
+                  color: '#856404',
+                  padding: '15px',
+                  borderRadius: '8px',
+                  border: '1px solid #ffeeba',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  marginBottom: '20px'
+                }}>
+                  <FiAlertTriangle style={{ fontSize: '24px' }} />
+                  <div>
+                    <strong>¡Atención!</strong>
+                    <p style={{ margin: '5px 0 0' }}>
+                      Al ser un caso de <strong>Hostigamiento o Acoso Sexual</strong>, es obligatorio adjuntar el archivo:
+                      <br />
+                      <em>"Evidencia de medidas preventivas"</em>.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {investigacion?.estatus === 'Concluida' ? (
                 <div style={{
@@ -831,7 +851,8 @@ function SeguimientoPage() {
           }}
           onCancel={() => setActiveTab('documentos')}
         />
-      )}
+      )
+      }
 
       <style>{`
         @keyframes spin {
@@ -843,7 +864,7 @@ function SeguimientoPage() {
         documento={previewFile}
         onClose={() => setPreviewFile(null)}
       />
-    </div>
+    </div >
   );
 }
 

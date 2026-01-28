@@ -150,7 +150,7 @@ class InvestigacionSerializer(serializers.ModelSerializer):
             'antecedentes',
             
             # Sección 5: Reconsideracion
-            'reconsideracion', 'ficha_reconsideracion', 'sancion_definitiva', 'conducta_definitiva',
+            'reconsideracion', 'ficha_reconsideracion', 'conducta_definitiva',
             
             # Relaciones
             'contactos', 'investigadores', 'involucrados', 'testigos', 'reportantes',
@@ -164,7 +164,7 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id', 'created_by', 'created_at', 'updated_at', 'semaforo',
             'numero_reporte', 'fecha_prescripcion', 'dias_restantes',
-            'conducta_definitiva', 'sancion_definitiva', 'reconsideracion', 'ficha_reconsideracion'
+            'conducta_definitiva', 'reconsideracion', 'ficha_reconsideracion'
         ]
 
     def get_dias_restantes(self, obj):
@@ -338,7 +338,7 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
             'gravedad', 'fecha_reporte', 'fecha_prescripcion',
             'gerencia_responsable', 'created_by_name', 'dias_restantes',
             'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos', 'investigadores', 'involucrados', 'reportantes',
-            'estatus', 'conductas', 'detalles_conducta', 'sancion', 'conducta_definitiva', 'sancion_definitiva'
+            'estatus', 'conductas', 'detalles_conducta', 'sancion', 'conducta_definitiva'
         ]
 
     def get_dias_restantes(self, obj):

@@ -51,8 +51,6 @@ const initialState: InvestigacionFormState = {
   responsable_extension: '',
   responsable_email: '',
   detalles_conducta: '',
-  sancion: '',
-  dias_suspension: null,
 };
 
 interface ContactoForm {
@@ -139,24 +137,23 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
   const [userRole, setUserRole] = useState<string>('');
 
   const conductaDescriptions: { [key: string]: string } = {
-    'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS': 'Incumplimiento de normas,  Incumplimiento de procedimientos operativos,Incumplimiento de lineamientos internos, Incumplimiento de instrucciones generales, Incumplimiento de cláusulas contractuales',
-    'FALTAS INJUSTIFICADAS / ABANDONO DE LABORES': 'Faltas injustificadas, Abandono de labores, Inasistencias reiteradas, Omisión de presentarse al centro de trabajo',
-    'NEGLIGENCIA EN EL DESEMPEÑO DE FUNCIONES': 'Omisiones en el desarrollo de funciones, Ejecución deficiente de tareas asignadas, Falta de cuidado o diligencia, Negligencia operativa sin dolo',
-    'ACOSO LABORAL (MOBBING)': ' Acoso laboral, Hostigamiento laboral no sexual,Conductas sistemáticas de presión o intimidación',
-    'ACTITUD INDEBIDA': ' Actitud indebida, Conducta inapropiada, Faltas al respeto, Comportamiento contrario a la convivencia laboral',
-    'DESOBEDIENCIA': ' Desobediencia a instrucciones superiores, Negativa a acatar órdenes directas, Incumplimiento de instrucciones operativas, Resistencia injustificada a la autoridad',
-    'ALTERACIÓN DEL ORDEN Y DISCIPLINA': ' Alteración del orden, Riñas o confrontaciones, Escándalos o conductas disruptivas, Afectación a la disciplina del centro de trabajo',
-    'SUSTRACCIÓN O ROBO DE BIENES': ' Sustracción, Robo, Sustracción de equipo mobiliario, Pérdida de bienes imputable, Uso indebido con ánimo de apropiación',
+    'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS': 'Incumplimiento de normas de trabajo,  Incumplimiento de procedimientos operativos, Conflicto de intereses, Actos de Corrupción',
+    'FALTAS INJUSTIFICADAS': 'Faltas injustificadas, Inasistencias reiteradas, Omisión de presentarse al centro de trabajo',
+    'NEGLIGENCIA EN EL DESEMPEÑO DE FUNCIONES': 'Omisiones en el desarrollo de funciones, Ejecución deficiente de tareas asignadas, Falta de cuidado o diligencia, Negligencia operativa',
+    'ACOSO LABORAL (MOBBING)': ' Acoso laboral, Hostigamiento laboral no sexual, Conductas sistemáticas de presión o intimidación',
+    'DESOBEDIENCIA': ' Desobediencia a instrucciones superiores, Desacato,  Incumplimiento de instrucciones operativas,  Resistencia injustificada a la autoridad',
+    'ALTERACIÓN DEL ORDEN Y DISCIPLINA': ' Alteración del orden, Riñas o confrontaciones, Actitud y/o conducta indebida, Faltas al respeto,  Comportamiento contrario a la convivencia laboral',
+    'SUSTRACCIÓN, PÉRDIDA O ROBO DE BIENES': ' Sustracción, Robo, Sustracción de equipo mobiliario, Pérdida de bienes imputable, Uso indebido con ánimo de apropiación, Mercado ilícito de combustible (MIC)',
     'USO INDEBIDO DE BIENES, HERRAMIENTAS O RECURSOS': ' Uso indebido de útiles y/o herramientas, Uso no autorizado de bienes de la empresa, Uso personal de recursos sin apropiación',
+    'PRESENTACIÓN DE DOCUMENTACIÓN ALTERADA Y/O APÓCRIFA': 'Uso indebido de documentación, Ejercicio indebido de funciones, Usurpación de funciones',
     'HOSTIGAMIENTO O ACOSO SEXUAL': ' Hostigamiento sexual, Acoso sexual, Conductas de connotación sexual, Violencia digital de índole sexual',
-    'CONCURRENCIA EN ESTADO INCONVENIENTE': ' Concurrir en estado de ebriedad, Presentarse bajo el influjo de alcohol, Presentarse bajo efectos de sustancias prohibidas',
+    'ENCONTRARSE EN ESTADO INCONVENIENTE': ' Concurrir en estado de ebriedad, Presentarse bajo el influjo de alcohol, Presentarse bajo efectos de sustancias prohibidas, Consumo de sustancias prohibidas dentro de las instalaciones',
     'DIVULGACIÓN O USO INDEBIDO DE INFORMACIÓN': ' Divulgación de información confidencial, Uso indebido de información, Acceso no autorizado a información',
     'OCASIONAR DAÑOS O PERJUICIOS': ' Daños a bienes de la empresa, Daños a instalaciones, Perjuicios ocasionados por acción u omisión',
-    'SUSPENSIÓN UNILATERAL DE LABORES': ' Suspensión de labores, Paro injustificado, Negativa injustificada a prestar servicios',
-    'DISCRIMINACIÓN': ' Discriminación laboral,Trato diferenciado injustificado',
-    'ACCIDENTE DE TRABAJO': ' Accidente de trabajo, Incidente con posible responsabilidad laboral',
+    'SUSPENSIÓN Y/O ABANDONO DE LABORES': ' Suspensión de labores, Paro injustificado',
+    'DISCRIMINACIÓN': '',
+    'COBRO/PAGO(S) EN DEMASÍA INDEBIDOS': '',
     'OTRAS CONDUCTAS': '',
-    'CLÁUSULA 253 CCT': ''
   };
 
   useEffect(() => {
@@ -1005,41 +1002,6 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
                 </div>
               </div>
               */}
-            </div>
-
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label>Sanción *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-balance-scale"></i>
-                  <select name="sancion" value={formState.sancion} onChange={handleChange} required>
-                    <option value="">Seleccione...</option>
-                    {opciones?.sancion?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              {formState.sancion === 'SUSPENSIÓN DE LABORES' && (
-                <div className="admin-form-group">
-                  <label>Días de Suspensión *</label>
-                  <div className="admin-input-with-icon">
-                    <i className="fas fa-calendar-alt"></i>
-                    <input
-                      type="number"
-                      name="dias_suspension"
-                      value={formState.dias_suspension || ''}
-                      onChange={handleChange}
-                      required={formState.sancion === 'SUSPENSIÓN DE LABORES'}
-                      min="1"
-                      max="8"
-                      placeholder="Ingrese el número de días"
-                    />
-                  </div>
-                  <small className="admin-field-hint">
-                    Ingrese el número de días de suspensión (1-8)
-                  </small>
-                </div>
-              )}
             </div>
 
             <div className="admin-form-row">

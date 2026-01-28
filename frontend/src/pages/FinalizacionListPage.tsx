@@ -43,24 +43,23 @@ function FinalizacionListPage() {
   });
 
   const conductaDescriptions: { [key: string]: string } = {
-    'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS': 'Incumplimiento de normas,  Incumplimiento de procedimientos operativos,Incumplimiento de lineamientos internos, Incumplimiento de instrucciones generales, Incumplimiento de cláusulas contractuales',
-    'FALTAS INJUSTIFICADAS / ABANDONO DE LABORES': 'Faltas injustificadas, Abandono de labores, Inasistencias reiteradas, Omisión de presentarse al centro de trabajo',
-    'NEGLIGENCIA EN EL DESEMPEÑO DE FUNCIONES': 'Omisiones en el desarrollo de funciones, Ejecución deficiente de tareas asignadas, Falta de cuidado o diligencia, Negligencia operativa sin dolo',
-    'ACOSO LABORAL (MOBBING)': ' Acoso laboral, Hostigamiento laboral no sexual,Conductas sistemáticas de presión o intimidación',
-    'ACTITUD INDEBIDA': ' Actitud indebida, Conducta inapropiada, Faltas al respeto, Comportamiento contrario a la convivencia laboral',
-    'DESOBEDIENCIA': ' Desobediencia a instrucciones superiores, Negativa a acatar órdenes directas, Incumplimiento de instrucciones operativas, Resistencia injustificada a la autoridad',
-    'ALTERACIÓN DEL ORDEN Y DISCIPLINA': ' Alteración del orden, Riñas o confrontaciones, Escándalos o conductas disruptivas, Afectación a la disciplina del centro de trabajo',
-    'SUSTRACCIÓN O ROBO DE BIENES': ' Sustracción, Robo, Sustracción de equipo mobiliario, Pérdida de bienes imputable, Uso indebido con ánimo de apropiación',
+    'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS': 'Incumplimiento de normas de trabajo,  Incumplimiento de procedimientos operativos, Conflicto de intereses, Actos de Corrupción',
+    'FALTAS INJUSTIFICADAS': 'Faltas injustificadas, Inasistencias reiteradas, Omisión de presentarse al centro de trabajo',
+    'NEGLIGENCIA EN EL DESEMPEÑO DE FUNCIONES': 'Omisiones en el desarrollo de funciones, Ejecución deficiente de tareas asignadas, Falta de cuidado o diligencia, Negligencia operativa',
+    'ACOSO LABORAL (MOBBING)': ' Acoso laboral, Hostigamiento laboral no sexual, Conductas sistemáticas de presión o intimidación',
+    'DESOBEDIENCIA': ' Desobediencia a instrucciones superiores, Desacato,  Incumplimiento de instrucciones operativas,  Resistencia injustificada a la autoridad',
+    'ALTERACIÓN DEL ORDEN Y DISCIPLINA': ' Alteración del orden, Riñas o confrontaciones, Actitud y/o conducta indebida, Faltas al respeto,  Comportamiento contrario a la convivencia laboral',
+    'SUSTRACCIÓN, PÉRDIDA O ROBO DE BIENES': ' Sustracción, Robo, Sustracción de equipo mobiliario, Pérdida de bienes imputable, Uso indebido con ánimo de apropiación, Mercado ilícito de combustible (MIC)',
     'USO INDEBIDO DE BIENES, HERRAMIENTAS O RECURSOS': ' Uso indebido de útiles y/o herramientas, Uso no autorizado de bienes de la empresa, Uso personal de recursos sin apropiación',
+    'PRESENTACIÓN DE DOCUMENTACIÓN ALTERADA Y/O APÓCRIFA': 'Uso indebido de documentación, Ejercicio indebido de funciones, Usurpación de funciones',
     'HOSTIGAMIENTO O ACOSO SEXUAL': ' Hostigamiento sexual, Acoso sexual, Conductas de connotación sexual, Violencia digital de índole sexual',
-    'CONCURRENCIA EN ESTADO INCONVENIENTE': ' Concurrir en estado de ebriedad, Presentarse bajo el influjo de alcohol, Presentarse bajo efectos de sustancias prohibidas',
+    'ENCONTRARSE EN ESTADO INCONVENIENTE': ' Concurrir en estado de ebriedad, Presentarse bajo el influjo de alcohol, Presentarse bajo efectos de sustancias prohibidas, Consumo de sustancias prohibidas dentro de las instalaciones',
     'DIVULGACIÓN O USO INDEBIDO DE INFORMACIÓN': ' Divulgación de información confidencial, Uso indebido de información, Acceso no autorizado a información',
     'OCASIONAR DAÑOS O PERJUICIOS': ' Daños a bienes de la empresa, Daños a instalaciones, Perjuicios ocasionados por acción u omisión',
-    'SUSPENSIÓN UNILATERAL DE LABORES': ' Suspensión de labores, Paro injustificado, Negativa injustificada a prestar servicios',
-    'DISCRIMINACIÓN': ' Discriminación laboral,Trato diferenciado injustificado',
-    'ACCIDENTE DE TRABAJO': ' Accidente de trabajo, Incidente con posible responsabilidad laboral',
+    'SUSPENSIÓN Y/O ABANDONO DE LABORES': ' Suspensión de labores, Paro injustificado',
+    'DISCRIMINACIÓN': '',
+    'COBRO/PAGO(S) EN DEMASÍA INDEBIDOS': '',
     'OTRAS CONDUCTAS': '',
-    'CLÁUSULA 253 CCT': ''
   };
 
   const [opciones, setOpciones] = useState<{ conductas: string[]; sancion: string[] } | null>(null);
@@ -137,10 +136,10 @@ function FinalizacionListPage() {
         id: id,
         reconsideracion: false,
         ficha: '',
-        sancion: investigacion?.sancion || '',
+        sancion: '',
         conducta: investigacion?.conductas || '',
-        dias_suspension: investigacion?.dias_suspension ? String(investigacion.dias_suspension) : '',
-        sancion_actual: investigacion?.sancion || 'No registrada',
+        dias_suspension: '',
+        sancion_actual: '',
         conducta_actual: investigacion?.conductas || 'No registrada'
       });
       setIsConcluirModalOpen(true);
@@ -157,9 +156,9 @@ function FinalizacionListPage() {
         estatus: 'CONCLUIDA',
         reconsideracion: dataConcluir.reconsideracion,
         ficha_reconsideracion: dataConcluir.reconsideracion ? dataConcluir.ficha : null,
-        sancion_definitiva: dataConcluir.reconsideracion ? dataConcluir.sancion : null,
-        conducta_definitiva: dataConcluir.reconsideracion ? dataConcluir.conducta : null,
-        dias_suspension: (dataConcluir.reconsideracion && dataConcluir.sancion === 'SUSPENSIÓN DE LABORES') ? dataConcluir.dias_suspension : null
+        sancion: dataConcluir.sancion,
+        conducta_definitiva: dataConcluir.reconsideracion ? dataConcluir.conducta : dataConcluir.conducta_actual,
+        dias_suspension: (dataConcluir.sancion === 'SUSPENSIÓN DE LABORES') ? dataConcluir.dias_suspension : null
       };
 
       await apiClient.patch(`/api/investigaciones/investigaciones/${dataConcluir.id}/concluir/`, payload);
@@ -442,6 +441,42 @@ function FinalizacionListPage() {
             </p>
 
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ddd' }}>
+
+              {/* 1. SELECCIÓN DE SANCIÓN (SIEMPRE DISPONIBLE) */}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.95rem', color: '#444' }}>
+                  Sanción a aplicar:
+                </label>
+                <select
+                  className="admin-input"
+                  value={dataConcluir.sancion}
+                  onChange={(e) => setDataConcluir(prev => ({ ...prev, sancion: e.target.value }))}
+                  style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+                >
+                  <option value="">Seleccione...</option>
+                  {opciones?.sancion?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+              </div>
+
+              {dataConcluir.sancion === 'SUSPENSIÓN DE LABORES' && (
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.95rem', color: '#444' }}>
+                    Días de Suspensión:
+                  </label>
+                  <input
+                    type="number"
+                    className="admin-input"
+                    value={dataConcluir.dias_suspension}
+                    onChange={(e) => setDataConcluir(prev => ({ ...prev, dias_suspension: e.target.value }))}
+                    placeholder="Ej. 3"
+                    min="1"
+                    style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+                  />
+                </div>
+              )}
+
+
+              {/* 2. RECONSIDERACIÓN DE CONDUCTA */}
               <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.05rem', fontWeight: 'bold', cursor: 'pointer', marginBottom: '20px', color: '#840016' }}>
                 <input
                   type="checkbox"
@@ -449,7 +484,7 @@ function FinalizacionListPage() {
                   onChange={(e) => setDataConcluir(prev => ({ ...prev, reconsideracion: e.target.checked }))}
                   style={{ width: '20px', height: '20px', accentColor: '#840016' }}
                 />
-                ¿Se instruyó Reconsideración?
+                ¿Reconsideración de Conducta?
               </label>
 
               {dataConcluir.reconsideracion && (
@@ -457,7 +492,7 @@ function FinalizacionListPage() {
 
                   <div style={{ position: 'relative', zIndex: 10 }}>
                     <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
-                      Conducta Definitiva:
+                      Conducta Definitiva (Nueva):
                     </label>
                     <CustomConductaSelect
                       value={dataConcluir.conducta}
@@ -466,38 +501,6 @@ function FinalizacionListPage() {
                       descriptions={conductaDescriptions}
                     />
                   </div>
-
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
-                      Sanción Definitiva:
-                    </label>
-                    <select
-                      className="admin-input"
-                      value={dataConcluir.sancion}
-                      onChange={(e) => setDataConcluir(prev => ({ ...prev, sancion: e.target.value }))}
-                      style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
-                    >
-                      <option value="">Seleccione...</option>
-                      {opciones?.sancion?.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                    </select>
-                  </div>
-
-                  {dataConcluir.sancion === 'SUSPENSIÓN DE LABORES' && (
-                    <div>
-                      <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
-                        Días de Suspensión (Definitiva):
-                      </label>
-                      <input
-                        type="number"
-                        className="admin-input"
-                        value={dataConcluir.dias_suspension}
-                        onChange={(e) => setDataConcluir(prev => ({ ...prev, dias_suspension: e.target.value }))}
-                        placeholder="Ej. 3"
-                        min="1"
-                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
-                      />
-                    </div>
-                  )}
 
                   <div>
                     <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>

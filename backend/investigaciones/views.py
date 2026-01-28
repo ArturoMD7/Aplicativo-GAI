@@ -56,7 +56,7 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
         investigacion.estatus = request.data.get('estatus', 'CONCLUIDA')
         investigacion.reconsideracion = request.data.get('reconsideracion', False)
         investigacion.ficha_reconsideracion = request.data.get('ficha_reconsideracion')
-        investigacion.sancion_definitiva = request.data.get('sancion_definitiva')
+        investigacion.sancion = request.data.get('sancion')
         investigacion.conducta_definitiva = request.data.get('conducta_definitiva')
         
         dias = request.data.get('dias_suspension')
@@ -608,18 +608,27 @@ def estadisticas_view(request):
         por_gravedad[gravedad] = queryset.filter(gravedad=gravedad).count()
 
     por_conductas = {}
-    for sancion in ['SUSPENCION DE LABORES', 'SUSTRACCION DE EQUIPO MOBILIARIO', 'FALTA DE PROBIDAD Y HONRADEZ',
-    'ALTERACION DEL ORDEN', 'PRESENTACION DE DOCUMENTACION IRREGULAR', 'ACTITUD INDEBIDA', 'FALTAS INJUSTIFICADAS',
-    'NEGLIGENCIA EN EL DESARROLLO DE FUNCIONES', 'DISCRIMINACION', 'ACOSO LABORAL O MOBBING', 'ACOSO Y/O HOSTIGAMIENTO SEXUAL',
-    'CONCURRIR CON EFECTOS DE ESTUPEFACIENTES Y/O EDO DE EBRIEDAD', 'INCUMPLIMIENTO DE NORMAS DE TRABAJO Y/O PROCEDIMIENTOS DE TRABAJO',
-    'USO INDEBIDO DE UTILES Y/O HERRAMIENTAS DE TRABAJO', 'CLAUSULA 253 CCT', 'ACTOS DE CORRUPCION', 'MERCADO ILICITO DE COMBUSTIBLES',
-    'OTRAS CONDUCTAS']:
+    for sancion in [
+        'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS',
+        'FALTAS INJUSTIFICADAS',
+        'NEGLIGENCIA EN EL DESEMPEÑO DE FUNCIONES',
+        'ACOSO LABORAL (MOBBING)',
+        'DESOBEDIENCIA',
+        'ALTERACIÓN DEL ORDEN Y DISCIPLINA',
+        'SUSTRACCIÓN, PÉRDIDA O ROBO DE BIENES',
+        'USO INDEBIDO DE BIENES, HERRAMIENTAS O RECURSOS',
+        'PRESENTACIÓN DE DOCUMENTACIÓN ALTERADA Y/O APÓCRIFA',
+        'HOSTIGAMIENTO O ACOSO SEXUAL',
+        'ENCONTRARSE EN ESTADO INCONVENIENTE',
+        'DIVULGACIÓN O USO INDEBIDO DE INFORMACIÓN',
+        'OCASIONAR DAÑOS O PERJUICIOS',
+        'SUSPENSIÓN Y/O ABANDONO DE LABORES',
+        'DISCRIMINACIÓN',
+        'COBRO/PAGO(S) EN DEMASÍA INDEBIDOS',
+        'OTRAS CONDUCTAS',
+    ]:
         por_conductas[sancion] = queryset.filter(conductas=sancion).count()
-    
-    # Estadísticas por dirección
-
-    
-    # Estadísticas por gerencia
+  
     por_gerencia = {}
     for gerencia in [choice[0] for choice in Investigacion.GERENCIA_CHOICES]:
         count = queryset.filter(gerencia_responsable=gerencia).count()

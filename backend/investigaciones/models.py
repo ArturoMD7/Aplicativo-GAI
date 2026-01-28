@@ -53,25 +53,25 @@ class Investigacion(UppercaseMixin,models.Model):
     regimen = models.CharField(max_length=15, choices=REGIMEN_CHOICES)
     """
     CONDUCTAS_CHOICES = [
-        ('INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS', 'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS'),
-        ('FALTAS INJUSTIFICADAS / ABANDONO DE LABORES', 'FALTAS INJUSTIFICADAS / ABANDONO DE LABORES'),
-        ('NEGLIGENCIA EN EL DESEMPEÑO DE FUNCIONES', 'NEGLIGENCIA EN EL DESEMPEÑO DE FUNCIONES'),
-        ('ACOSO LABORAL (MOBBING)', 'ACOSO LABORAL (MOBBING)'),
-        ('ACTITUD INDEBIDA', 'ACTITUD INDEBIDA'),
-        ('DESOBEDIENCIA', 'DESOBEDIENCIA'),
-        ('ALTERACIÓN DEL ORDEN Y DISCIPLINA', 'ALTERACIÓN DEL ORDEN Y DISCIPLINA'),
-        ('SUSTRACCIÓN O ROBO DE BIENES', 'SUSTRACCIÓN O ROBO DE BIENES'),
-        ('USO INDEBIDO DE BIENES, HERRAMIENTAS O RECURSOS', 'USO INDEBIDO DE BIENES, HERRAMIENTAS O RECURSOS'),
-        ('HOSTIGAMIENTO O ACOSO SEXUAL', 'HOSTIGAMIENTO O ACOSO SEXUAL'),
-        ('CONCURRENCIA EN ESTADO INCONVENIENTE', 'CONCURRENCIA EN ESTADO INCONVENIENTE'),
-        ('DIVULGACIÓN O USO INDEBIDO DE INFORMACIÓN', 'DIVULGACIÓN O USO INDEBIDO DE INFORMACIÓN'),
-        ('OCASIONAR DAÑOS O PERJUICIOS', 'OCASIONAR DAÑOS O PERJUICIOS'),
-        ('SUSPENSIÓN UNILATERAL DE LABORES', 'SUSPENSIÓN UNILATERAL DE LABORES'),
-        ('DISCRIMINACIÓN', 'DISCRIMINACIÓN'),
-        ('ACCIDENTE DE TRABAJO', 'ACCIDENTE DE TRABAJO'),
-        ('OTRAS CONDUCTAS', 'OTRAS CONDUCTAS'),
-        ('CLÁUSULA 253 CCT', 'CLÁUSULA 253 CCT'),
+    ('INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS', 'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS'),
+    ('FALTAS INJUSTIFICADAS', 'FALTAS INJUSTIFICADAS'),
+    ('NEGLIGENCIA EN EL DESEMPEÑO DE FUNCIONES', 'NEGLIGENCIA EN EL DESEMPEÑO DE FUNCIONES'),
+    ('ACOSO LABORAL (MOBBING)', 'ACOSO LABORAL (MOBBING)'),
+    ('DESOBEDENCIA', 'DESOBEDIENCIA'),
+    ('ALTERACIÓN DEL ORDEN Y DISCIPLINA', 'ALTERACIÓN DEL ORDEN Y DISCIPLINA'),
+    ('SUSTRACCIÓN, PÉRDIDA O ROBO DE BIENES', 'SUSTRACCIÓN, PÉRDIDA O ROBO DE BIENES'),
+    ('USO INDEBIDO DE BIENES, HERRAMIENTAS O RECURSOS', 'USO INDEBIDO DE BIENES, HERRAMIENTAS O RECURSOS'),
+    ('PRESENTACIÓN DE DOCUMENTACIÓN ALTERADA Y/O APÓCRIFA', 'PRESENTACIÓN DE DOCUMENTACIÓN ALTERADA Y/O APÓCRIFA'),
+    ('HOSTIGAMIENTO O ACOSO SEXUAL', 'HOSTIGAMIENTO O ACOSO SEXUAL'),
+    ('ENCONTRARSE EN ESTADO INCONVENIENTE', 'ENCONTRARSE EN ESTADO INCONVENIENTE'),
+    ('DIVULGACIÓN O USO INDEBIDO DE INFORMACIÓN', 'DIVULGACIÓN O USO INDEBIDO DE INFORMACIÓN'),
+    ('OCASIONAR DAÑOS O PERJUICIOS', 'OCASIONAR DAÑOS O PERJUICIOS'),
+    ('SUSPENSIÓN Y/O ABANDONO DE LABORES', 'SUSPENSIÓN Y/O ABANDONO DE LABORES'),
+    ('DISCRIMINACIÓN', 'DISCRIMINACIÓN'),
+    ('COBRO/PAGO(S) EN DEMASÍA INDEBIDOS', 'COBRO/PAGO(S) EN DEMASÍA INDEBIDOS'),
+    ('OTRAS CONDUCTAS', 'OTRAS CONDUCTAS'),
     ]
+
     conductas = models.CharField(max_length=65, choices=CONDUCTAS_CHOICES, default='OTRAS CONDUCTAS')
     conducta_definitiva = models.CharField(max_length=65, choices=CONDUCTAS_CHOICES, null=True, blank=True)
 
@@ -151,7 +151,7 @@ class Investigacion(UppercaseMixin,models.Model):
     # Sección 5: Reconsideracion
     reconsideracion = models.BooleanField(default=False)
     ficha_reconsideracion = models.CharField(max_length=20, null=True, blank=True)
-    sancion_definitiva = models.CharField(max_length=70, choices=CONDUCTAS_CHOICES, null=True, blank=True)
+    # sancion_definitiva removed
     
     # Auditoría
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='investigaciones_creadas')
@@ -285,10 +285,10 @@ def generar_ruta_archivo(instance, filename):
             investigacion=instance.investigacion,
             tipo=instance.tipo
         ).count() + 1
-        nuevo_nombre = f"{reporte_safe}_{instance.tipo}_{cantidad}.{ext}"
+        
+        tipo_safe = instance.tipo.replace(' ', '_')
+        nuevo_nombre = f"{reporte_safe}_{tipo_safe}_{cantidad}.{ext}"
     
-    # hoy = datetime.now()
-    # return f"investigaciones/documentos/{hoy.year}/{hoy.month}/{nuevo_nombre}"
     return f"investigaciones/documentos/{reporte_safe}/{nuevo_nombre}"
 
 
@@ -310,11 +310,11 @@ class DocumentoInvestigacion(models.Model):
         ('Resultado', 'Resultado de la investigación'),
         ('Anexo', 'Anexo'),
         ('NotificacionConclusion', 'Notificación de Conclusión'),
+        ('Evidencia de medidas preventivas', 'Evidencia de medidas preventivas'),
     ]
     tipo = models.CharField(max_length=50, choices=TIPO_DOC_CHOICES)
     
-    # 2. Actualiza el campo archivo usando la función
-    archivo = models.FileField(upload_to=generar_ruta_archivo)
+    archivo = models.FileField(upload_to=generar_ruta_archivo, max_length=255)
     
     descripcion = models.CharField(max_length=255, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
@@ -323,7 +323,6 @@ class DocumentoInvestigacion(models.Model):
         return f"{self.tipo} - {self.investigacion.numero_reporte}"
 
     def delete(self, *args, **kwargs):
-        # Borrar archivo físico al borrar registro
         if self.archivo:
             if os.path.isfile(self.archivo.path):
                 os.remove(self.archivo.path)

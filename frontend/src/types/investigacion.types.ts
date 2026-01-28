@@ -104,8 +104,6 @@ export interface InvestigacionFormState {
   involucrados: Involucrado[];
   testigos: Testigo[];
   detalles_conducta?: string;
-  sancion?: string;
-  dias_suspension?: number | null;
 }
 
 export interface OpcionesDropdowns {
@@ -144,7 +142,6 @@ export interface InvestigacionListado {
   detalles_conducta?: string;
   sancion?: string;
   conducta_definitiva?: string;
-  sancion_definitiva?: string;
   dias_suspension?: number;
 }
 
@@ -193,4 +190,13 @@ export interface InvolucradoForm {
   direccion: string;
   tiene_antecedentes?: boolean;
   antecedentes_detalles?: Antecedente[];
+}
+
+export interface InvestigacionDetalle extends InvestigacionFormState {
+  sancion?: string;
+  dias_suspension?: number;
+  estatus?: string;
+  reconsideracion?: boolean;
+  ficha_reconsideracion?: string;
+  conducta_definitiva?: string;
 }

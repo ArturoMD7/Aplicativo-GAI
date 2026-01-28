@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import ButtonIcon from '../components/Buttons/ButtonIcon';
-import type { InvestigacionFormState } from '../types/investigacion.types';
+import type { InvestigacionDetalle } from '../types/investigacion.types';
 import { FiEdit, FiFileText, FiDownload, FiEye, FiPaperclip, FiDollarSign, FiClock, FiCheckCircle } from 'react-icons/fi';
 import { FaArrowLeft } from "react-icons/fa";
 import { saveAs } from 'file-saver';
@@ -14,7 +14,7 @@ function InvestigacionDetailsPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const backPath = (location.state as any)?.from || '/investigaciones';
-  const [investigacion, setInvestigacion] = useState<InvestigacionFormState | null>(null);
+  const [investigacion, setInvestigacion] = useState<InvestigacionDetalle | null>(null);
   const [documentos, setDocumentos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -544,7 +544,7 @@ function InvestigacionDetailsPage() {
                   <i className="fas fa-balance-scale"></i>
                   <input
                     type="text"
-                    value={(investigacion as any).sancion_definitiva || 'No registrada'}
+                    value={investigacion.sancion || 'No registrada'}
                     readOnly
                     className="admin-readonly-field"
                   />
