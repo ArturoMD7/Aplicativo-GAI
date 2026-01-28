@@ -20,8 +20,8 @@ const TIPOS_DOCUMENTOS = [
   'Acta',
   'Dictamen',
   'Resultado',
-  'Anexo',
-  'Pruebas',
+  //'Anexo',
+  //'Pruebas',
   'Evidencia de medidas preventivas'
 ];
 

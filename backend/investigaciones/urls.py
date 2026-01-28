@@ -20,4 +20,5 @@ urlpatterns = [
     path('listar-investigadores/', views.listar_investigadores_view, name='listar_investigadores'),
     path('user-dashboard/<int:user_id>/', views.user_dashboard_view, name='user-dashboard'),
     path('user-dashboard/<int:user_id>/list/', views.user_dashboard_list_view, name='user-dashboard-list'),
+    path('buscar-personal/', views.buscar_personal_view, name='buscar-personal'),
 ]

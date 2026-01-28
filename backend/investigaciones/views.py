@@ -666,3 +666,93 @@ def user_dashboard_list_view(request, user_id):
     
     serializer = InvestigacionListSerializer(inv_queryset, many=True)
     return Response(serializer.data)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def buscar_personal_view(request):
+    """
+    Búsqueda general de personal por nombre o ficha.
+    Retorna una lista de coincidencias básicas.
+    """
+    query = request.query_params.get('query', '').strip()
+    
+    if not query:
+        return Response({'error': 'Debe proporcionar un término de búsqueda (ficha o nombre)'}, status=400)
+
+    resultados = []
+    
+    # Determinar si es búsqueda por ficha (numérica) o nombre (texto)
+    es_busqueda_ficha = query.isdigit()
+    
+    try:
+        with connections['pemex'].cursor() as cursor:
+            # 1. Búsqueda en Tablero (Activos)
+            if es_busqueda_ficha:
+                sql_activos = """
+                    SELECT ficha, nombres, nivel_plaza, catego, mc_stext, 'Activo' as estado
+                    FROM [00_tablero_dg]
+                    WHERE ficha = %s
+                """
+                params_activos = [query]
+            else:
+                # Búsqueda por nombre (fuzzy)
+                sql_activos = """
+                    SELECT ficha, nombres, nivel_plaza, catego, mc_stext, 'Activo' as estado
+                    FROM [00_tablero_dg]
+                    WHERE nombres LIKE %s
+                """
+                params_activos = [f'%{query}%']
+            
+            cursor.execute(sql_activos, params_activos)
+            rows = cursor.fetchall()
+            
+            for row in rows:
+                resultados.append({
+                    'ficha': row[0],
+                    'nombre': row[1],
+                    'nivel': row[2],
+                    'categoria': row[3],
+                    'puesto': row[4],
+                    'estado': row[5],
+                    'origen': 'Activos'
+                })
+
+            # 2. Búsqueda en Último Contrato (Inactivos/Transitorios)
+            # Solo si buscamos por ficha o si queremos buscar también en históricos por nombre
+            
+            if es_busqueda_ficha:
+                sql_inactivos = """
+                    SELECT ficha, nombres, nivel_plaza, catego, 'Inactivo/Baja' as estado
+                    FROM [ultimo_contrato_activo]
+                    WHERE ficha = %s
+                """
+                params_inactivos = [query]
+            else:
+                 sql_inactivos = """
+                    SELECT ficha, nombres, nivel_plaza, catego, 'Inactivo/Baja' as estado
+                    FROM [ultimo_contrato_activo]
+                    WHERE nombres LIKE %s
+                """
+                 params_inactivos = [f'%{query}%']
+
+            cursor.execute(sql_inactivos, params_inactivos)
+            rows = cursor.fetchall()
+            
+            for row in rows:
+                # Evitar duplicados si ya apareció en activos (aunque raro con misma ficha, posible validación)
+                if not any(r['ficha'] == row[0] for r in resultados):
+                     resultados.append({
+                        'ficha': row[0],
+                        'nombre': row[1],
+                        'nivel': row[2],
+                        'categoria': row[3],
+                        'puesto': 'No disponible', # ultimo_contrato no suele tener puesto detallado
+                        'estado': row[4],
+                        'origen': 'Último Contrato'
+                    })
+        
+        return Response(resultados)
+
+    except Exception as e:
+        print(f"Error en buscar_personal_view: {e}")
+        return Response({'error': str(e)}, status=500)

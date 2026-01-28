@@ -5,7 +5,8 @@ import { FiSearch, FiUser, FiInfo, FiAlertCircle, FiRefreshCw } from 'react-icon
 import type { EmpleadoBuscado } from '../types/investigacion.types';
 
 const BuscarEmpleadoPage = () => {
-    const [ficha, setFicha] = useState('');
+    const [query, setQuery] = useState('');
+    const [resultados, setResultados] = useState<any[]>([]);
     const [empleado, setEmpleado] = useState<EmpleadoBuscado | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -13,27 +14,55 @@ const BuscarEmpleadoPage = () => {
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!ficha.trim()) return;
+        if (!query.trim()) return;
 
         setLoading(true);
         setError('');
         setEmpleado(null);
+        setResultados([]);
         setSearched(true);
 
         try {
-            const response = await apiClient.get(`/api/investigaciones/buscar-empleado/?ficha=${ficha}`);
-            setEmpleado(response.data);
+            // Usar el nuevo endpoint de búsqueda general
+            const response = await apiClient.get(`/api/investigaciones/buscar-personal/?query=${query}`);
+            const data = response.data;
+
+            if (data.length === 0) {
+                setError('No se encontraron coincidencias.');
+            } else if (data.length === 1) {
+                // Si solo hay uno, cargar detalle directamente
+                fetchDetalleEmpleado(data[0].ficha);
+            } else {
+                // Si hay varios, mostrar lista
+                setResultados(data);
+            }
         } catch (err: any) {
             console.error(err);
-            setError(err.response?.data?.error || 'No se encontró información para la ficha proporcionada.');
+            setError(err.response?.data?.error || 'Error al realizar la búsqueda.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchDetalleEmpleado = async (ficha: string) => {
+        setLoading(true);
+        setError('');
+        try {
+            const response = await apiClient.get(`/api/investigaciones/buscar-empleado/?ficha=${ficha}`);
+            setEmpleado(response.data);
+            setResultados([]); // Limpiar lista de resultados
+        } catch (err: any) {
+            console.error(err);
+            setError('No se pudo cargar el detalle del empleado seleccionado.');
         } finally {
             setLoading(false);
         }
     };
 
     const handleClear = () => {
-        setFicha('');
+        setQuery('');
         setEmpleado(null);
+        setResultados([]);
         setError('');
         setSearched(false);
     };
@@ -42,7 +71,7 @@ const BuscarEmpleadoPage = () => {
         <div className="buscar-empleado-container">
             <div className="buscar-empleado-header">
                 <h1>Búsqueda de Personal</h1>
-                <p>Consulta información detallada de empleados mediante su ficha</p>
+                <p>Busca por Ficha o Nombre del empleado</p>
             </div>
 
             <div className="search-section">
@@ -51,13 +80,13 @@ const BuscarEmpleadoPage = () => {
                         <FiSearch className="search-icon-input" />
                         <input
                             type="text"
-                            placeholder="Ingrese número de ficha..."
-                            value={ficha}
-                            onChange={(e) => setFicha(e.target.value)}
+                            placeholder="Ingrese Ficha o Nombre..."
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
                             autoFocus
                         />
                     </div>
-                    <button type="submit" className="search-button" disabled={loading || !ficha.trim()}>
+                    <button type="submit" className="search-button" disabled={loading || !query.trim()}>
                         {loading ? 'Buscando...' : 'Consultar'}
                     </button>
                 </form>
@@ -70,6 +99,31 @@ const BuscarEmpleadoPage = () => {
                 </div>
             )}
 
+            {/* LISTA DE RESULTADOS */}
+            {resultados.length > 0 && !empleado && (
+                <div className="resultados-lista-container">
+                    <h3>Resultados ({resultados.length}):</h3>
+                    <div className="resultados-grid">
+                        {resultados.map((res) => (
+                            <div key={res.ficha} className="resultado-card">
+                                <div className="resultado-info">
+                                    <strong>{res.nombre}</strong>
+                                    <span>Ficha: {res.ficha}</span>
+                                    <span className="resultado-meta">{res.categoria} - {res.status}</span>
+                                </div>
+                                <button
+                                    className="ver-detalle-btn"
+                                    onClick={() => fetchDetalleEmpleado(res.ficha)}
+                                >
+                                    Ver Detalle
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* DETALLE DEL EMPLEADO */}
             {empleado && (
                 <div className="empleado-result-card">
                     <div className="result-header">
@@ -82,7 +136,7 @@ const BuscarEmpleadoPage = () => {
                     <div className="empleado-details-grid">
                         <div className="detail-item">
                             <span className="detail-label">Ficha</span>
-                            <span className="detail-value highlight">{ficha}</span>
+                            <span className="detail-value highlight">{empleado.ficha}</span>
                         </div>
                         <div className="detail-item">
                             <span className="detail-label">Categoría</span>
