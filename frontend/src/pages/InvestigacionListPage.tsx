@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload, FiAlertCircle, FiTrendingUp, FiFilter, FiChevronUp, FiChevronDown } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload, FiAlertCircle, FiTrendingUp, FiFilter, FiChevronUp, FiChevronDown, FiCheckCircle, FiClock } from 'react-icons/fi';
 import { MdDeleteForever } from "react-icons/md";
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import Pagination from '../components/Pagination';
@@ -33,6 +33,8 @@ function InvestigacionListPage() {
   const [showMenu, setShowMenu] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'ascending' });
   const [userRole, setUserRole] = useState<string>('');
+  const [allData, setAllData] = useState<InvestigacionListado[]>([]);
+  const [currentView, setCurrentView] = useState<'ABIERTA' | 'SEGUIMIENTO' | 'ENVIADA_A_CONCLUIR' | 'CONCLUIDA'>('ABIERTA');
 
   useEffect(() => {
     const checkRole = async () => {
@@ -63,10 +65,7 @@ function InvestigacionListPage() {
       try {
         const response = await apiClient.get('/api/investigaciones/investigaciones/');
         console.log("DATA REAL:", response.data);
-
-        const abiertas = response.data.filter((inv: any) => !inv.estatus || inv.estatus === 'Abierta' || inv.estatus === 'ABIERTA');
-        setInvestigaciones(abiertas);
-
+        setAllData(response.data);
       } catch (err) {
         setError('No se pudo cargar la lista de investigaciones.');
         console.error('Error fetching investigaciones:', err);
@@ -75,8 +74,24 @@ function InvestigacionListPage() {
       }
     };
     fetchInvestigaciones();
-    fetchInvestigaciones();
   }, []);
+
+  useEffect(() => {
+    if (!allData) return;
+
+    let filtered: InvestigacionListado[] = [];
+    if (currentView === 'ABIERTA') {
+      filtered = allData.filter((inv: any) => !inv.estatus || inv.estatus === 'Abierta' || inv.estatus === 'ABIERTA');
+    } else if (currentView === 'SEGUIMIENTO') {
+      filtered = allData.filter((inv: any) => inv.estatus === 'Seguimiento' || inv.estatus === 'SEGUIMIENTO');
+    } else if (currentView === 'ENVIADA_A_CONCLUIR') {
+      filtered = allData.filter((inv: any) => ['ENVIADA_A_CONCLUIR', 'Enviada a Concluir'].includes(inv.estatus));
+    } else if (currentView === 'CONCLUIDA') {
+      filtered = allData.filter((inv: any) => ['CONCLUIDA', 'Concluida'].includes(inv.estatus));
+    }
+    setInvestigaciones(filtered);
+    setCurrentPage(1); // Reset pagination on view switch
+  }, [allData, currentView]);
 
   const getSemaforoColor = (semaforo: string) => {
     const colors: Record<string, string> = {
@@ -341,7 +356,7 @@ function InvestigacionListPage() {
 
           {(['Admin', 'AdminCentral'].includes(userRole) || userRole.startsWith('Supervisor')) && (
             <ButtonIcon
-              variant="download"
+              variant="add"
               to="/investigaciones/nuevo"
               icon={<FiPlus />}
               text="Nuevo"
@@ -350,6 +365,48 @@ function InvestigacionListPage() {
           )}
         </div>
       </div>
+
+      {/* View Toggles for Admin/Supervisor */}
+      {(['Admin', 'AdminCentral'].includes(userRole) || userRole.startsWith('Supervisor')) && (
+        <div className="view-toggles" style={{ display: 'flex', gap: '8px', marginLeft: '20px', marginBottom: '10px' }}>
+          <ButtonIcon
+            variant="custom"
+            color={currentView === 'ABIERTA' ? '#840016' : '#6c757d'}
+            hoverColor={currentView === 'ABIERTA' ? '#640011' : '#5a6268'}
+            onClick={() => setCurrentView('ABIERTA')}
+            icon={<FiFileText />}
+            text="Abiertas"
+            size="medium"
+          />
+          <ButtonIcon
+            variant="custom"
+            color={currentView === 'SEGUIMIENTO' ? '#840016' : '#6c757d'}
+            hoverColor={currentView === 'SEGUIMIENTO' ? '#640011' : '#5a6268'}
+            onClick={() => setCurrentView('SEGUIMIENTO')}
+            icon={<FiTrendingUp />}
+            text="Seguimiento"
+            size="medium"
+          />
+          <ButtonIcon
+            variant="custom"
+            color={currentView === 'ENVIADA_A_CONCLUIR' ? '#840016' : '#6c757d'}
+            hoverColor={currentView === 'ENVIADA_A_CONCLUIR' ? '#640011' : '#5a6268'}
+            onClick={() => setCurrentView('ENVIADA_A_CONCLUIR')}
+            icon={<FiClock />}
+            text="Por Finalizar"
+            size="medium"
+          />
+          <ButtonIcon
+            variant="custom"
+            color={currentView === 'CONCLUIDA' ? '#840016' : '#6c757d'}
+            hoverColor={currentView === 'CONCLUIDA' ? '#640011' : '#5a6268'}
+            onClick={() => setCurrentView('CONCLUIDA')}
+            icon={<FiCheckCircle />}
+            text="Concluidas"
+            size="medium"
+          />
+        </div>
+      )}
       <div style={{ display: 'flex', alignItems: 'center', marginLeft: '1px' }}>
         <div style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
           <FiFilter style={{ color: '#666', marginRight: '5px' }} />
@@ -458,29 +515,34 @@ function InvestigacionListPage() {
                         title="Ver detalles"
                         size="medium"
                       />
-                      <ButtonIcon
-                        variant="edit"
-                        onClick={() => handleEditClick(inv)}
-                        icon={<FiEdit />}
-                        title="Editar"
-                        size="medium"
-                      />
 
-                      <ButtonIcon
-                        variant="view"
-                        onClick={() => handleSeguimiento(inv.id)}
-                        icon={<FiTrendingUp />}
-                        title="Pasar a Seguimiento"
-                        size="medium"
-                      />
+                      {currentView === 'ABIERTA' && (
+                        <>
+                          <ButtonIcon
+                            variant="edit"
+                            onClick={() => handleEditClick(inv)}
+                            icon={<FiEdit />}
+                            title="Editar"
+                            size="medium"
+                          />
 
-                      <ButtonIcon
-                        variant="delete"
-                        onClick={() => handleDelete(inv.id, inv.numero_reporte)}
-                        icon={<MdDeleteForever />}
-                        title="Eliminar"
-                        size="medium"
-                      />
+                          <ButtonIcon
+                            variant="view"
+                            onClick={() => handleSeguimiento(inv.id)}
+                            icon={<FiTrendingUp />}
+                            title="Pasar a Seguimiento"
+                            size="medium"
+                          />
+
+                          <ButtonIcon
+                            variant="delete"
+                            onClick={() => handleDelete(inv.id, inv.numero_reporte)}
+                            icon={<MdDeleteForever />}
+                            title="Eliminar"
+                            size="medium"
+                          />
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
