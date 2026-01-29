@@ -143,8 +143,51 @@ function InvestigacionFormPage() {
   };
 
   useEffect(() => {
-    setUserRole(localStorage.getItem('userRole') || '');
-  }, []);
+    const role = localStorage.getItem('userRole') || '';
+    setUserRole(role);
+
+    // Mapeo de roles a regiones
+    const regionMapping: { [key: string]: string } = {
+      'NTE': 'NORTE',
+      'SUR': 'SUR',
+      'STE': 'SURESTE',
+      'ALT': 'ALTIPLANO',
+      'GAI': 'GAI'
+    };
+
+    let regionFound = '';
+    const roleUpper = role.toUpperCase();
+
+    // Buscar si el rol coincide con alguna región (ej: SupervisorNTE, OperadorSUR)
+    for (const suffix in regionMapping) {
+      if (roleUpper.endsWith(suffix)) {
+        regionFound = regionMapping[suffix];
+        break;
+      }
+    }
+
+    // Determinar si puede editar
+    // Editable solo para: ADMIN, ADMINCENTRAL, SUPERVISORGAI
+    const isAdmin = roleUpper === 'ADMIN' || roleUpper === 'ADMINCENTRAL';
+    const isSupervisorGAI = roleUpper === 'SUPERVISORGAI';
+    const canEdit = isAdmin || isSupervisorGAI;
+
+    // Establecer estado de deshabilitado
+    setIsGerenciaDisabled(!canEdit);
+
+    // Auto-asignar gerencia si se encontró región y NO es una edición existente con valor (opcional, pero buena práctica para "Nuevo")
+    if (regionFound && !id) { // Solo auto-asignar en creación
+      setFormState(prev => ({ ...prev, gerencia_responsable: regionFound }));
+    }
+    // Si queremos forzarlo siempre para operadores/supervisores regionales, quitamos el check de !id
+    // El requerimiento dice "la pondra sola de acuerdo a su region", lo forzamos si no es admin/supGAI
+    if (regionFound && !canEdit) {
+      setFormState(prev => ({ ...prev, gerencia_responsable: regionFound }));
+    }
+
+  }, [id]);
+
+  const [isGerenciaDisabled, setIsGerenciaDisabled] = useState(false);
 
   const [formState, setFormState] = useState<InvestigacionFormState>(initialState);
   const [opciones, setOpciones] = useState<OpcionesDropdowns | null>(null);
@@ -764,6 +807,7 @@ function InvestigacionFormPage() {
       return;
     }
 
+
     setLoading(true);
     setError('');
     setSuccess('');
@@ -1039,7 +1083,14 @@ function InvestigacionFormPage() {
                 <label>Gerencia Jurisdiccional SCH *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-briefcase"></i>
-                  <select name="gerencia_responsable" value={formState.gerencia_responsable} onChange={handleChange} required>
+                  <select
+                    name="gerencia_responsable"
+                    value={formState.gerencia_responsable}
+                    onChange={handleChange}
+                    required
+                    disabled={isGerenciaDisabled}
+                    className={isGerenciaDisabled ? 'admin-disabled-field' : ''}
+                  >
                     <option value="">Seleccione...</option>
                     {opciones?.gerencias.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>

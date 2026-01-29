@@ -157,8 +157,42 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
   };
 
   useEffect(() => {
-    setUserRole(localStorage.getItem('userRole') || '');
-  }, []);
+    const role = localStorage.getItem('userRole') || '';
+    setUserRole(role);
+
+    const regionMapping: { [key: string]: string } = {
+      'NTE': 'NORTE',
+      'SUR': 'SUR',
+      'STE': 'SURESTE',
+      'ALT': 'ALTIPLANO',
+      'GAI': 'GAI'
+    };
+
+    let regionFound = '';
+    const roleUpper = role.toUpperCase();
+
+    for (const suffix in regionMapping) {
+      if (roleUpper.endsWith(suffix)) {
+        regionFound = regionMapping[suffix];
+        break;
+      }
+    }
+
+    const isAdmin = roleUpper === 'ADMIN' || roleUpper === 'ADMINCENTRAL';
+    const isSupervisorGAI = roleUpper === 'SUPERVISORGAI';
+    const canEdit = isAdmin || isSupervisorGAI;
+
+    setIsGerenciaDisabled(!canEdit);
+
+    if (regionFound && !id) {
+      setFormState(prev => ({ ...prev, gerencia_responsable: regionFound }));
+    }
+    if (regionFound && !canEdit) {
+      setFormState(prev => ({ ...prev, gerencia_responsable: regionFound }));
+    }
+  }, [id]);
+
+  const [isGerenciaDisabled, setIsGerenciaDisabled] = useState(false);
 
   const [formState, setFormState] = useState<InvestigacionFormState>(initialState);
   const [opciones, setOpciones] = useState<OpcionesDropdowns | null>(null);
@@ -1083,7 +1117,14 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
                 <label>Gerencia Jurisdiccional SCH *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-briefcase"></i>
-                  <select name="gerencia_responsable" value={formState.gerencia_responsable} onChange={handleChange} required>
+                  <select
+                    name="gerencia_responsable"
+                    value={formState.gerencia_responsable}
+                    onChange={handleChange}
+                    required
+                    disabled={isGerenciaDisabled}
+                    className={isGerenciaDisabled ? 'admin-disabled-field' : ''}
+                  >
                     <option value="">Seleccione...</option>
                     {opciones?.gerencias.map(opt => <option key={opt} value={opt}>{opt}</option>)}
                   </select>
