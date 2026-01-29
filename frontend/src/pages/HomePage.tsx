@@ -70,14 +70,13 @@ function HomePage({ onLogout }: HomePageProps) {
       style={{ background: '#ffffffff' }}
       fontColor="#d3cfcfff"
       rotate={-20}
-      gapX={0}
+      gapX={20}
       width={80}
-      gapY={60}
+      gapY={40}
       height={1}
       fontSize={12}
 
     >
-
       <div className="layout-container">
 
         <Sidebar onLogout={onLogout} />
