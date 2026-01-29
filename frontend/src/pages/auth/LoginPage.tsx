@@ -99,14 +99,6 @@ function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
               Acceder
             </button>
 
-            {/* Botón de olvidaste tu contraseña 
-            <div style={{ textAlign: 'center', marginTop: 14 }}>
-              <a href="#" className="auth-link">
-                <i className="fas fa-key" aria-hidden="true" style={{ marginRight: 6 }}></i>
-                ¿Olvidaste tu contraseña?
-              </a>
-            </div> */}
-
             <div style={{ textAlign: 'center', marginTop: 14 }}>
               <a
                 href="#"

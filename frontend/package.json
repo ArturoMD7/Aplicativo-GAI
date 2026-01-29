@@ -10,7 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@babel/runtime": "^7.28.6",
     "@fortawesome/fontawesome-free": "^7.1.0",
+    "@uiw/react-watermark": "^1.0.1",
     "axios": "^1.13.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

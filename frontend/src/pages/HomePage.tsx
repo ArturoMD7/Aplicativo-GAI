@@ -8,8 +8,6 @@ import Sidebar from '../components/Sidebar/Sidebar';
 import '../styles/HomePage.css';
 import { FiUser } from 'react-icons/fi';
 
-
-// 2. Importa tus nuevas páginas
 import ProtectedRoute from '../components/ProtectedRoute';
 import WelcomePage from './WelcomePage';
 import UsersPage from './auth/UserPage';
@@ -25,6 +23,10 @@ import SeguimientoListPage from './SeguimientoListPage';
 import SeguimientoPage from './SeguimientoPage';
 import BuscarEmpleadoPage from './BuscarEmpleadoPage';
 import FinalizacionListPage from './FinalizacionListPage';
+import Watermark from '@uiw/react-watermark';
+
+const style = { width: '100%', maxWidth: '100%', height: 200, display: 'block' };
+const text = `React makes it painless to create interactive UIs.`;
 
 
 type HomePageProps = {
@@ -37,6 +39,7 @@ interface UserHeaderProfile {
   last_name: string;
   username: string;
   profile_picture: string | null;
+  ficha: string | null;
 }
 
 function HomePage({ onLogout }: HomePageProps) {
@@ -62,65 +65,72 @@ function HomePage({ onLogout }: HomePageProps) {
   };
 
   return (
-    <div className="layout-container">
+    <Watermark
+      content={[userProfile?.ficha + ' ' + userProfile?.first_name + ' ' + userProfile?.last_name || '']}
+      style={{ background: '#ffffffff' }}
+      fontColor="#a09c9cff"
+    >
 
-      <Sidebar onLogout={onLogout} />
+      <div className="layout-container">
 
-      <div className="content-container">
-        <header className="home-header">
-          <h1 className="app-title"> </h1>
+        <Sidebar onLogout={onLogout} />
 
-          {userProfile && (
-            <div className="user-header-profile" onClick={handleProfileClick} title="Ver mi información">
-              <span className="user-header-name"> <strong>
-                {userProfile.first_name} {userProfile.last_name || userProfile.username}
-              </strong></span>
-              <div className="user-header-avatar">
-                {userProfile.profile_picture ? (
-                  <img src={userProfile.profile_picture} alt="Avatar" />
-                ) : (
-                  <FiUser />
-                )}
+        <div className="content-container">
+          <header className="home-header">
+            <h1 className="app-title"> </h1>
+
+            {userProfile && (
+              <div className="user-header-profile" onClick={handleProfileClick} title="Ver mi información">
+                <span className="user-header-name"> <strong>
+                  {userProfile.first_name} {userProfile.last_name || userProfile.username}
+                </strong></span>
+                <div className="user-header-avatar">
+                  {userProfile.profile_picture ? (
+                    <img src={userProfile.profile_picture} alt="Avatar" />
+                  ) : (
+                    <FiUser />
+                  )}
+                </div>
               </div>
-            </div>
-          )}
-        </header>
+            )}
+          </header>
 
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<WelcomePage />} />
+          <main className="main-content">
+            <Routes>
+              <Route path="/" element={<WelcomePage />} />
 
-            <Route element={<ProtectedRoute allowedRoles={['admin', 'admincentral']} />}>
-              <Route path="/users" element={<UsersPage />} />
-              <Route path="/logs" element={<LogListPage />} />
-              <Route
-                path="/admin/register-user"
-                element={<RegisterPage onSwitchToLogin={() => { }} />}
-              />
-              <Route path="/admin/edit-user/:userId" element={<EditUserPage />} />
-            </Route>
+              <Route element={<ProtectedRoute allowedRoles={['admin', 'admincentral']} />}>
+                <Route path="/users" element={<UsersPage />} />
+                <Route path="/logs" element={<LogListPage />} />
+                <Route
+                  path="/admin/register-user"
+                  element={<RegisterPage onSwitchToLogin={() => { }} />}
+                />
+                <Route path="/admin/edit-user/:userId" element={<EditUserPage />} />
+              </Route>
 
-            <Route path="/investigaciones" element={<InvestigacionListPage />} />
-            <Route path="/settings" element={<Settings />} />
+              <Route path="/investigaciones" element={<InvestigacionListPage />} />
+              <Route path="/settings" element={<Settings />} />
 
-            <Route path="/admin/user-info/:userId" element={<UserInfoPage />} />
+              <Route path="/admin/user-info/:userId" element={<UserInfoPage />} />
 
-            <Route path="/investigaciones/nuevo" element={<InvestigacionFormPage />} />
+              <Route path="/investigaciones/nuevo" element={<InvestigacionFormPage />} />
 
-            <Route path="/investigaciones/editar/:id" element={<InvestigacionFormPage />} />
-            <Route path="/investigaciones/detalles/:id" element={<InvestigacionDetailsPage />} />
-            <Route path="/investigaciones/seguimiento-lista" element={<SeguimientoListPage />} />
-            <Route path="/investigaciones/finalizacion-lista" element={<FinalizacionListPage />} />
-            <Route path="/investigaciones/seguimiento/:id" element={<SeguimientoPage />} />
-            <Route path="/buscar-empleado" element={<BuscarEmpleadoPage />} />
+              <Route path="/investigaciones/editar/:id" element={<InvestigacionFormPage />} />
+              <Route path="/investigaciones/detalles/:id" element={<InvestigacionDetailsPage />} />
+              <Route path="/investigaciones/seguimiento-lista" element={<SeguimientoListPage />} />
+              <Route path="/investigaciones/finalizacion-lista" element={<FinalizacionListPage />} />
+              <Route path="/investigaciones/seguimiento/:id" element={<SeguimientoPage />} />
+              <Route path="/buscar-empleado" element={<BuscarEmpleadoPage />} />
 
 
-            {/* Ruta de 'no encontrado' (opcional) */}
-            <Route path="*" element={<h1>Página no encontrada</h1>} />
-          </Routes>
-        </main>
+              {/* Ruta de 'no encontrado' (opcional) */}
+              <Route path="*" element={<h1>Página no encontrada</h1>} />
+            </Routes>
+          </main>
+        </div>
       </div>
-    </div>
+    </Watermark>
   );
 }
 
