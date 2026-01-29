@@ -764,15 +764,6 @@ function InvestigacionFormPage() {
       return;
     }
 
-    if (formState.involucrados.length === 0) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Faltan datos',
-        text: 'Debe agregar al menos un personal reportado (involucrado) para guardar la investigación.'
-      });
-      return;
-    }
-
     setLoading(true);
     setError('');
     setSuccess('');
@@ -1160,13 +1151,13 @@ function InvestigacionFormPage() {
               </div>
 
               <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>RFC</label>
-                  <input type="text" value={involucradoActual.rfc} readOnly className="admin-readonly-field" />
+                <div className="admin-form-group hidden">
+                  {/* <label>RFC</label> */}
+                  <input type="text" value={involucradoActual.rfc} hidden className="admin-readonly-field" />
                 </div>
-                <div className="admin-form-group">
-                  <label>CURP</label>
-                  <input type="text" value={involucradoActual.curp} readOnly className="admin-readonly-field" />
+                <div className="admin-form-group hidden">
+                  {/* <label>CURP</label> */}
+                  <input type="text" value={involucradoActual.curp} hidden className="admin-readonly-field" />
                 </div>
               </div>
 

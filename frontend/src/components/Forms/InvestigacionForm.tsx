@@ -785,15 +785,6 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
       return;
     }
 
-    if (formState.involucrados.length === 0) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Faltan datos',
-        text: 'Debe agregar al menos un personal reportado (involucrado) para guardar la investigación.'
-      });
-      return;
-    }
-
     setLoading(true);
     setError('');
     setSuccess('');
@@ -1197,11 +1188,11 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
               </div>
 
               <div className="admin-form-row">
-                <div className="admin-form-group">
+                <div className="admin-form-group" hidden={involucradoActual.ficha === ''}>
                   <label>RFC</label>
                   <input type="text" value={involucradoActual.rfc} readOnly className="admin-readonly-field" />
                 </div>
-                <div className="admin-form-group">
+                <div className="admin-form-group" hidden={involucradoActual.ficha === ''}>
                   <label>CURP</label>
                   <input type="text" value={involucradoActual.curp} readOnly className="admin-readonly-field" />
                 </div>
