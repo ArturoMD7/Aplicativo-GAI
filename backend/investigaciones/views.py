@@ -8,7 +8,7 @@ from django.db import connections
 from django.utils import timezone
 from datetime import date
 from .permissions import IsAdminOrReadOnly
-from .models import Investigacion, Involucrado, InvestigacionHistorico, DocumentoInvestigacion, CatalogoInvestigador
+from .models import Investigacion, Involucrado, InvestigacionHistorico, DocumentoInvestigacion, CatalogoInvestigador, InvestigacionSirhn
 from login_register.models import Profile
 from .serializers import (
     InvestigacionSerializer, InvestigacionListSerializer, 
@@ -474,12 +474,23 @@ def buscar_empleado_view(request):
                 'referencia': 'N/A'
             })
 
+        historicos_sirhn = InvestigacionSirhn.objects.filter(ficha=ficha_buscada)
+        for h in historicos_sirhn:
+            desc = f"{h.motivoinvestigacion or ''} - {h.descripcion or ''} (Sanción: {h.sancion or 'N/A'})"
+            lista_antecedentes.append({
+                'origen': 'Histórico (SIRHN)',
+                'fecha': h.fechainicio,
+                'descripcion': desc.strip(' -'),
+                'referencia': 'N/A'
+            })
+
         actuales = Involucrado.objects.filter(ficha=ficha_buscada).select_related('investigacion')
         for inv in actuales:
+            desc = f"{inv.investigacion.conductas or ''} - (Sanción: {inv.investigacion.sancion or 'N/A'})"
             lista_antecedentes.append({
                 'origen': 'Sistema Actual',
                 'fecha': inv.investigacion.fecha_reporte,
-                'descripcion': inv.investigacion.antecedentes or inv.investigacion.observaciones,
+                'descripcion': desc.strip(' -'),
                 'referencia': inv.investigacion.numero_reporte
             })
 

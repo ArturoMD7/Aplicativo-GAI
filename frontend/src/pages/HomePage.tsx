@@ -69,7 +69,7 @@ function HomePage({ onLogout }: HomePageProps) {
       content={[userProfile?.ficha || '']}
       style={{ background: '#ffffffff' }}
       fontColor="#d3cfcfff"
-      rotate={20}
+      rotate={-20}
       gapX={0}
       width={80}
       gapY={60}

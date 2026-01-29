@@ -221,6 +221,17 @@ class Testigo(UppercaseMixin, models.Model):
     subordinacion = models.BooleanField(default=False)
     es_externo = models.BooleanField(default=False)
 
+class InvestigacionSirhn(UppercaseMixin, models.Model):
+    ficha = models.CharField(db_column='Ficha', primary_key=True, max_length=20)
+    fechainicio = models.CharField(db_column='FechaInicio', max_length=50)
+    fechatermino = models.CharField(db_column='FechaTermino', max_length=50)
+    motivoinvestigacion = models.CharField(db_column='MotivoInvestigacion', max_length=200)
+    descripcion = models.CharField(db_column='Descripcion', max_length=200)
+    sancion = models.CharField(db_column='Sancion', max_length=200)
+
+    class Meta:
+        managed = False  
+        db_table = 'aplicativo_investigaciones'
 
 class InvestigacionHistorico(UppercaseMixin, models.Model):
     id_investigacion_historico = models.AutoField(db_column='IdInvestigacionHistorico', primary_key=True)
