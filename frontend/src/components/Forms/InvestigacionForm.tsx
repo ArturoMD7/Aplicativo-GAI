@@ -730,13 +730,10 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
       const implicaGravedadAlta = !isNaN(nivelNumero) && nivelNumero >= 41;
       const nuevaGravedad = implicaGravedadAlta ? 'ALTA' : prev.gravedad;
 
-      const shouldAutofillCentro = prev.involucrados.length === 0;
-
       return {
         ...prev,
         involucrados: [...prev.involucrados, nuevoInvolucrado],
         gravedad: nuevaGravedad,
-        centro_trabajo: shouldAutofillCentro ? (nuevoInvolucrado.centro_trabajo || prev.centro_trabajo) : prev.centro_trabajo
       };
     });
 
@@ -965,7 +962,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
 
 
               <div className="admin-form-group">
-                <label> Posible Conducta *</label>
+                <label> Presunta Conducta *</label>
                 <div className="admin-input-with-icon" style={{ padding: 0, border: 'none' }}>
                   <i className="fas" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', zIndex: 10, color: '#666' }}></i>
                   <div style={{ marginLeft: '0' }}>
@@ -1091,6 +1088,16 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
             }
 
             <div className="admin-personas-section" style={{ marginTop: '30px', borderTop: '1px dashed #ccc', paddingTop: '20px' }}>
+              <div className="admin-form-group">
+                <label>Gerencia Jurisdiccional SCH *</label>
+                <div className="admin-input-with-icon">
+                  <i className="fas fa-briefcase"></i>
+                  <select name="gerencia_responsable" value={formState.gerencia_responsable} onChange={handleChange} required>
+                    <option value="">Seleccione...</option>
+                    {opciones?.gerencias.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+                </div>
+              </div>
               <h3 style={{ color: '#2c3e50', fontSize: '1.1rem', marginBottom: '15px' }}>
                 <i className="fas fa-users" style={{ marginRight: '8px' }}></i>
                 Personal Reportado
@@ -1309,7 +1316,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
               >
                 {antecedentesEncontrados.length > 0 ? (
                   <span><i className="fas fa-exclamation-circle"></i> Agregar con Antecedente(s)</span>
-                ) : "Agregar Involucrado"}
+                ) : "Agregar Reportado"}
               </button>
 
               {/* Lista de involucrados agregados */}
@@ -1676,16 +1683,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
               </div>
             </div>
 
-            <div className="admin-form-group">
-              <label>Gerencia Jurisdiccional SCH *</label>
-              <div className="admin-input-with-icon">
-                <i className="fas fa-briefcase"></i>
-                <select name="gerencia_responsable" value={formState.gerencia_responsable} onChange={handleChange} required>
-                  <option value="">Seleccione...</option>
-                  {opciones?.gerencias.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                </select>
-              </div>
-            </div>
+
           </section >
 
           {/* --- SECCIÓN 4: GERENCIA RESPONSABLE --- */}

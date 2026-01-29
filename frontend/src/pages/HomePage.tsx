@@ -66,7 +66,7 @@ function HomePage({ onLogout }: HomePageProps) {
 
   return (
     <Watermark
-      content={[userProfile?.ficha + ' ' + userProfile?.first_name + ' ' + userProfile?.last_name || '']}
+      content={['F-'+ userProfile?.ficha + ' ' + userProfile?.first_name + ' ' + userProfile?.last_name || '']}
       style={{ background: '#ffffffff' }}
       fontColor="#a09c9cff"
     >

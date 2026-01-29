@@ -312,7 +312,7 @@ function InvestigacionDetailsPage() {
           </div>
 
           <div className="admin-form-group">
-            <label>Conducta / Sanción Posible</label>
+            <label>Conducta</label>
             <div className="admin-input-with-icon">
               <i className="fas fa-exclamation-circle"></i>
               <input
@@ -526,7 +526,7 @@ function InvestigacionDetailsPage() {
 
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label>Conducta Definitiva</label>
+                <label>Presunta Conducta</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-gavel"></i>
                   <input
