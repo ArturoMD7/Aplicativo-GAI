@@ -62,10 +62,21 @@ class UserSerializer(serializers.ModelSerializer):
 
     ficha = serializers.CharField(source='profile.ficha', read_only=True)
     profile_picture = serializers.ImageField(source='profile.profile_picture', read_only=True)
+    investigador = serializers.SerializerMethodField()
+
+    def get_investigador(self, obj):
+        if hasattr(obj, 'investigador_profile'):
+            return {
+                'id': obj.investigador_profile.id,
+                'no_constancia': obj.investigador_profile.no_constancia,
+                'activo': obj.investigador_profile.activo,
+                'archivo_constancia': obj.investigador_profile.archivo_constancia.url if obj.investigador_profile.archivo_constancia else None
+            }
+        return None
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_staff', 'groups', 'ficha', 'profile_picture']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'is_staff', 'groups', 'ficha', 'profile_picture', 'investigador']
 
 class RegisterSerializer(serializers.ModelSerializer):
 

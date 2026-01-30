@@ -5,19 +5,28 @@ from django.http import HttpResponse, Http404, FileResponse
 from django.conf import settings
 import os
 from auditoria.models import ActivityLog
+from rest_framework import viewsets
+from investigaciones.models import CatalogoInvestigador
+from .serializers import InvestigadorSerializer
+
+class InvestigadorViewSet(viewsets.ModelViewSet):
+    queryset = CatalogoInvestigador.objects.all()
+    serializer_class = InvestigadorSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'ficha' # Allows /api/investigadores/management/<ficha>/
+
+    def get_queryset(self):
+        queryset = CatalogoInvestigador.objects.all()
+        # Filter logic if needed
+        return queryset
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def serve_constancia(request, filename):
-    """
-    Sirve el archivo de constancia si el usuario está autenticado y registra la actividad.
-    """
     file_path = os.path.join(settings.MEDIA_ROOT, 'constancias', filename)
-    
     if not os.path.exists(file_path):
         raise Http404("Constancia no encontrada")
-        
-    # Registrar log de descarga/visualización
+    
     try:
         ActivityLog.objects.create(
             user=request.user,
@@ -28,17 +37,14 @@ def serve_constancia(request, filename):
             ip_address=request.META.get('REMOTE_ADDR'),
             user_agent=request.META.get('HTTP_USER_AGENT', '')
         )
-    except Exception as e:
-        print(f"Error creating log: {e}")
+    except Exception:
+        pass
         
     return FileResponse(open(file_path, 'rb'), content_type='application/pdf')
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def check_constancia(request, filename):
-    """
-    Verifica si existe una constancia
-    """
     file_path = os.path.join(settings.MEDIA_ROOT, 'constancias', filename)
     exists = os.path.exists(file_path)
     return Response({'exists': exists})

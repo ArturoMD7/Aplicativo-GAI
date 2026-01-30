@@ -271,11 +271,63 @@ class Involucrado(UppercaseMixin, models.Model):
     seccion_sindical = models.CharField(null=True, blank=True, max_length=10)
 
 
+
+
+    def __str__(self):
+        return f"{self.ficha} - {self.nombre}"
+
+def constancia_upload_path(instance, filename):
+    return f"constancias/{instance.no_constancia}.pdf"
+
 class CatalogoInvestigador(UppercaseMixin, models.Model):
     ficha = models.CharField(max_length=20, unique=True)
     nombre = models.CharField(max_length=100)
     no_constancia = models.CharField(max_length=50)
+    archivo_constancia = models.FileField(upload_to=constancia_upload_path, blank=True, null=True)
     activo = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        # 1. Debug info
+        print(f"[DEBUG] Saving CatalogoInvestigador {self.ficha}. No Constancia: {self.no_constancia}")
+        
+        from django.conf import settings
+        import os
+
+        # 2. Force overwrite of target file
+        if self.no_constancia:
+            # Manually construct the path that constancia_upload_path WILL generate
+            filename = f"{self.no_constancia}.pdf"
+            target_path = os.path.join(settings.MEDIA_ROOT, 'constancias', filename)
+            
+            # If a file exists at that path, DELETE it to allow overwrite
+            if os.path.exists(target_path):
+                print(f"[DEBUG] Deleting existing file at target path: {target_path}")
+                try:
+                    os.remove(target_path)
+                except Exception as e:
+                    print(f"[DEBUG] Error deleting file: {e}")
+        
+        # 3. Handle cleanup of OLD file if pk exists (logic for changing constancia number)
+        if self.pk:
+            try:
+                old_instance = CatalogoInvestigador.objects.get(pk=self.pk)
+                if old_instance.archivo_constancia and old_instance.archivo_constancia.name:
+                    # If we are changing the file OR changing the constancia number (which changes the path)
+                    # we should remove the old physical file if it's different from the new target
+                    
+                    # Check if the new file is actually a new upload (usually it has no path property yet if it's InMemoryUploadedFile, or it's different)
+                    # Or simpler: if the generated path of the new file would be different, or if we explicitly uploaded a new one.
+                    
+                    # If the old file path is NOT the same as the target path we just cleared, delete it.
+                    old_path = os.path.join(settings.MEDIA_ROOT, old_instance.archivo_constancia.name)
+                    if os.path.exists(old_path) and old_path != target_path:
+                         print(f"[DEBUG] Deleting old orphaned file: {old_path}")
+                         os.remove(old_path)
+
+            except CatalogoInvestigador.DoesNotExist:
+                pass
+        
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.ficha} - {self.nombre}"

@@ -33,21 +33,26 @@ function UsersPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'ascending' });
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await apiClient.get('/api/users/');
-        setUsers(response.data);
-      } catch (err) {
-        setError('No se pudo cargar la lista de usuarios. Verifica que tienes permisos de administrador.');
-        console.error('Error fetching users:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
 
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await apiClient.get('/api/users/');
+      setUsers(response.data);
+    } catch (err) {
+      setError('No se pudo cargar la lista de usuarios. Verifica que tienes permisos de administrador.');
+      console.error('Error fetching users:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchUsers();
   }, []);
+
+
+
 
   const handleDelete = async (userId: number, userEmail: string) => {
     if (!window.confirm(`¿Estás seguro de que quieres eliminar al usuario "${userEmail}" ? `)) {
@@ -263,11 +268,11 @@ function UsersPage() {
                     </td>
                     <td>
                       <div className="actions-container">
+
                         <ButtonIcon
                           to={`/admin/user-info/${user.id}`}
                           variant="info"
                           title="Información detallada"
-                          className="btn-info"
                         />
                         <ButtonIcon
                           to={`/admin/edit-user/${user.id}`}
@@ -308,6 +313,7 @@ function UsersPage() {
           </>
         )}
       </div>
+
     </div>
   );
 }
