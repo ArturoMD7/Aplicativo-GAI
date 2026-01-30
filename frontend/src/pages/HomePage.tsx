@@ -23,6 +23,7 @@ import SeguimientoPage from './SeguimientoPage';
 import BuscarEmpleadoPage from './BuscarEmpleadoPage';
 import FinalizacionListPage from './FinalizacionListPage';
 import Watermark from '@uiw/react-watermark';
+import ResponsivaUploadModal from '../components/Modals/ResponsivaUploadModal';
 
 const style = { width: '100%', maxWidth: '100%', height: 200, display: 'block' };
 const text = `React makes it painless to create interactive UIs.`;
@@ -39,10 +40,15 @@ interface UserHeaderProfile {
   username: string;
   profile_picture: string | null;
   ficha: string | null;
+  missing_responsiva?: boolean;
+  investigador?: {
+    id: number;
+  };
 }
 
 function HomePage({ onLogout }: HomePageProps) {
   const [userProfile, setUserProfile] = useState<UserHeaderProfile | null>(null);
+  const [showResponsivaModal, setShowResponsivaModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -50,6 +56,9 @@ function HomePage({ onLogout }: HomePageProps) {
       try {
         const response = await apiClient.get('/api/user/profile/');
         setUserProfile(response.data);
+        if (response.data.missing_responsiva) {
+          setShowResponsivaModal(true);
+        }
       } catch (error) {
         console.error("Error fetching user profile for header", error);
       }
@@ -134,6 +143,20 @@ function HomePage({ onLogout }: HomePageProps) {
           </main>
         </div>
       </div>
+
+      {userProfile && userProfile.missing_responsiva && userProfile.ficha && (
+        <ResponsivaUploadModal
+          isOpen={showResponsivaModal}
+          onClose={() => setShowResponsivaModal(false)}
+          ficha={userProfile.ficha}
+          onUploadSuccess={() => {
+            setShowResponsivaModal(false);
+            if (userProfile) {
+              setUserProfile({ ...userProfile, missing_responsiva: false });
+            }
+          }}
+        />
+      )}
     </Watermark>
   );
 }
