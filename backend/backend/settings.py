@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'login_register.apps.LoginRegisterConfig',
     'investigaciones',
     'auditoria',
+    'investigadores',
 ]
 
 REST_FRAMEWORK = {

@@ -68,16 +68,26 @@ const UserInfoPage = () => {
         }
     }, [userId]);
 
-    const handleDownloadConstancia = () => {
+    const handleDownloadConstancia = async () => {
         if (data?.investigador.no_constancia) {
             const fileName = `${data.investigador.no_constancia}.pdf`;
-            const url = `/constancias/${fileName}`;
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            try {
+                const response = await apiClient.get(`/api/investigadores/constancias/${fileName}/`, {
+                    responseType: 'blob'
+                });
+
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', fileName);
+                document.body.appendChild(link);
+                link.click();
+                link.parentNode?.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error("Error downloading constancia:", error);
+                alert("Error al descargar la constancia. Verifique que el archivo exista.");
+            }
         }
     };
 

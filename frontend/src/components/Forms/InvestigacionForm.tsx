@@ -16,6 +16,7 @@ import CustomConductaSelect from '../Inputs/CustomConductaSelect';
 import { FiEdit } from 'react-icons/fi';
 import { FaArrowLeft } from "react-icons/fa";
 import Swal from 'sweetalert2';
+import DocumentPreviewModal from '../Modals/DocumentPreviewModal';
 
 const initialState: InvestigacionFormState = {
   nombre_corto: '',
@@ -249,16 +250,13 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
     }
 
     const timeoutId = setTimeout(async () => {
-      // Búsqueda en carpeta /constancias/ con el nombre exacto del número (ej: 001.pdf)
       const fileName = `${no_constancia}.pdf`;
-      const url = `/constancias/${fileName}`;
 
       try {
-        const response = await fetch(url, { method: 'HEAD' });
-        const contentType = response.headers.get('content-type');
+        const response = await apiClient.get(`/api/investigadores/check-constancia/${fileName}/`);
 
-        if (response.ok && contentType && contentType.includes('application/pdf')) {
-          setPdfUrl(url);
+        if (response.data.exists) {
+          setPdfUrl(fileName);
           setMostrarPDF(true);
           setPdfError('');
         } else {
@@ -276,15 +274,27 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
     return () => clearTimeout(timeoutId);
   }, [investigadorActual.no_constancia]);
 
-  const handleDescargarPDF = () => {
-    if (pdfUrl) {
-      const link = document.createElement('a');
-      link.href = pdfUrl;
-      const fileName = pdfUrl.split('/').pop() || 'constancia.pdf';
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+  const handleDescargarPDF = async () => {
+    const { no_constancia } = investigadorActual;
+    const fileName = no_constancia ? `${no_constancia}.pdf` : '';
+
+    if (fileName) {
+      try {
+        const response = await apiClient.get(`/api/investigadores/constancias/${fileName}/`, {
+          responseType: 'blob'
+        });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode?.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Error downloading constancia:", error);
+        alert("Error al descargar la constancia.");
+      }
     }
   };
   useEffect(() => {
@@ -2025,69 +2035,18 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
                           </div>
                         </div>
 
-                        {/* MODAL PARA PREVISUALIZAR PDF */}
                         {showPdfModal && (
-                          <div style={{
-                            position: 'fixed',
-                            top: 0,
-                            left: 0,
-                            width: '100vw',
-                            height: '100vh',
-                            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            zIndex: 9999
-                          }}>
-                            <div style={{
-                              width: '90%',
-                              height: '90%',
-                              backgroundColor: 'white',
-                              borderRadius: '8px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              overflow: 'hidden',
-                              boxShadow: '0 4px 15px rgba(0,0,0,0.3)'
-                            }}>
-                              {/* Cabecera del Modal */}
-                              <div style={{
-                                padding: '10px 20px',
-                                borderBottom: '1px solid #dee2e6',
-                                display: 'flex',
-                                justifyContent: 'space-between',
-                                alignItems: 'center',
-                                backgroundColor: '#f8f9fa'
-                              }}>
-                                <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#333' }}>
-                                  Previsualización
-                                </h3>
-                                <button
-                                  type="button"
-                                  onClick={() => setShowPdfModal(false)}
-                                  style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    fontSize: '1.5rem',
-                                    cursor: 'pointer',
-                                    color: '#666'
-                                  }}
-                                >
-                                  &times;
-                                </button>
-                              </div>
-
-                              {/* Cuerpo del Modal (Iframe) */}
-                              <div style={{ flex: 1, padding: 0, backgroundColor: '#525659' }}>
-                                <iframe
-                                  src={pdfUrl}
-                                  width="100%"
-                                  height="100%"
-                                  style={{ border: 'none' }}
-                                  title="Visor PDF"
-                                />
-                              </div>
-                            </div>
-                          </div>
+                          <DocumentPreviewModal
+                            documento={{
+                              id: 0,
+                              tipo: 'Constancia',
+                              nombre_archivo: `${investigadorActual.no_constancia}.pdf`,
+                              archivo: pdfUrl,
+                              uploaded_at: new Date().toISOString(),
+                              descripcion: 'Visualización de Constancia'
+                            }}
+                            onClose={() => setShowPdfModal(false)}
+                          />
                         )}
                       </>
                     )}

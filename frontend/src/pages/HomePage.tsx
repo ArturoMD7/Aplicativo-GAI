@@ -1,6 +1,5 @@
 // src/pages/HomePage.tsx
 import React from 'react';
-// 1. Importa el Router
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import apiClient from '../api/apliClient';

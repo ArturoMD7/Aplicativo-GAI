@@ -88,11 +88,9 @@ const DocumentosModals: React.FC<Props> = ({ investigacionId, isOpen, onClose, n
 
   return (
     <>
-      {/* --- MODAL PRINCIPAL: LISTA DE ARCHIVOS --- */}
       <div className="doc-modal-overlay">
         <div className="doc-modal-container">
 
-          {/* Header */}
           <div className="doc-modal-header">
             <h3 className="doc-modal-title">
               <FiFolder style={{ marginRight: '10px', color: '#840016' }} />
