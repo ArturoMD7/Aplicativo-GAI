@@ -19,7 +19,7 @@ const TIPOS_DOCUMENTOS = [
   'Citatorio',
   'Acta',
   'Dictamen',
-  'Resultado',
+  //'Resultado',
   //'Anexo',
   //'Pruebas',
   'Evidencia de medidas preventivas'
@@ -835,7 +835,6 @@ function SeguimientoPage() {
           </div>
         </div>
       ) : (
-        /* PESTAÑA DETALLES COMPLETOS */
         <InvestigacionForm
           id={id}
           isEmbedded={true}

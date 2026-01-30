@@ -8,6 +8,7 @@ import { FaArrowLeft } from "react-icons/fa";
 import { saveAs } from 'file-saver';
 import Swal from 'sweetalert2';
 import '../styles/InvestigacionaDetails.css';
+import DocumentPreviewModal from '../components/Modals/DocumentPreviewModal';
 
 function InvestigacionDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +19,7 @@ function InvestigacionDetailsPage() {
   const [documentos, setDocumentos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [previewFile, setPreviewFile] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchInvestigacion = async () => {
@@ -48,11 +50,11 @@ function InvestigacionDetailsPage() {
     return `${day}/${month}/${year}`;
   };
 
+
   const handlePreview = (doc: any) => {
     const ext = doc.nombre_archivo.split('.').pop()?.toLowerCase();
     if (ext === 'pdf' || ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) {
-
-      window.open(doc.archivo, '_blank');
+      setPreviewFile(doc);
     } else {
       Swal.fire({
         icon: 'info',
@@ -528,7 +530,7 @@ function InvestigacionDetailsPage() {
               <div className="admin-form-group">
                 <label>Presunta Conducta</label>
                 <div className="admin-input-with-icon">
-                  <i className="fas fa-gavel"></i>
+                  <i className="fas fa-balance-scale"></i>
                   <input
                     type="text"
                     value={(investigacion as any).conducta_definitiva || 'No registrada'}
@@ -541,7 +543,7 @@ function InvestigacionDetailsPage() {
               <div className="admin-form-group">
                 <label>Sanción Definitiva</label>
                 <div className="admin-input-with-icon">
-                  <i className="fas fa-balance-scale"></i>
+                  <i className="fas fa-gavel"></i>
                   <input
                     type="text"
                     value={investigacion.sancion || 'No registrada'}
@@ -706,7 +708,17 @@ function InvestigacionDetailsPage() {
                     </button>
                   </div>
                 </div>
+
+
+
               ))}
+
+
+              <DocumentPreviewModal
+                documento={previewFile}
+                onClose={() => setPreviewFile(null)}
+              />
+
             </div>
           </section>
         )}

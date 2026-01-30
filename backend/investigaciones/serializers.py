@@ -250,13 +250,28 @@ class InvestigacionSerializer(serializers.ModelSerializer):
         }
         
         prefijo = prefijos.get(gerencia_responsable.upper(), 'GAI')
+    
+        # Filtramos por prefijo 'SCH-' y el año actual
+        ultimo_reporte = Investigacion.objects.filter(
+            numero_reporte__startswith='SCH-',
+            numero_reporte__contains=f"/{año}/"
+        ).order_by('-numero_reporte').first() # Orden descendente para asegurar el mayor string
+
+        if ultimo_reporte:
+            try:
+                # Formato esperado: SCH-003/2026/SURE
+                parte_numero = ultimo_reporte.numero_reporte.split('/')[0] # SCH-003
+                consecutivo_actual = int(parte_numero.split('-')[1]) # 003 -> 3
+                nuevo_consecutivo = consecutivo_actual + 1
+            except (IndexError, ValueError, AttributeError):
+                # Fallback por si hay datos corruptos o formato diferente
+                conteo = Investigacion.objects.filter(created_at__year=año).count()
+                nuevo_consecutivo = conteo + 1
+        else:
+            # Primer registro del año
+            nuevo_consecutivo = 1
         
-        from .models import Investigacion
-        conteo = Investigacion.objects.filter(
-            created_at__year=año
-        ).count()
-        
-        numero = str(conteo + 1).zfill(3)
+        numero = str(nuevo_consecutivo).zfill(3)
         
         return f"SCH-{numero}/{año}/{prefijo}"
 

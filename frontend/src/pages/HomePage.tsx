@@ -71,9 +71,9 @@ function HomePage({ onLogout }: HomePageProps) {
       rotate={-20}
       gapX={20}
       width={80}
-      gapY={40}
+      gapY={60}
       height={1}
-      fontSize={12}
+      fontSize={15}
     >
       <div className="layout-container">
 

@@ -92,11 +92,11 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({ documento, 
                             style={{ background: 'transparent', height: '100%' }}
                             fontColor="rgba(200, 200, 200, 0.5)"
                             rotate={-20}
-                            gapX={100}
-                            gapY={50}
-                            width={120}
-                            height={60}
-                            fontSize={16}
+                            gapX={20}
+                            width={90}
+                            gapY={60}
+                            height={1}
+                            fontSize={15}
                         >
                             <div style={{ width: '100%', height: '100%' }}></div>
                         </Watermark>
