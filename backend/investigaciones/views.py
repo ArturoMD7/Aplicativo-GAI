@@ -233,16 +233,23 @@ def user_dashboard_view(request, user_id):
     if user_data['ficha']:
         try:
             inv = CatalogoInvestigador.objects.get(ficha=user_data['ficha'], activo=True)
+            
+            responsiva_name = None
+            if inv.archivo_responsiva and inv.archivo_responsiva.name:
+                import os
+                # Extract filename from path (e.g. 'responsiva/file.pdf' -> 'file.pdf')
+                basename = os.path.basename(inv.archivo_responsiva.name)
+                # Remove extension to match frontend logic (which appends .pdf)
+                responsiva_name = os.path.splitext(basename)[0]
+
             investigador_data = {
                 'es_investigador': True,
-                'no_constancia': inv.no_constancia
+                'no_constancia': inv.no_constancia,
+                'responsiva': responsiva_name
             }
         except CatalogoInvestigador.DoesNotExist:
             pass
 
-    # 4. Estadísticas de Investigaciones (Simulando ser el usuario target)
-    # IMPORTANTE: Pasamos personal='true' para que si es Supervisor, cuente solo las suyas (Productividad)
-    # Si es Operador, ya filtra por asignación por defecto.
     inv_queryset = get_investigaciones_for_user(target_user, query_params={'personal': 'true'})
     
     total = inv_queryset.count()

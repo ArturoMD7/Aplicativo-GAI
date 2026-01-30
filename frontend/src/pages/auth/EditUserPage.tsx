@@ -275,12 +275,16 @@ const InvestigadorSection = ({ ficha }: { ficha: string }) => {
   const [investigador, setInvestigador] = useState<any>(null);
   const [noConstancia, setNoConstancia] = useState('');
   const [archivo, setArchivo] = useState<File | null>(null);
+  const [archivoResponsiva, setArchivoResponsiva] = useState<File | null>(null);
   const [msg, setMsg] = useState({ type: '', text: '' });
   const [showPreview, setShowPreview] = useState(false);
+  const [showPreviewResponsiva, setShowPreviewResponsiva] = useState(false);
 
   // New states for file checking
   const [constanciaExists, setConstanciaExists] = useState(false);
+  const [responsivaExists, setResponsivaExists] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [previewUrlResponsiva, setPreviewUrlResponsiva] = useState<string>('');
 
   useEffect(() => {
     if (!ficha) return;
@@ -291,8 +295,9 @@ const InvestigadorSection = ({ ficha }: { ficha: string }) => {
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
+      if (previewUrlResponsiva) URL.revokeObjectURL(previewUrlResponsiva);
     };
-  }, [previewUrl]);
+  }, [previewUrl, previewUrlResponsiva]);
 
   const fetchInvestigador = async () => {
     try {
@@ -301,6 +306,12 @@ const InvestigadorSection = ({ ficha }: { ficha: string }) => {
       if (res.data.no_constancia) {
         setNoConstancia(res.data.no_constancia);
         checkFileExistence(res.data.no_constancia);
+      }
+      // Check responsiva existence immediately using naming convention
+      if (res.data.nombre) {
+        const safeName = res.data.nombre.replace(/ /g, '_').toUpperCase();
+        const responsivaName = `${ficha}_${safeName}.pdf`;
+        checkResponsivaExistence(responsivaName);
       }
     } catch (error: any) {
       if (error.response && error.response.status === 404) {
@@ -324,6 +335,17 @@ const InvestigadorSection = ({ ficha }: { ficha: string }) => {
     }
   };
 
+  const checkResponsivaExistence = async (fileName: string) => {
+    try {
+      const response = await apiClient.get(`/api/investigadores/check-responsiva/${fileName}/`);
+      setResponsivaExists(response.data.exists);
+    } catch (error) {
+      // Silent error or debug
+      console.log("Responsiva check failed", error);
+      setResponsivaExists(false);
+    }
+  };
+
   const handlePreviewOpen = async () => {
     const fileName = `${noConstancia}.pdf`;
     try {
@@ -340,6 +362,24 @@ const InvestigadorSection = ({ ficha }: { ficha: string }) => {
     }
   };
 
+  const handlePreviewResponsivaOpen = async () => {
+    if (!investigador) return;
+    const safeName = investigador.nombre.replace(/ /g, '_').toUpperCase();
+    const fileName = `${ficha}_${safeName}.pdf`;
+
+    try {
+      const response = await apiClient.get(`/api/investigadores/responsiva/${fileName}/`, {
+        responseType: 'blob'
+      });
+      const url = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      setPreviewUrlResponsiva(url);
+      setShowPreviewResponsiva(true);
+    } catch (error) {
+      console.error("Error fetching Responsiva PDF:", error);
+      setMsg({ type: 'error', text: 'Error al cargar la Responsiva.' });
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -348,8 +388,12 @@ const InvestigadorSection = ({ ficha }: { ficha: string }) => {
     const formData = new FormData();
     formData.append('ficha', ficha);
     formData.append('no_constancia', noConstancia);
+
     if (archivo) {
       formData.append('archivo_constancia', archivo);
+    }
+    if (archivoResponsiva) {
+      formData.append('archivo_responsiva', archivoResponsiva);
     }
 
     try {
@@ -364,6 +408,7 @@ const InvestigadorSection = ({ ficha }: { ficha: string }) => {
       // Re-fetch to update state
       await fetchInvestigador();
       setArchivo(null); // Clear file selection on success
+      setArchivoResponsiva(null);
     } catch (err) {
       console.error(err);
       setMsg({ type: 'error', text: 'Error al eliminar/guardar.' });
@@ -376,6 +421,7 @@ const InvestigadorSection = ({ ficha }: { ficha: string }) => {
 
   // Determine if we can show a file: either from DB field or physical check
   const hasFile = investigador?.archivo_constancia || constanciaExists;
+  const hasResponsiva = investigador?.archivo_responsiva || responsivaExists;
 
   return (
     <div className="admin-card">
@@ -386,7 +432,13 @@ const InvestigadorSection = ({ ficha }: { ficha: string }) => {
           <div className="admin-form-row">
             <div className="admin-form-group">
               <label>Nombre en Catálogo</label>
-              <input value={investigador.nombre} disabled className="disabled-input" />
+              <div className="admin-input-with-icon">
+                <i className="fas fa-user" />
+                <input
+                  value={investigador.nombre}
+                  disabled
+                />
+              </div>
             </div>
             <div className="admin-form-group">
               <label>Número de Constancia</label>
@@ -467,6 +519,70 @@ const InvestigadorSection = ({ ficha }: { ficha: string }) => {
             </div>
           </div>
 
+
+          <div className="admin-form-group" style={{ marginTop: '20px', padding: '15px', border: '1px solid #eee', borderRadius: '8px', backgroundColor: '#fafafa' }}>
+            <label style={{ marginBottom: '10px', display: 'block', fontWeight: '500' }}>Carta Responsiva (PDF)</label>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>
+
+              {/* CURRENT RESPONSIVA PREVIEW */}
+              {hasResponsiva ? (
+                <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'white', padding: '8px 12px', borderRadius: '6px', border: '1px solid #dde', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                  <div style={{ width: '32px', height: '32px', backgroundColor: '#e3f2fd', color: '#1976d2', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', marginRight: '10px' }}>
+                    <FiFileText size={18} />
+                  </div>
+                  <div style={{ marginRight: '15px' }}>
+                    <div style={{ fontSize: '0.9rem', fontWeight: '600', color: '#333' }}>Responsiva Disponible</div>
+                    <div style={{ fontSize: '0.75rem', color: '#777' }}>{ficha}_RESPONSIVA.pdf</div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handlePreviewResponsivaOpen}
+                    className="btn-simple-view"
+                    style={{ color: '#0d6efd', background: 'none', border: 'none', cursor: 'pointer', fontWeight: '500', fontSize: '0.9rem' }}
+                  >
+                    Ver Documento
+                  </button>
+                </div>
+              ) : (
+                <span style={{ color: '#999', fontSize: '0.9rem', fontStyle: 'italic' }}>Sin responsiva asignada o archivo no encontrado</span>
+              )}
+
+              {/* FILE UPLOAD INPUT */}
+              <div className="file-input-wrapper" style={{ margin: 0 }}>
+                <input
+                  id="file-upload-resp"
+                  type="file"
+                  accept=".pdf"
+                  style={{ display: 'none' }}
+                  onChange={(e) => e.target.files && setArchivoResponsiva(e.target.files[0])}
+                />
+                <label
+                  htmlFor="file-upload-resp"
+                  className="file-upload-label"
+                  style={{
+                    border: archivoResponsiva ? '1px solid #198754' : '1px dashed #ccc',
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    backgroundColor: archivoResponsiva ? '#f0fdf4' : 'white',
+                    color: archivoResponsiva ? '#157347' : '#555',
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <FiUpload />
+                  {archivoResponsiva ? (
+                    <span>Archivo seleccionado: <strong>{archivoResponsiva.name}</strong></span>
+                  ) : (
+                    <span>Cargar / Reemplazar Responsiva</span>
+                  )}
+                </label>
+              </div>
+
+            </div>
+          </div>
+
           <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end' }}>
             <ButtonIcon
               variant="edit"
@@ -496,6 +612,21 @@ const InvestigadorSection = ({ ficha }: { ficha: string }) => {
             descripcion: 'Constancia de Investigador'
           }}
           onClose={() => setShowPreview(false)}
+        />
+      )}
+
+      {/* RESPONSIVA PREVIEW MODAL */}
+      {showPreviewResponsiva && (
+        <DocumentPreviewModal
+          documento={{
+            id: investigador?.id || 0,
+            tipo: 'Responsiva',
+            nombre_archivo: `${investigador.ficha}_${investigador.nombre?.replace(/ /g, '_').toUpperCase()}.pdf`,
+            archivo: previewUrlResponsiva,
+            uploaded_at: '',
+            descripcion: 'Carta Responsiva de Investigador'
+          }}
+          onClose={() => setShowPreviewResponsiva(false)}
         />
       )}
     </div>

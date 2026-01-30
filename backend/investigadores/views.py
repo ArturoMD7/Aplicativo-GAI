@@ -48,3 +48,32 @@ def check_constancia(request, filename):
     file_path = os.path.join(settings.MEDIA_ROOT, 'constancias', filename)
     exists = os.path.exists(file_path)
     return Response({'exists': exists})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def serve_responsiva(request, filename):
+    file_path = os.path.join(settings.MEDIA_ROOT, 'responsiva', filename)
+    if not os.path.exists(file_path):
+        raise Http404("Documento no encontrado")
+    
+    try:
+        ActivityLog.objects.create(
+            user=request.user,
+            action='DOWNLOAD',
+            endpoint=request.path,
+            method='GET',
+            description=f"Descarga de Responsiva: {filename}",
+            ip_address=request.META.get('REMOTE_ADDR'),
+            user_agent=request.META.get('HTTP_USER_AGENT', '')
+        )
+    except Exception:
+        pass
+        
+    return FileResponse(open(file_path, 'rb'), content_type='application/pdf')
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def check_responsiva(request, filename):
+    file_path = os.path.join(settings.MEDIA_ROOT, 'responsiva', filename)
+    exists = os.path.exists(file_path)
+    return Response({'exists': exists})

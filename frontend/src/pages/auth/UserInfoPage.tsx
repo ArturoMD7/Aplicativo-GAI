@@ -3,11 +3,12 @@ import { useParams } from 'react-router-dom';
 import apiClient from '../../api/apliClient';
 import {
     FiUser, FiMail, FiBriefcase, FiShield,
-    FiFileText, FiAlertTriangle, FiDownload, FiEye
+    FiFileText, FiAlertTriangle, FiEye
 } from 'react-icons/fi';
 import ButtonIcon from '../../components/Buttons/ButtonIcon';
+import DocumentPreviewModal from '../../components/Modals/DocumentPreviewModal';
 
-import '../../styles/Auth/UserInfoPage.css'; // Asumiendo que crearás este archivo o usarás estilos inline/existentes
+import '../../styles/Auth/UserInfoPage.css';
 
 interface UserDashboardData {
     user: {
@@ -34,6 +35,7 @@ interface UserDashboardData {
     investigador: {
         es_investigador: boolean;
         no_constancia: string | null;
+        responsiva: string | null;
     };
     stats: {
         total: number;
@@ -49,6 +51,20 @@ const UserInfoPage = () => {
     const [error, setError] = useState('');
     const [myInvestigaciones, setMyInvestigaciones] = useState<any[]>([]);
     const [showMyList, setShowMyList] = useState(false);
+
+    // Modal State
+    const [showModal, setShowModal] = useState(false);
+    const [previewUrl, setPreviewUrl] = useState<string>('');
+    const [modalDocType, setModalDocType] = useState('');
+    const [modalDocName, setModalDocName] = useState('');
+
+    useEffect(() => {
+        return () => {
+            if (previewUrl) {
+                window.URL.revokeObjectURL(previewUrl);
+            }
+        };
+    }, [previewUrl]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -68,29 +84,42 @@ const UserInfoPage = () => {
         }
     }, [userId]);
 
-    const handleDownloadConstancia = async () => {
-        if (data?.investigador.no_constancia) {
-            const fileName = `${data.investigador.no_constancia}.pdf`;
-            try {
-                const response = await apiClient.get(`/api/investigadores/constancias/${fileName}/`, {
-                    responseType: 'blob'
-                });
+    const handleViewConstancia = async () => {
+        if (!data?.investigador.no_constancia) return;
 
-                const url = window.URL.createObjectURL(new Blob([response.data]));
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', fileName);
-                document.body.appendChild(link);
-                link.click();
-                link.parentNode?.removeChild(link);
-                window.URL.revokeObjectURL(url);
-            } catch (error) {
-                console.error("Error downloading constancia:", error);
-                alert("Error al descargar la constancia. Verifique que el archivo exista.");
-            }
+        try {
+            const fileName = `${data.investigador.no_constancia}.pdf`;
+            const response = await apiClient.get(`/api/investigadores/constancias/${fileName}/`, {
+                responseType: 'blob'
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+            setPreviewUrl(url);
+            setModalDocType('Constancia');
+            setModalDocName(fileName);
+            setShowModal(true);
+        } catch (error) {
+            console.error("Error loading constancia:", error);
         }
     };
 
+    const handleViewResponsiva = async () => {
+        if (!data?.investigador.responsiva) return;
+
+        try {
+            const fileName = `${data.investigador.responsiva}.pdf`;
+            // Fixed URL: responsiva singular as per urls.py
+            const response = await apiClient.get(`/api/investigadores/responsiva/${fileName}/`, {
+                responseType: 'blob'
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+            setPreviewUrl(url);
+            setModalDocType('Responsiva');
+            setModalDocName(fileName);
+            setShowModal(true);
+        } catch (error) {
+            console.error("Error loading responsiva:", error);
+        }
+    };
     const handleToggleList = async () => {
         if (!showMyList && myInvestigaciones.length === 0) {
             try {
@@ -153,8 +182,20 @@ const UserInfoPage = () => {
                                 {investigador.no_constancia && (
                                     <div className="constancia-block">
                                         <small>Constancia: {investigador.no_constancia}</small>
-                                        <button onClick={handleDownloadConstancia} className="btn-download-mini">
-                                            <FiDownload /> Descargar
+                                        <button onClick={handleViewConstancia} className="btn-download-mini">
+                                            <FiEye /> Ver Documento
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                        {investigador.es_investigador && (
+                            <div className="investigador-status active">
+                                {investigador.responsiva && (
+                                    <div className="constancia-block">
+                                        <small>Responsiva: {investigador.responsiva}</small>
+                                        <button onClick={handleViewResponsiva} className="btn-download-mini">
+                                            <FiEye /> Ver Documento
                                         </button>
                                     </div>
                                 )}
@@ -276,6 +317,22 @@ const UserInfoPage = () => {
 
                 </div>
             </div>
+
+            {
+                showModal && (
+                    <DocumentPreviewModal
+                        documento={{
+                            id: 0,
+                            tipo: modalDocType,
+                            nombre_archivo: modalDocName,
+                            archivo: previewUrl,
+                            uploaded_at: new Date().toISOString(),
+                            descripcion: `Visualización de ${modalDocType}`
+                        }}
+                        onClose={() => setShowModal(false)}
+                    />
+                )
+            }
         </div>
     );
 };

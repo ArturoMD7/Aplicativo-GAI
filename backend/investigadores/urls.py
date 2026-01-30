@@ -10,4 +10,6 @@ urlpatterns = [
     path('', include(router.urls)),
     path('constancias/<str:filename>/', views.serve_constancia, name='serve_constancia'),
     path('check-constancia/<str:filename>/', views.check_constancia, name='check_constancia'),
+    path('responsiva/<str:filename>/', views.serve_responsiva, name='serve_responsiva'),
+    path('check-responsiva/<str:filename>/', views.check_responsiva, name='check_responsiva'),
 ]
