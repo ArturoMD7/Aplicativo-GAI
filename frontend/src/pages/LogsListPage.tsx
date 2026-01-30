@@ -116,7 +116,8 @@ function LogListPage() {
       'Ficha': inv.user_profile_ficha,
       'Nombre Equipo': inv.computer_name,
       'Ficha Reportado': inv.reportados_ficha,
-      'Nombre Reportado': inv.reportados_nombre
+      'Nombre Reportado': inv.reportados_nombre,
+      'User Agent': inv.user_agent
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -146,7 +147,7 @@ function LogListPage() {
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
-                setCurrentPage(1); // Reset to first page on search
+                setCurrentPage(1);
               }}
             />
           </div>
@@ -181,12 +182,6 @@ function LogListPage() {
                 <th onClick={() => handleSort('description')} className="sortable-header">
                   Acción {renderSortIcon('description')}
                 </th>
-                <th onClick={() => handleSort('reportados_ficha')} className="sortable-header">
-                  Ficha Reportado {renderSortIcon('reportados_ficha')}
-                </th>
-                <th onClick={() => handleSort('reportados_nombre')} className="sortable-header">
-                  Nombre Reportado {renderSortIcon('reportados_nombre')}
-                </th>
                 <th onClick={() => handleSort('ip_address')} className="sortable-header">
                   Direccion IP {renderSortIcon('ip_address')}
                 </th>
@@ -199,6 +194,15 @@ function LogListPage() {
                 <th onClick={() => handleSort('investigacion')} className="sortable-header">
                   Investigación {renderSortIcon('investigacion')}
                 </th>
+                <th onClick={() => handleSort('user_agent')} className="sortable-header">
+                  User Agent {renderSortIcon('user_agent')}
+                </th>
+                <th onClick={() => handleSort('reportados_ficha')} className="sortable-header">
+                  Ficha Reportado {renderSortIcon('reportados_ficha')}
+                </th>
+                <th onClick={() => handleSort('reportados_nombre')} className="sortable-header">
+                  Nombre Reportado {renderSortIcon('reportados_nombre')}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -208,8 +212,6 @@ function LogListPage() {
                   <td style={{ fontWeight: 500 }}>{inv.user_name}</td>
                   <td>{inv.user_profile_ficha}</td>
                   <td className="text-muted">{inv.description}</td>
-                  <td className="text-muted">{inv.reportados_ficha}</td>
-                  <td className="text-muted">{inv.reportados_nombre}</td>
                   <td className="text-muted">{inv.ip_address}</td>
                   <td>{inv.computer_name}</td>
                   <td>
@@ -219,6 +221,9 @@ function LogListPage() {
                     </span>
                   </td>
                   <td>{inv.investigacion_numero || <span className="text-muted">-</span>}</td>
+                  <td className="text-muted">{inv.user_agent || <span className="text-muted">-</span>}</td>
+                  <td className="text-muted">{inv.reportados_ficha || <span className="text-muted">-</span>}</td>
+                  <td className="text-muted">{inv.reportados_nombre || <span className="text-muted">-</span>}</td>
                 </tr>
               ))}
             </tbody>

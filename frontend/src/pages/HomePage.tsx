@@ -75,7 +75,6 @@ function HomePage({ onLogout }: HomePageProps) {
       gapY={40}
       height={1}
       fontSize={12}
-
     >
       <div className="layout-container">
 
