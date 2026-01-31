@@ -21,7 +21,7 @@ const TIPOS_DOCUMENTOS = [
   'Dictamen',
   //'Resultado',
   //'Anexo',
-  //'Pruebas',
+  'Pruebas',
   'Evidencia de medidas preventivas'
 ];
 
@@ -481,7 +481,10 @@ function SeguimientoPage() {
                         }}
                         style={{ padding: '12px', background: 'white' }}
                       >
-                        {TIPOS_DOCUMENTOS.map(tipo => (
+                        {TIPOS_DOCUMENTOS.filter(tipo =>
+                          tipo !== 'Evidencia de medidas preventivas' ||
+                          investigacion?.conductas?.toLowerCase().includes('acoso sexual')
+                        ).map(tipo => (
                           <option key={tipo} value={tipo}>{tipo}</option>
                         ))}
                       </select>
