@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
 import { FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiTrendingUp, FiEye, FiClock, FiFileText } from 'react-icons/fi';
+import { MdDeleteForever } from "react-icons/md";
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import Pagination from '../components/Pagination';
 import * as XLSX from 'xlsx';
@@ -28,6 +29,7 @@ function FinalizacionListPage() {
   const [selectedInvestigacionId, setSelectedInvestigacionId] = useState<number | null>(null);
   const [selectedReporteNum, setSelectedReporteNum] = useState('');
   const [statusFilter, setStatusFilter] = useState<'PENDING' | 'COMPLETED'>('PENDING');
+  const [userRole, setUserRole] = useState<string>('');
 
   // Estados para Modal de Conclusión (Reconsideración)
   const [isConcluirModalOpen, setIsConcluirModalOpen] = useState(false);
@@ -90,6 +92,26 @@ function FinalizacionListPage() {
       }
     };
     fetchDatos();
+  }, []);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      let role = localStorage.getItem('userRole');
+      if (!role) {
+        try {
+          const profileRes = await apiClient.get('/api/user/profile/');
+          const groups = profileRes.data.groups;
+          if (groups && groups.length > 0) {
+            role = groups[0];
+            localStorage.setItem('userRole', role || '');
+          }
+        } catch (error) {
+          console.error("Error al obtener rol:", error);
+        }
+      }
+      setUserRole(role || '');
+    };
+    checkRole();
   }, []);
 
   const handleFinalizar = async (id: number) => {
@@ -204,6 +226,30 @@ function FinalizacionListPage() {
     if (!str) return '';
     const [year, month, day] = str.split("-");
     return `${day}/${month}/${year}`;
+  };
+
+  const handleDelete = async (id: number, numeroReporte: string) => {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: `Se eliminará el reporte ${numeroReporte}. Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await apiClient.delete(`/api/investigaciones/investigaciones/${id}/`);
+        setInvestigaciones(prev => prev.filter(item => item.id !== id));
+        Swal.fire('¡Eliminado!', 'El registro ha sido eliminado correctamente.', 'success');
+      } catch (err) {
+        console.error(err);
+        Swal.fire('Error', 'Hubo un problema al intentar eliminar el registro.', 'error');
+      }
+    }
   };
 
   const exportToExcel = () => {
@@ -358,6 +404,16 @@ function FinalizacionListPage() {
                           onClick={() => handleFinalizar(inv.id)}
                           icon={<FiTrendingUp />}
                           title="Concluir investigación"
+                          size="medium"
+                        />
+                      )}
+
+                      {(['Admin', 'AdminCentral'].includes(userRole) || userRole.startsWith('Supervisor')) && (
+                        <ButtonIcon
+                          variant="delete"
+                          onClick={() => handleDelete(inv.id, inv.numero_reporte)}
+                          icon={<MdDeleteForever />}
+                          title="Eliminar"
                           size="medium"
                         />
                       )}

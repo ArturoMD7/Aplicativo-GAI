@@ -534,13 +534,15 @@ function InvestigacionListPage() {
                             size="medium"
                           />
 
-                          <ButtonIcon
-                            variant="delete"
-                            onClick={() => handleDelete(inv.id, inv.numero_reporte)}
-                            icon={<MdDeleteForever />}
-                            title="Eliminar"
-                            size="medium"
-                          />
+                          {(['Admin', 'AdminCentral'].includes(userRole) || userRole.startsWith('Supervisor')) && (
+                            <ButtonIcon
+                              variant="delete"
+                              onClick={() => handleDelete(inv.id, inv.numero_reporte)}
+                              icon={<MdDeleteForever />}
+                              title="Eliminar"
+                              size="medium"
+                            />
+                          )}
                         </>
                       )}
                     </div>
