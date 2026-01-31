@@ -406,7 +406,7 @@ class DocumentoInvestigacion(models.Model):
         ('Acta_Investigacion', 'Acta de Investigación (Reportados)'),
         ('Pruebas', 'Pruebas'),
         ('Dictamen', 'Dictamen'),
-        #('Resultado', 'Resultado de la investigación'),
+        ('Resultado', 'Resultado de la investigación'),
         #('Anexo', 'Anexo'),
         ('NotificacionConclusion', 'Notificación de Conclusión'),
         ('Evidencia de medidas preventivas', 'Evidencia de medidas preventivas'),

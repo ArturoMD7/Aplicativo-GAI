@@ -19,7 +19,7 @@ const TIPOS_DOCUMENTOS = [
   'Citatorio',
   'Acta',
   'Dictamen',
-  //'Resultado',
+  'Resultado',
   //'Anexo',
   'Pruebas',
   'Evidencia de medidas preventivas'
