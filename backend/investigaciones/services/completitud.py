@@ -62,7 +62,7 @@ def calcular_completitud(investigacion):
         if d["tipo"] in tipos_presentes:
             valor_completo += d["valor"]
         else:
-            campos_faltantes.append(f"documento:{d['tipo']}")
+            campos_faltantes.append(f"Documento: {d['tipo']}")
 
     return {
         "porcentaje": round(valor_completo, 2),

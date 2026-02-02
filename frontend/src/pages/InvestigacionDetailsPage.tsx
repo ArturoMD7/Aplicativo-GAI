@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import CompletionProgressBar from '../components/DataDisplay/CompletionProgressBar';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import ButtonIcon from '../components/Buttons/ButtonIcon';
@@ -222,17 +223,12 @@ function InvestigacionDetailsPage() {
             <i className="fas fa-info-circle"></i>
             Porcentaje de Completitud
           </h2>
-            <div className="admin-form-group">
-              <div className="admin-input-with-icon">
-                <i className="fas fa-file-alt"></i>
-                <input
-                  type="text"
-                  value={investigacion.porcentaje_completitud || 'No especificado'}
-                  readOnly
-                  className="admin-readonly-field"
-                />
-              </div>
-            </div>
+          <div className="admin-form-group" style={{ width: '100%' }}>
+            <CompletionProgressBar
+              percentage={investigacion.porcentaje_completitud || 0}
+              missingFields={(investigacion as any).campos_faltantes}
+            />
+          </div>
 
         </section>
 

@@ -1,4 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
+import CompletionProgressBar from '../components/DataDisplay/CompletionProgressBar';
+
 import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type {
@@ -963,6 +965,15 @@ function InvestigacionFormPage() {
             </div>
           )}
           {success && <div className="admin-alert admin-alert-success">{success}</div>}
+
+          {isEditMode && (
+            <div className="admin-form-section" style={{ width: '100%', marginBottom: '20px', gridColumn: '1 / -1' }}>
+              <CompletionProgressBar
+                percentage={formState.porcentaje_completitud || 0}
+                missingFields={(formState as any).campos_faltantes}
+              />
+            </div>
+          )}
 
           {/* --- SECCIÓN 1: INFORMACIÓN GENERAL --- */}
           <section
