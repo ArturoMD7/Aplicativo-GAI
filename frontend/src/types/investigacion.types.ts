@@ -104,6 +104,7 @@ export interface InvestigacionFormState {
   involucrados: Involucrado[];
   testigos: Testigo[];
   detalles_conducta?: string;
+  porcentaje_completitud?: number;
 }
 
 export interface OpcionesDropdowns {

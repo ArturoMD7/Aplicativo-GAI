@@ -217,6 +217,24 @@ function InvestigacionDetailsPage() {
       </div>
 
       <div className="admin-register-form-container" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+        <section className="admin-form-section">
+          <h2 className="admin-section-title">
+            <i className="fas fa-info-circle"></i>
+            Porcentaje de Completitud
+          </h2>
+            <div className="admin-form-group">
+              <div className="admin-input-with-icon">
+                <i className="fas fa-file-alt"></i>
+                <input
+                  type="text"
+                  value={investigacion.porcentaje_completitud || 'No especificado'}
+                  readOnly
+                  className="admin-readonly-field"
+                />
+              </div>
+            </div>
+
+        </section>
 
         {/* SECCIÓN 3: FECHAS IMPORTANTES */}
         <section className="admin-form-section">

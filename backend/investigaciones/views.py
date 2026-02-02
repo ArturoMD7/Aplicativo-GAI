@@ -764,7 +764,7 @@ def buscar_personal_view(request):
                         'nombre': row[1],
                         'nivel': row[2],
                         'categoria': row[3],
-                        'puesto': 'No disponible', # ultimo_contrato no suele tener puesto detallado
+                        'puesto': 'No disponible', 
                         'estado': row[4],
                         'origen': 'Último Contrato'
                     })

@@ -3,6 +3,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
 from .models import Investigacion, Contacto, Investigador, Involucrado, Testigo, Reportante, DocumentoInvestigacion
+from .services.completitud import calcular_completitud
 
 
 # Serializers para modelos relacionados
@@ -22,6 +23,8 @@ class DocumentoInvestigacionSerializer(serializers.ModelSerializer):
 
     def get_nombre_archivo(self, obj):
         return obj.archivo.name.split('/')[-1] if obj.archivo else ''
+
+
 
 class ContactoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -125,6 +128,8 @@ class InvestigacionSerializer(serializers.ModelSerializer):
     # Campos calculados para el frontend
     dias_restantes = serializers.SerializerMethodField()
     semaforo = serializers.SerializerMethodField()
+    porcentaje_completitud = serializers.SerializerMethodField()
+    campos_faltantes = serializers.SerializerMethodField()
 
     class Meta:
         model = Investigacion
@@ -159,7 +164,7 @@ class InvestigacionSerializer(serializers.ModelSerializer):
             'created_by', 'created_by_name', 'created_by_email',
             'created_at', 'updated_at', 'dias_restantes', 'semaforo',
 
-            'documentos', 'estatus',
+            'documentos', 'estatus', 'porcentaje_completitud', 'campos_faltantes',
         ]
         read_only_fields = [
             'id', 'created_by', 'created_at', 'updated_at', 'semaforo',
@@ -187,6 +192,12 @@ class InvestigacionSerializer(serializers.ModelSerializer):
             return 'yellow'
         else:
             return 'green'
+
+    def get_porcentaje_completitud(self, obj):
+        return calcular_completitud(obj)["porcentaje"]
+
+    def get_campos_faltantes(self, obj):
+        return calcular_completitud(obj)["faltantes"]
 
     def validate(self, data):
         """Validaciones generales"""
