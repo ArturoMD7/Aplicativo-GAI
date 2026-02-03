@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiTrendingUp, FiEye, FiClock, FiFileText } from 'react-icons/fi';
+import { FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiTrendingUp, FiEye, FiClock, FiFileText, FiUpload, FiFile } from 'react-icons/fi';
 import { MdDeleteForever } from "react-icons/md";
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import Pagination from '../components/Pagination';
@@ -43,6 +43,10 @@ function FinalizacionListPage() {
     sancion_actual: '',
     conducta_actual: ''
   });
+
+  // Estado para controlar si ya existe el documento de notificación y el archivo seleccionado
+  const [hasNotificacion, setHasNotificacion] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const conductaDescriptions: { [key: string]: string } = {
     'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS': 'Incumplimiento de normas de trabajo,  Incumplimiento de procedimientos operativos, Conflicto de intereses, Actos de Corrupción',
@@ -120,40 +124,12 @@ function FinalizacionListPage() {
       const docs = docsRes.data;
       const notificacion = docs.find((d: any) => d.tipo === 'NotificacionConclusion');
 
-      if (!notificacion) {
-        const { value: file } = await Swal.fire({
-          title: 'Notificación Requerida',
-          text: 'Para concluir la investigación, debes adjuntar el archivo de Notificación de Conclusión.',
-          input: 'file',
-          inputAttributes: {
-            'accept': 'application/pdf',
-            'aria-label': 'Sube la Notificación de Conclusión'
-          },
-          showCancelButton: true,
-          confirmButtonText: 'Subir y Concluir',
-          cancelButtonText: 'Cancelar',
-          inputValidator: (result) => {
-            return !result && 'Debes seleccionar un archivo PDF'
-          }
-        });
-
-        if (file) {
-          const formData = new FormData();
-          formData.append('archivo', file);
-          formData.append('tipo', 'NotificacionConclusion');
-          formData.append('investigacion_id', id.toString());
-          formData.append('descripcion', 'Notificación adjuntada al concluir');
-          await apiClient.post('/api/investigaciones/documentos/', formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-          });
-        } else {
-          return;
-        }
-      }
+      setHasNotificacion(!!notificacion);
+      setSelectedFile(null); // Resetear archivo seleccionado
 
       const investigacion = investigaciones.find(inv => inv.id === id);
 
-      // 2. Abrir Modal de Conclusión en lugar de Swal directo
+      // Abrir Modal de Conclusión DIRECTAMENTE
       setDataConcluir({
         id: id,
         reconsideracion: false,
@@ -173,7 +149,27 @@ function FinalizacionListPage() {
   };
 
   const handleConfirmConcluir = async () => {
+    // 1. Validar el archivo si no existe previamente
+    if (!hasNotificacion && !selectedFile) {
+      Swal.fire('Atención', 'Debes adjuntar la Notificación de Conclusión para continuar.', 'warning');
+      return;
+    }
+
     try {
+      // 2. Subir archivo si fue seleccionado
+      if (selectedFile && !hasNotificacion) {
+        const formData = new FormData();
+        formData.append('archivo', selectedFile);
+        formData.append('tipo', 'NotificacionConclusion');
+        formData.append('investigacion_id', dataConcluir.id.toString());
+        formData.append('descripcion', 'Notificación adjuntada al concluir');
+
+        await apiClient.post('/api/investigaciones/documentos/', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
+
+      // 3. Proceder con la conclusión
       const payload = {
         estatus: 'CONCLUIDA',
         reconsideracion: dataConcluir.reconsideracion,
@@ -194,7 +190,7 @@ function FinalizacionListPage() {
 
     } catch (err) {
       console.error(err);
-      Swal.fire('Error', 'No se pudo concluir la investigación', 'error');
+      Swal.fire('Error', 'No se pudo concluir la investigación (verifica el archivo o la conexión)', 'error');
     }
   };
 
@@ -497,6 +493,60 @@ function FinalizacionListPage() {
             </p>
 
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ddd' }}>
+              {!hasNotificacion && (
+                <div style={{ marginBottom: '25px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#840016', fontSize: '0.95rem' }}>
+                    <FiAlertCircle style={{ marginBottom: '-2px', marginRight: '5px' }} />
+                    Notificación de Conclusión Requerida
+                  </label>
+                  <div style={{
+                    border: '2px dashed #ccc',
+                    borderRadius: '8px',
+                    padding: '20px',
+                    textAlign: 'center',
+                    backgroundColor: '#fafafa',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer',
+                    position: 'relative'
+                  }}>
+                    <input
+                      type="file"
+                      id="file-upload"
+                      accept="application/pdf"
+                      onChange={(e) => setSelectedFile(e.target.files ? e.target.files[0] : null)}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        opacity: 0,
+                        cursor: 'pointer'
+                      }}
+                    />
+
+                    {!selectedFile ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', color: '#666' }}>
+                        <FiUpload style={{ fontSize: '2rem', color: '#840016' }} />
+                        <div>
+                          <span style={{ fontWeight: '600', color: '#333' }}>Haz clic para subir el archivo</span>
+                          <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem' }}>Solo formato PDF</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', color: '#28a745' }}>
+                        <FiFile style={{ fontSize: '2rem' }} />
+                        <div>
+                          <span style={{ fontWeight: '600' }}>{selectedFile.name}</span>
+                          <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem', color: '#666' }}>
+                            {(selectedFile.size / 1024 / 1024).toFixed(2)} MB - Listo para subir
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* 1. SELECCIÓN DE SANCIÓN (SIEMPRE DISPONIBLE) */}
               <div style={{ marginBottom: '20px' }}>

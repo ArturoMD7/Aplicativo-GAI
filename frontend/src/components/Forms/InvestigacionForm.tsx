@@ -970,15 +970,6 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
           )}
           {success && <div className="admin-alert admin-alert-success">{success}</div>}
 
-          {isEditMode && (
-            <div className="admin-form-section" style={{ width: '100%', gridColumn: '1 / -1' }}>
-              <CompletionProgressBar
-                percentage={formState.porcentaje_completitud || 0}
-              />
-            </div>
-          )}
-
-          {/* --- SECCIÓN 1: INFORMACIÓN GENERAL --- */}
           <section
             className="admin-form-section"
             style={{ gridColumn: '1 / -1' }}
