@@ -55,7 +55,7 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
         # Actualizar datos
         investigacion.estatus = request.data.get('estatus', 'CONCLUIDA')
         investigacion.reconsideracion = request.data.get('reconsideracion', False)
-        investigacion.ficha_reconsideracion = request.data.get('ficha_reconsideracion')
+        investigacion.observaciones_reconsideracion = request.data.get('observaciones_reconsideracion')
         investigacion.sancion = request.data.get('sancion')
         investigacion.conducta_definitiva = request.data.get('conducta_definitiva')
         

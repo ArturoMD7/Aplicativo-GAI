@@ -36,10 +36,10 @@ function FinalizacionListPage() {
   const [dataConcluir, setDataConcluir] = useState({
     id: 0,
     reconsideracion: false,
-    ficha: '',
+    observaciones_reconsideracion: '', 
     sancion: '',
     conducta: '',
-    dias_suspension: '', // New state for suspension days
+    dias_suspension: '',
     sancion_actual: '',
     conducta_actual: ''
   });
@@ -47,7 +47,8 @@ function FinalizacionListPage() {
   const [modalMode, setModalMode] = useState<'CONCLUDE' | 'RECONSIDER'>('CONCLUDE');
 
   const [hasNotificacion, setHasNotificacion] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFileConcluir, setSelectedFileConcluir] = useState<File | null>(null); // Renamed for clarity
+  const [selectedFileReconsiderar, setSelectedFileReconsiderar] = useState<File | null>(null); // New state for Reconsideracion file
 
   const conductaDescriptions: { [key: string]: string } = {
     'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS': 'Incumplimiento de normas de trabajo,  Incumplimiento de procedimientos operativos, Conflicto de intereses, Actos de Corrupción',
@@ -126,7 +127,8 @@ function FinalizacionListPage() {
       const notificacion = docs.find((d: any) => d.tipo === 'NotificacionConclusion');
 
       setHasNotificacion(!!notificacion);
-      setSelectedFile(null); // Resetear archivo seleccionado
+      setHasNotificacion(!!notificacion);
+      setSelectedFileConcluir(null); 
 
       const investigacion = investigaciones.find(inv => inv.id === id);
 
@@ -134,7 +136,7 @@ function FinalizacionListPage() {
       setDataConcluir({
         id: id,
         reconsideracion: false,
-        ficha: '',
+        observaciones_reconsideracion: '',
         sancion: '',
         conducta: investigacion?.conductas || '',
         dias_suspension: '',
@@ -155,7 +157,7 @@ function FinalizacionListPage() {
     setDataConcluir({
       id: id,
       reconsideracion: true, // Modo reconsideración activado
-      ficha: investigacion?.ficha_reconsideracion || '',
+      observaciones_reconsideracion: investigacion?.observaciones_reconsideracion || '',
       sancion: investigacion?.sancion || '',
       conducta: investigacion?.conducta_definitiva || '',
       dias_suspension: investigacion?.dias_suspension ? String(investigacion.dias_suspension) : '',
@@ -163,21 +165,41 @@ function FinalizacionListPage() {
       conducta_actual: investigacion?.conducta_definitiva || investigacion?.conductas || 'No registrada'
     });
     setModalMode('RECONSIDER');
+    setSelectedFileReconsiderar(null);
     setIsConcluirModalOpen(true);
   };
 
   const handleConfirmConcluir = async () => {
-    // 1. Validar el archivo si no existe previamente (SOLO EN MODO CONCLUDE)
-    if (modalMode === 'CONCLUDE' && !hasNotificacion && !selectedFile) {
-      Swal.fire('Atención', 'Debes adjuntar la Notificación de Conclusión para continuar.', 'warning');
-      return;
+    // 1. Validaciones
+    // CONCLUDE: Sanción obligatoria y Archivo (si no existe)
+    if (modalMode === 'CONCLUDE') {
+      if (!dataConcluir.sancion) {
+        Swal.fire('Atención', 'Debes seleccionar una Sanción para concluir.', 'warning');
+        return;
+      }
+      if (!hasNotificacion && !selectedFileConcluir) {
+        Swal.fire('Atención', 'Debes adjuntar la Notificación de Conclusión para continuar.', 'warning');
+        return;
+      }
+    }
+
+    // RECONSIDER: Observaciones y Archivo obligatorios
+    if (modalMode === 'RECONSIDER') {
+      if (!dataConcluir.observaciones_reconsideracion.trim()) {
+        Swal.fire('Atención', 'Debes ingresar las Observaciones de la reconsideración.', 'warning');
+        return;
+      }
+      if (!selectedFileReconsiderar) {
+        Swal.fire('Atención', 'Debes adjuntar el Formato de Reconsideración.', 'warning');
+        return;
+      }
     }
 
     try {
-      // 2. Subir archivo si fue seleccionado (SOLO EN MODO CONCLUDE)
-      if (modalMode === 'CONCLUDE' && selectedFile && !hasNotificacion) {
+      // 2. Subir archivo si fue seleccionado (CONCLUDE)
+      if (modalMode === 'CONCLUDE' && selectedFileConcluir && !hasNotificacion) {
         const formData = new FormData();
-        formData.append('archivo', selectedFile);
+        formData.append('archivo', selectedFileConcluir);
         formData.append('tipo', 'NotificacionConclusion');
         formData.append('investigacion_id', dataConcluir.id.toString());
         formData.append('descripcion', 'Notificación adjuntada al concluir');
@@ -187,11 +209,24 @@ function FinalizacionListPage() {
         });
       }
 
-      // 3. Proceder con la conclusión / reconsideración
+      // 3. Subir archivo de Reconsideración (RECONSIDER)
+      if (modalMode === 'RECONSIDER' && selectedFileReconsiderar) {
+        const formData = new FormData();
+        formData.append('archivo', selectedFileReconsiderar);
+        formData.append('tipo', 'Formato_Reconsideracion');
+        formData.append('investigacion_id', dataConcluir.id.toString());
+        formData.append('descripcion', 'Formato de Reconsideración adjuntado');
+
+        await apiClient.post('/api/investigaciones/documentos/', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
+
+      // 4. Proceder con la conclusión / reconsideración
       const payload = {
         estatus: 'CONCLUIDA',
         reconsideracion: modalMode === 'RECONSIDER',
-        ficha_reconsideracion: modalMode === 'RECONSIDER' ? dataConcluir.ficha : null,
+        observaciones_reconsideracion: modalMode === 'RECONSIDER' ? dataConcluir.observaciones_reconsideracion : null,
         sancion: dataConcluir.sancion,
         conducta_definitiva: modalMode === 'RECONSIDER' ? dataConcluir.conducta : dataConcluir.conducta_actual,
         dias_suspension: (dataConcluir.sancion === 'SUSPENSIÓN DE LABORES') ? dataConcluir.dias_suspension : null
@@ -213,7 +248,7 @@ function FinalizacionListPage() {
 
     } catch (err) {
       console.error(err);
-      Swal.fire('Error', 'No se pudo concluir la investigación (verifica el archivo o la conexión)', 'error');
+      Swal.fire('Error', 'No se pudo guardar la información (verifica los archivos o la conexión)', 'error');
     }
   };
 
@@ -558,7 +593,7 @@ function FinalizacionListPage() {
                       type="file"
                       id="file-upload"
                       accept="application/pdf"
-                      onChange={(e) => setSelectedFile(e.target.files ? e.target.files[0] : null)}
+                      onChange={(e) => setSelectedFileConcluir(e.target.files ? e.target.files[0] : null)}
                       style={{
                         position: 'absolute',
                         top: 0,
@@ -570,7 +605,7 @@ function FinalizacionListPage() {
                       }}
                     />
 
-                    {!selectedFile ? (
+                    {!selectedFileConcluir ? (
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', color: '#666' }}>
                         <FiUpload style={{ fontSize: '2rem', color: '#840016' }} />
                         <div>
@@ -582,9 +617,9 @@ function FinalizacionListPage() {
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', color: '#28a745' }}>
                         <FiFile style={{ fontSize: '2rem' }} />
                         <div>
-                          <span style={{ fontWeight: '600' }}>{selectedFile.name}</span>
+                          <span style={{ fontWeight: '600' }}>{selectedFileConcluir.name}</span>
                           <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem', color: '#666' }}>
-                            {(selectedFile.size / 1024 / 1024).toFixed(2)} MB - Listo para subir
+                            {(selectedFileConcluir.size / 1024 / 1024).toFixed(2)} MB - Listo para subir
                           </p>
                         </div>
                       </div>
@@ -648,16 +683,55 @@ function FinalizacionListPage() {
 
                     <div>
                       <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
-                        Ficha que autoriza Reconsideración:
+                        Observaciones para Reconsideración (Obligatorio):
                       </label>
-                      <input
-                        type="text"
+                      <textarea
                         className="admin-input"
-                        value={dataConcluir.ficha}
-                        onChange={(e) => setDataConcluir(prev => ({ ...prev, ficha: e.target.value }))}
-                        placeholder="Ej. 123456"
-                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+                        value={dataConcluir.observaciones_reconsideracion}
+                        onChange={(e) => setDataConcluir(prev => ({ ...prev, observaciones_reconsideracion: e.target.value }))}
+                        placeholder="Describa el motivo de la reconsideración y quién autoriza..."
+                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', minHeight: '80px', resize: 'vertical' }}
                       />
+                    </div>
+
+                    {/* FILE UPLOAD FOR RECONSIDERATION */}
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
+                        Formato de Reconsideración (Obligatorio):
+                      </label>
+                      <div style={{
+                        border: '2px dashed #ccc',
+                        borderRadius: '8px',
+                        padding: '15px',
+                        textAlign: 'center',
+                        backgroundColor: '#fafafa',
+                        cursor: 'pointer',
+                        position: 'relative'
+                      }}>
+                        <input
+                          type="file"
+                          accept="application/pdf"
+                          onChange={(e) => setSelectedFileReconsiderar(e.target.files ? e.target.files[0] : null)}
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            opacity: 0,
+                            cursor: 'pointer'
+                          }}
+                        />
+                        {!selectedFileReconsiderar ? (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: '#666' }}>
+                            <FiUpload /> <span>Adjuntar Formato PDF</span>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: '#28a745' }}>
+                            <FiFile /> <span>{selectedFileReconsiderar.name}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

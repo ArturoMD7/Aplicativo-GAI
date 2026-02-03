@@ -492,27 +492,6 @@ function InvestigacionDetailsPage() {
           </div>
         </section>
 
-        {/* SECCIÓN CONDICIONAL: ANTECEDENTES (Seguimiento o posterior) */}
-        {['SEGUIMIENTO', 'ENVIADA_A_CONCLUIR', 'CONCLUIDA'].includes((investigacion as any).estatus?.toUpperCase() || '') && (
-          <section className="admin-form-section">
-            <h2 className="admin-section-title">
-              <FiClock style={{ marginRight: '10px' }} />
-              Antecedentes
-            </h2>
-            <div className="admin-form-group">
-              <div className="admin-input-with-icon">
-                <i className="fas fa-history" style={{ top: '15px' }}></i>
-                <textarea
-                  value={investigacion.antecedentes || 'Sin antecedentes registrados.'}
-                  readOnly
-                  className="admin-readonly-field admin-textarea"
-                  rows={4}
-                />
-              </div>
-            </div>
-          </section>
-        )}
-
         {/* SECCIÓN 6: PERSONAS INVOLUCRADAS */}
         <section className="admin-form-section">
           <h2 className="admin-section-title">
@@ -589,13 +568,23 @@ function InvestigacionDetailsPage() {
                 <span className={`admin-badge ${(investigacion as any).reconsideracion ? 'admin-badge-warning' : 'admin-badge-secondary'}`}>
                   {(investigacion as any).reconsideracion ? 'SÍ' : 'NO'}
                 </span>
+
               </div>
-              {(investigacion as any).reconsideracion && (investigacion as any).ficha_reconsideracion && (
-                <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginTop: '10px' }}>
-                  <strong style={{ minWidth: '150px' }}>Autorizó (Ficha):</strong>
-                  <span>{(investigacion as any).ficha_reconsideracion}</span>
+              {(investigacion as any).reconsideracion && (
+                <div className="admin-form-group">
+                  <label>Observación (Resolución)</label>
+                  <div className="admin-input-with-icon">
+                    <i className="fas fa-gavel"></i>
+                    <input
+                      type="text"
+                      value={investigacion.observaciones_reconsideracion || 'No registrada'}
+                      readOnly
+                      className="admin-readonly-field"
+                    />
+                  </div>
                 </div>
               )}
+
             </div>
 
           </section>

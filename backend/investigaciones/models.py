@@ -150,8 +150,8 @@ class Investigacion(UppercaseMixin,models.Model):
 
     # Sección 5: Reconsideracion
     reconsideracion = models.BooleanField(default=False)
-    ficha_reconsideracion = models.CharField(max_length=20, null=True, blank=True)
-    # sancion_definitiva removed
+    reconsideracion = models.BooleanField(default=False)
+    observaciones_reconsideracion = models.TextField(null=True, blank=True)
     
     # Auditoría
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='investigaciones_creadas')
@@ -410,6 +410,7 @@ class DocumentoInvestigacion(models.Model):
         #('Anexo', 'Anexo'),
         ('NotificacionConclusion', 'Notificación de Conclusión'),
         ('Evidencia de medidas preventivas', 'Evidencia de medidas preventivas'),
+        ('Formato_Reconsideracion', 'Formato de Reconsideración'),
     ]
     tipo = models.CharField(max_length=50, choices=TIPO_DOC_CHOICES)
     

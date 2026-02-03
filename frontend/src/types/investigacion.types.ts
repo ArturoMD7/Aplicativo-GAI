@@ -144,7 +144,7 @@ export interface InvestigacionListado {
   sancion?: string;
   conducta_definitiva?: string;
   dias_suspension?: number;
-  ficha_reconsideracion?: string;
+  observaciones_reconsideracion?: string;
   reconsideracion?: boolean;
 }
 
@@ -200,6 +200,6 @@ export interface InvestigacionDetalle extends InvestigacionFormState {
   dias_suspension?: number;
   estatus?: string;
   reconsideracion?: boolean;
-  ficha_reconsideracion?: string;
+  observaciones_reconsideracion?: string;
   conducta_definitiva?: string;
 }
