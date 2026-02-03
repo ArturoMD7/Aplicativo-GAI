@@ -63,22 +63,24 @@ interface ButtonIconProps {
   size?: 'small' | 'medium' | 'large';
   // Tipo de elemento (button o link)
   type?: 'button' | 'submit' | 'reset';
+  style?: React.CSSProperties;
 }
 
-const ButtonIcon: React.FC<ButtonIconProps> = ({
-  variant = 'custom',
-  to,
-  onClick,
-  icon,
-  text,
-  color,
-  hoverColor,
-  title,
-  disabled = false,
-  className = '',
-  size = 'medium',
-  type = 'button'
-}) => {
+const ButtonIcon: React.FC<ButtonIconProps> = (props) => {
+  const {
+    variant = 'custom',
+    to,
+    onClick,
+    icon,
+    text,
+    color,
+    hoverColor,
+    title,
+    disabled = false,
+    className = '',
+    size = 'medium',
+    type = 'button'
+  } = props;
   // Obtener configuración del variant
   const variantConfig = BUTTON_VARIANTS[variant];
 
@@ -97,7 +99,8 @@ const ButtonIcon: React.FC<ButtonIconProps> = ({
   // Estilos inline
   const buttonStyle = {
     '--btn-color': finalColor,
-    '--btn-hover-color': finalHoverColor
+    '--btn-hover-color': finalHoverColor,
+    ...props.style
   } as React.CSSProperties;
 
   // Si tiene 'to', es un Link de React Router

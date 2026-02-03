@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiTrendingUp, FiEye, FiClock, FiFileText, FiUpload, FiFile } from 'react-icons/fi';
+import { FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiTrendingUp, FiEye, FiClock, FiFileText, FiUpload, FiFile, FiRefreshCw } from 'react-icons/fi';
 import { MdDeleteForever } from "react-icons/md";
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import Pagination from '../components/Pagination';
@@ -44,7 +44,8 @@ function FinalizacionListPage() {
     conducta_actual: ''
   });
 
-  // Estado para controlar si ya existe el documento de notificación y el archivo seleccionado
+  const [modalMode, setModalMode] = useState<'CONCLUDE' | 'RECONSIDER'>('CONCLUDE');
+
   const [hasNotificacion, setHasNotificacion] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -140,6 +141,7 @@ function FinalizacionListPage() {
         sancion_actual: '',
         conducta_actual: investigacion?.conductas || 'No registrada'
       });
+      setModalMode('CONCLUDE');
       setIsConcluirModalOpen(true);
 
     } catch (err: any) {
@@ -148,16 +150,32 @@ function FinalizacionListPage() {
     }
   };
 
+  const handleReconsiderar = (id: number) => {
+    const investigacion = investigaciones.find(inv => inv.id === id);
+    setDataConcluir({
+      id: id,
+      reconsideracion: true, // Modo reconsideración activado
+      ficha: investigacion?.ficha_reconsideracion || '',
+      sancion: investigacion?.sancion || '',
+      conducta: investigacion?.conducta_definitiva || '',
+      dias_suspension: investigacion?.dias_suspension ? String(investigacion.dias_suspension) : '',
+      sancion_actual: investigacion?.sancion || '',
+      conducta_actual: investigacion?.conducta_definitiva || investigacion?.conductas || 'No registrada'
+    });
+    setModalMode('RECONSIDER');
+    setIsConcluirModalOpen(true);
+  };
+
   const handleConfirmConcluir = async () => {
-    // 1. Validar el archivo si no existe previamente
-    if (!hasNotificacion && !selectedFile) {
+    // 1. Validar el archivo si no existe previamente (SOLO EN MODO CONCLUDE)
+    if (modalMode === 'CONCLUDE' && !hasNotificacion && !selectedFile) {
       Swal.fire('Atención', 'Debes adjuntar la Notificación de Conclusión para continuar.', 'warning');
       return;
     }
 
     try {
-      // 2. Subir archivo si fue seleccionado
-      if (selectedFile && !hasNotificacion) {
+      // 2. Subir archivo si fue seleccionado (SOLO EN MODO CONCLUDE)
+      if (modalMode === 'CONCLUDE' && selectedFile && !hasNotificacion) {
         const formData = new FormData();
         formData.append('archivo', selectedFile);
         formData.append('tipo', 'NotificacionConclusion');
@@ -169,13 +187,13 @@ function FinalizacionListPage() {
         });
       }
 
-      // 3. Proceder con la conclusión
+      // 3. Proceder con la conclusión / reconsideración
       const payload = {
         estatus: 'CONCLUIDA',
-        reconsideracion: dataConcluir.reconsideracion,
-        ficha_reconsideracion: dataConcluir.reconsideracion ? dataConcluir.ficha : null,
+        reconsideracion: modalMode === 'RECONSIDER',
+        ficha_reconsideracion: modalMode === 'RECONSIDER' ? dataConcluir.ficha : null,
         sancion: dataConcluir.sancion,
-        conducta_definitiva: dataConcluir.reconsideracion ? dataConcluir.conducta : dataConcluir.conducta_actual,
+        conducta_definitiva: modalMode === 'RECONSIDER' ? dataConcluir.conducta : dataConcluir.conducta_actual,
         dias_suspension: (dataConcluir.sancion === 'SUSPENSIÓN DE LABORES') ? dataConcluir.dias_suspension : null
       };
 
@@ -186,7 +204,12 @@ function FinalizacionListPage() {
       ));
 
       setIsConcluirModalOpen(false);
-      Swal.fire('¡Concluida!', 'La investigación ha sido concluida exitosamente.', 'success');
+
+      if (modalMode === 'RECONSIDER') {
+        Swal.fire('Actualizado', 'La reconsideración se guardó correctamente.', 'success');
+      } else {
+        Swal.fire('¡Concluida!', 'La investigación ha sido concluida exitosamente.', 'success');
+      }
 
     } catch (err) {
       console.error(err);
@@ -404,6 +427,17 @@ function FinalizacionListPage() {
                         />
                       )}
 
+                      {statusFilter === 'COMPLETED' && (['Admin', 'AdminCentral'].includes(userRole) || userRole.startsWith('Supervisor')) && !inv.reconsideracion && (
+                        <ButtonIcon
+                          variant="custom"
+                          onClick={() => handleReconsiderar(inv.id)}
+                          icon={<FiRefreshCw />}
+                          title="Reconsiderar Conducta/Sanción"
+                          size="medium"
+                          style={{ backgroundColor: '#6c757d', color: 'white' }}
+                        />
+                      )}
+
                       {(['Admin', 'AdminCentral'].includes(userRole) || userRole.startsWith('Supervisor')) && (
                         <ButtonIcon
                           variant="delete"
@@ -473,27 +507,38 @@ function FinalizacionListPage() {
             </button>
 
             <h2 style={{ margin: 0, color: '#2c3e50', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
-              <FiCheckCircle style={{ marginRight: '10px', color: '#28a745' }} />
-              Concluir Investigación
+              {modalMode === 'RECONSIDER' ? (
+                <>
+                  <FiRefreshCw style={{ marginRight: '10px', color: '#6c757d' }} />
+                  Reconsiderar Investigación
+                </>
+              ) : (
+                <>
+                  <FiCheckCircle style={{ marginRight: '10px', color: '#28a745' }} />
+                  Concluir Investigación
+                </>
+              )}
             </h2>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', background: '#f8f9fa', padding: '15px', borderRadius: '8px' }}>
               <div>
-                <label style={{ fontSize: '0.9rem', color: '#666', fontWeight: 'bold' }}>Conducta Reportada:</label>
+                <label style={{ fontSize: '0.9rem', color: '#666', fontWeight: 'bold' }}>Conducta {modalMode === 'RECONSIDER' ? 'Actual' : 'Reportada'}:</label>
                 <p style={{ margin: '5px 0', fontSize: '0.95rem' }}>{dataConcluir.conducta_actual}</p>
               </div>
               <div>
-                <label style={{ fontSize: '0.9rem', color: '#666', fontWeight: 'bold' }}>Sanción Determinada:</label>
-                <p style={{ margin: '5px 0', fontSize: '0.95rem' }}>{dataConcluir.sancion_actual}</p>
+                <label style={{ fontSize: '0.9rem', color: '#666', fontWeight: 'bold' }}>Sanción {modalMode === 'RECONSIDER' ? 'Actual' : 'Determinada'}:</label>
+                <p style={{ margin: '5px 0', fontSize: '0.95rem' }}>{dataConcluir.sancion_actual || 'Pendiente'}</p>
               </div>
             </div>
 
-            <p style={{ color: '#555', lineHeight: '1.5' }}>
-              Al concluir la investigación, esta pasará al estatus <strong>CONCLUIDA</strong>.
-            </p>
+            {modalMode === 'CONCLUDE' && (
+              <p style={{ color: '#555', lineHeight: '1.5' }}>
+                Al concluir la investigación, esta pasará al estatus <strong>CONCLUIDA</strong>.
+              </p>
+            )}
 
             <div style={{ background: '#fff', padding: '20px', borderRadius: '8px', border: '1px solid #ddd' }}>
-              {!hasNotificacion && (
+              {modalMode === 'CONCLUDE' && !hasNotificacion && (
                 <div style={{ marginBottom: '25px' }}>
                   <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#840016', fontSize: '0.95rem' }}>
                     <FiAlertCircle style={{ marginBottom: '-2px', marginRight: '5px' }} />
@@ -551,7 +596,7 @@ function FinalizacionListPage() {
               {/* 1. SELECCIÓN DE SANCIÓN (SIEMPRE DISPONIBLE) */}
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.95rem', color: '#444' }}>
-                  Sanción a aplicar:
+                  {modalMode === 'RECONSIDER' ? 'Nueva Sanción:' : 'Sanción a aplicar:'}
                 </label>
                 <select
                   className="admin-input"
@@ -567,7 +612,7 @@ function FinalizacionListPage() {
               {dataConcluir.sancion === 'SUSPENSIÓN DE LABORES' && (
                 <div style={{ marginBottom: '20px' }}>
                   <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.95rem', color: '#444' }}>
-                    Días de Suspensión:
+                    {modalMode === 'RECONSIDER' ? 'Nuevos Días de Suspensión:' : 'Días de Suspensión:'}
                   </label>
                   <input
                     type="number"
@@ -582,44 +627,38 @@ function FinalizacionListPage() {
               )}
 
 
-              {/* 2. RECONSIDERACIÓN DE CONDUCTA */}
-              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.05rem', fontWeight: 'bold', cursor: 'pointer', marginBottom: '20px', color: '#840016' }}>
-                <input
-                  type="checkbox"
-                  checked={dataConcluir.reconsideracion}
-                  onChange={(e) => setDataConcluir(prev => ({ ...prev, reconsideracion: e.target.checked }))}
-                  style={{ width: '20px', height: '20px', accentColor: '#840016' }}
-                />
-                ¿Reconsideración de Conducta?
-              </label>
+              {/* 2. RECONSIDERACIÓN DE CONDUCTA (SOLO EN MODO RECONSIDER) */}
+              {modalMode === 'RECONSIDER' && (
+                <div style={{ paddingTop: '20px', borderTop: '2px dashed #ddd' }}>
+                  <h4 style={{ color: '#840016', marginTop: 0, marginBottom: '15px' }}><FiRefreshCw style={{ marginRight: '5px' }} /> Reconsideración</h4>
 
-              {dataConcluir.reconsideracion && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', paddingLeft: '10px', borderLeft: '3px solid #840016' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
 
-                  <div style={{ position: 'relative', zIndex: 10 }}>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
-                      Conducta Definitiva (Nueva):
-                    </label>
-                    <CustomConductaSelect
-                      value={dataConcluir.conducta}
-                      onChange={(val) => setDataConcluir(prev => ({ ...prev, conducta: val }))}
-                      options={opciones?.conductas || []}
-                      descriptions={conductaDescriptions}
-                    />
-                  </div>
+                    <div style={{ position: 'relative', zIndex: 10 }}>
+                      <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
+                        Conducta Definitiva (Nueva):
+                      </label>
+                      <CustomConductaSelect
+                        value={dataConcluir.conducta}
+                        onChange={(val) => setDataConcluir(prev => ({ ...prev, conducta: val }))}
+                        options={opciones?.conductas || []}
+                        descriptions={conductaDescriptions}
+                      />
+                    </div>
 
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
-                      Ficha que autoriza Reconsideración:
-                    </label>
-                    <input
-                      type="text"
-                      className="admin-input"
-                      value={dataConcluir.ficha}
-                      onChange={(e) => setDataConcluir(prev => ({ ...prev, ficha: e.target.value }))}
-                      placeholder="Ej. 123456"
-                      style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
-                    />
+                    <div>
+                      <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
+                        Ficha que autoriza Reconsideración:
+                      </label>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={dataConcluir.ficha}
+                        onChange={(e) => setDataConcluir(prev => ({ ...prev, ficha: e.target.value }))}
+                        placeholder="Ej. 123456"
+                        style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -639,11 +678,16 @@ function FinalizacionListPage() {
                 onClick={handleConfirmConcluir}
                 style={{
                   padding: '10px 20px', borderRadius: '6px', border: 'none',
-                  background: '#28a745', color: 'white', cursor: 'pointer', fontWeight: '600',
+                  background: modalMode === 'RECONSIDER' ? '#6c757d' : '#28a745',
+                  color: 'white', cursor: 'pointer', fontWeight: '600',
                   display: 'flex', alignItems: 'center', gap: '5px'
                 }}
               >
-                <FiCheckCircle /> Confirmar Conclusión
+                {modalMode === 'RECONSIDER' ? (
+                  <> <FiRefreshCw /> Guardar Reconsideración </>
+                ) : (
+                  <> <FiCheckCircle /> Confirmar Conclusión </>
+                )}
               </button>
             </div>
           </div>

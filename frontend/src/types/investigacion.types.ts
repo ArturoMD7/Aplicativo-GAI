@@ -144,6 +144,8 @@ export interface InvestigacionListado {
   sancion?: string;
   conducta_definitiva?: string;
   dias_suspension?: number;
+  ficha_reconsideracion?: string;
+  reconsideracion?: boolean;
 }
 
 export interface Antecedente {
