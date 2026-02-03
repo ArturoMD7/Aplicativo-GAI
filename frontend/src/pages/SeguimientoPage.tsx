@@ -13,6 +13,7 @@ import Swal from 'sweetalert2';
 import '../styles/InvestigacionPage.css';
 import DocumentPreviewModal from '../components/Modals/DocumentPreviewModal';
 import { InvestigacionForm } from '../components/Forms/InvestigacionForm';
+import CompletionProgressBar from '../components/DataDisplay/CompletionProgressBar';
 
 const TIPOS_DOCUMENTOS = [
   'Reporte',
@@ -313,9 +314,12 @@ function SeguimientoPage() {
             {investigacion?.estatus}
           </div>
         </div>
+        <div className='admin-form-section' style={{ marginBottom: '20px' }}>
+          <CompletionProgressBar percentage={investigacion?.porcentaje_completitud || 0} />
+        </div>
 
         {/* RESUMEN PRINCIPAL */}
-        <div style={{
+        <div className='admin-form-section' style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
           gap: '20px',
