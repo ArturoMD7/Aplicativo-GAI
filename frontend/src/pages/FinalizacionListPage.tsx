@@ -544,12 +544,10 @@ function FinalizacionListPage() {
             <h2 style={{ margin: 0, color: '#2c3e50', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
               {modalMode === 'RECONSIDER' ? (
                 <>
-                  <FiRefreshCw style={{ marginRight: '10px', color: '#6c757d' }} />
                   Reconsiderar Investigación
                 </>
               ) : (
                 <>
-                  <FiCheckCircle style={{ marginRight: '10px', color: '#28a745' }} />
                   Concluir Investigación
                 </>
               )}
@@ -631,7 +629,7 @@ function FinalizacionListPage() {
               {/* 1. SELECCIÓN DE SANCIÓN (SIEMPRE DISPONIBLE) */}
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', fontSize: '0.95rem', color: '#444' }}>
-                  {modalMode === 'RECONSIDER' ? 'Nueva Sanción:' : 'Sanción a aplicar:'}
+                  {modalMode === 'RECONSIDER' ? 'Sanción Reconsiderada:' : 'Sanción:'}
                 </label>
                 <select
                   className="admin-input"
@@ -671,7 +669,7 @@ function FinalizacionListPage() {
 
                     <div style={{ position: 'relative', zIndex: 10 }}>
                       <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
-                        Conducta Definitiva (Nueva):
+                        Conducta (Nueva):
                       </label>
                       <CustomConductaSelect
                         value={dataConcluir.conducta}
