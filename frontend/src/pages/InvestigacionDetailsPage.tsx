@@ -221,7 +221,7 @@ function InvestigacionDetailsPage() {
         <section className="admin-form-section">
           <h2 className="admin-section-title">
             <i className="fas fa-info-circle"></i>
-            Porcentaje de Completitud
+            Avance de la investigación
           </h2>
           <div className="admin-form-group" style={{ width: '100%' }}>
             <CompletionProgressBar
