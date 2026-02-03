@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
-from .models import Investigacion, Contacto, Investigador, Involucrado, Testigo, Reportante, DocumentoInvestigacion
+from .models import Investigacion, Contacto, Investigador, Involucrado, Testigo, Reportante, DocumentoInvestigacion, InvestigacionHistorico, InvestigacionSirhn
 from .services.completitud import calcular_completitud
 
 
@@ -78,9 +78,50 @@ class InvolucradoSerializer(serializers.ModelSerializer):
         model = Involucrado
         fields = [
             'id', 'ficha', 'nombre', 'nivel', 'categoria', 'puesto',
-            'edad', 'antiguedad', 'rfc', 'curp', 'direccion', 'tiene_antecedentes', 'regimen', 'jornada', 'sindicato', 'seccion_sindical'
+            'edad', 'antiguedad', 'rfc', 'curp', 'direccion', 'tiene_antecedentes', 'regimen', 'jornada', 'sindicato', 'seccion_sindical',
+            'antecedentes_detalles'
         ]
-        read_only_fields = ['id']
+        read_only_fields = ['id', 'antecedentes_detalles']
+        
+    antecedentes_detalles = serializers.SerializerMethodField()
+
+    def get_antecedentes_detalles(self, obj):
+        lista_antecedentes = []
+        ficha = obj.ficha
+        if not ficha:
+            return []
+
+        historicos = InvestigacionHistorico.objects.filter(ficha=ficha)
+        for h in historicos:
+            desc = f"{h.motivo_investigacion or ''} - {h.observaciones or ''} (Sanción: {h.sancion_aplicada or 'N/A'})"
+            lista_antecedentes.append({
+                'origen': 'Histórico (Legacy)',
+                'fecha': h.fecha,
+                'descripcion': desc.strip(' -'),
+                'referencia': 'N/A'
+            })
+
+        historicos_sirhn = InvestigacionSirhn.objects.filter(ficha=ficha)
+        for h in historicos_sirhn:
+            desc = f"{h.motivoinvestigacion or ''} - {h.descripcion or ''} (Sanción: {h.sancion or 'N/A'})"
+            lista_antecedentes.append({
+                'origen': 'Histórico (SIRHN)',
+                'fecha': h.fechainicio,
+                'descripcion': desc.strip(' -'),
+                'referencia': 'N/A'
+            })
+        
+        actuales = Involucrado.objects.filter(ficha=ficha).exclude(investigacion=obj.investigacion).select_related('investigacion')
+        for inv in actuales:
+            desc = f"{inv.investigacion.conductas or ''} - (Sanción: {inv.investigacion.sancion or 'N/A'})"
+            lista_antecedentes.append({
+                'origen': 'Sistema Actual',
+                'fecha': inv.investigacion.fecha_reporte,
+                'descripcion': desc.strip(' -'),
+                'referencia': inv.investigacion.numero_reporte
+            })
+            
+        return lista_antecedentes
 
     def validate_ficha(self, value):
         if not value.strip():

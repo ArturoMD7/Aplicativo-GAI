@@ -164,6 +164,69 @@ function InvestigacionDetailsPage() {
                 </span>
               </div>
 
+              {tipo === 'involucrados' && persona.tiene_antecedentes && (
+                <div style={{
+                  backgroundColor: '#fff3cd',
+                  border: '1px solid #ffeeba',
+                  borderRadius: '6px',
+                  marginTop: '15px',
+                  marginBottom: '15px',
+                  overflow: 'hidden'
+                }}>
+                  {/* Título de la alerta */}
+                  <div style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#ffeeba',
+                    color: '#856404',
+                    fontSize: '0.85rem',
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
+                    <i className="fas fa-history"></i>
+                    Historial Encontrado:
+                  </div>
+
+                  {/* Mini Tabla de Detalles */}
+                  <div style={{ padding: '0', maxHeight: '200px', overflowY: 'auto' }}>
+                    <table style={{ width: '100%', fontSize: '0.80rem', borderCollapse: 'collapse' }}>
+                      <thead style={{ backgroundColor: '#fffdf5' }}>
+                        <tr>
+                          <th style={{ textAlign: 'left', padding: '6px 10px', color: '#856404' }}>Fecha</th>
+                          <th style={{ textAlign: 'left', padding: '6px 10px', color: '#856404' }}>Detalle</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {persona.antecedentes_detalles?.map((ant: any, i: number) => (
+                          <tr key={i} style={{ borderBottom: '1px solid #fae3b3' }}>
+                            <td style={{ padding: '6px 10px', color: '#555', whiteSpace: 'nowrap', verticalAlign: 'top' }}>
+                              {ant.fecha}
+                            </td>
+                            <td style={{ padding: '6px 10px', verticalAlign: 'top' }}>
+                              <strong>{ant.referencia}</strong>
+                              <span style={{
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                fontSize: '0.70rem',
+                                marginLeft: '8px',
+                                backgroundColor: ant.origen?.includes('Histórico') ? '#e2e3e5' : '#cce5ff',
+                                color: ant.origen?.includes('Histórico') ? '#383d41' : '#004085'
+                              }}>
+                                {ant.origen}
+                              </span>
+                              <div style={{ color: '#666', fontSize: '0.75rem', marginTop: '2px' }}>
+                                {ant.descripcion}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
 
               {tipo === 'investigadores' && persona.no_constancia && (
                 <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed #eee' }}>
