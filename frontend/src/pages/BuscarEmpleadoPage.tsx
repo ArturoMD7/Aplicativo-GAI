@@ -3,6 +3,7 @@ import apiClient from '../api/apliClient';
 import '../styles/BuscarEmpleadoPage.css';
 import { FiSearch, FiUser, FiInfo, FiAlertCircle, FiRefreshCw } from 'react-icons/fi';
 import type { EmpleadoBuscado } from '../types/investigacion.types';
+import ButtonIcon from '../components/Buttons/ButtonIcon';
 
 const BuscarEmpleadoPage = () => {
     const [query, setQuery] = useState('');
@@ -86,9 +87,16 @@ const BuscarEmpleadoPage = () => {
                             autoFocus
                         />
                     </div>
-                    <button type="submit" className="search-button" disabled={loading || !query.trim()}>
-                        {loading ? 'Buscando...' : 'Consultar'}
-                    </button>
+                    <ButtonIcon
+                        type="submit"
+                        title="Consultar ficha o nombre"
+                        text={loading ? 'Buscando...' : 'Consultar'}
+                        icon={<FiSearch />}
+                        disabled={loading || !query.trim()}
+                        color="#840016"
+                        hoverColor="#640011"
+                        size="large"
+                    />
                 </form>
             </div>
 
@@ -111,12 +119,14 @@ const BuscarEmpleadoPage = () => {
                                     <span>Ficha: {res.ficha}</span>
                                     <span className="resultado-meta">{res.categoria} - {res.status}</span>
                                 </div>
-                                <button
-                                    className="ver-detalle-btn"
-                                    onClick={() => fetchDetalleEmpleado(res.ficha)}
-                                >
-                                    Ver Detalle
-                                </button>
+                                <div style={{ width: '100%', marginTop: 'auto' }}>
+                                    <ButtonIcon
+                                        variant="view"
+                                        text="Ver Detalle"
+                                        onClick={() => fetchDetalleEmpleado(res.ficha)}
+                                        style={{ width: '100%' }}
+                                    />
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -128,9 +138,15 @@ const BuscarEmpleadoPage = () => {
                 <div className="empleado-result-card">
                     <div className="result-header">
                         <h2><FiUser /> {empleado.nombre}</h2>
-                        <button onClick={handleClear} className="clear-button">
-                            <FiRefreshCw style={{ marginRight: 5 }} /> Nueva Consulta
-                        </button>
+                        <ButtonIcon
+                            text="Nueva Consulta"
+                            onClick={handleClear}
+                            icon={<FiRefreshCw />}
+                            variant="custom"
+                            color="#666"
+                            hoverColor="#333"
+                            style={{ border: '1px solid #ddd', backgroundColor: 'transparent', color: '#666' }}
+                        />
                     </div>
 
                     <div className="empleado-details-grid">
