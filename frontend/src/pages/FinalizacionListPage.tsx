@@ -687,7 +687,7 @@ function FinalizacionListPage() {
                         className="admin-input"
                         value={dataConcluir.observaciones_reconsideracion}
                         onChange={(e) => setDataConcluir(prev => ({ ...prev, observaciones_reconsideracion: e.target.value }))}
-                        placeholder="Describa el motivo de la reconsideración y quién autoriza..."
+                        placeholder="Describa el motivo de la reconsideración..."
                         style={{ width: '100%', padding: '10px', borderRadius: '5px', border: '1px solid #ccc', minHeight: '80px', resize: 'vertical' }}
                       />
                     </div>
