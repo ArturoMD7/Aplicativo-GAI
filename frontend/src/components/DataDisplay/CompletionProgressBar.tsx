@@ -19,7 +19,7 @@ const CompletionProgressBar: React.FC<CompletionProgressBarProps> = ({
                 marginBottom: '8px',
                 alignItems: 'center'
             }}>
-                <span style={{ fontWeight: 600, color: '#444' }}>Progreso del Expediente</span>
+                <span style={{ fontWeight: 600, color: '#444' }}>Progreso de la investigación</span>
                 <span style={{
                     fontWeight: 'bold',
                     color: percentage === 100 ? '#1e5b4f' : '#840016',
