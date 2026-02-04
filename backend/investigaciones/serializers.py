@@ -80,8 +80,6 @@ class ReportanteSerializer(serializers.ModelSerializer):
             errors = {}
             for field in required_fields:
                 if not data.get(field) and (not self.instance or not getattr(self.instance, field)):
-                     # Check if present in data OR present in instance. 
-                     # Actually, standard required=True is relaxed. So we must check if value is present.
                      val = data.get(field)
                      if val is None or (isinstance(val, str) and not val.strip()):
                          errors[field] = "Este campo es requerido."
@@ -91,8 +89,6 @@ class ReportanteSerializer(serializers.ModelSerializer):
         return data
 
     def validate_ficha(self, value):
-        # We can't easily access es_externo here without looking at initial data, 
-        # but simpler to allow empty here and catch in validate() if not external
         return value
 
 class InvolucradoSerializer(serializers.ModelSerializer):
@@ -152,9 +148,6 @@ class InvolucradoSerializer(serializers.ModelSerializer):
             es_externo = self.instance.es_externo
 
         if not es_externo:
-            # Note: rfc, curp are required per original model constraints, so we enforce them here.
-            # regimen, jornada were nullable but seemingly required in previous validation context?
-            # User reported errors for: nivel, edad, rfc, curp, direccion, regimen, jornada.
             required_fields = ['ficha', 'nivel', 'categoria', 'puesto', 'edad', 'antiguedad', 'rfc', 'curp', 'direccion', 'regimen', 'jornada']
             errors = {}
             for field in required_fields:

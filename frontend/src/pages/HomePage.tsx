@@ -90,7 +90,9 @@ function HomePage({ onLogout }: HomePageProps) {
 
         <div className="content-container">
           <header className="home-header">
-            <h1 className="app-title"> </h1>
+            <div className="header-spacer"></div>
+
+            <h1 className="app-title"> Sistema de Administración de Asuntos Internos</h1>
 
             {userProfile && (
               <div className="user-header-profile" onClick={handleProfileClick} title="Ver mi información">

@@ -80,6 +80,12 @@
   margin: 0 0 6px;
 }
 
+.titulo-pemex2 {
+  font-weight: 700;
+  color: var(--pemex-green);
+  margin: 0 0 6px;
+}
+
 .auth-subtitle {
   color: #6c757d;
   margin: 0;

@@ -63,6 +63,7 @@ function LoginPage({ onSwitchToRegister, onLoginSuccess }: LoginPageProps) {
         <div className="auth-card-body">
           <div className="auth-brand">
             <img src={pemexLogo} alt="Pemex" />
+            <h1 className="titulo-pemex">SAAI</h1>
             <h3 className="titulo-pemex">Iniciar Sesión</h3>
             <p className="auth-subtitle">Ingrese sus credenciales para continuar</p>
           </div>
