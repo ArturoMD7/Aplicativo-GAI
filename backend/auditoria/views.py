@@ -6,6 +6,7 @@ from datetime import timedelta
 from django.db.models import Count
 from .models import ActivityLog
 from .serializers import ActivityLogSerializer, ActivityStatsSerializer
+from user_agents import parse
 
 class ActivityLogViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -103,6 +104,14 @@ def create_log(request):
         except:
              pass
 
+        # Parsear User Agent
+        ua_string = request.META.get('HTTP_USER_AGENT', '')
+        try:
+            user_agent = parse(ua_string)
+            formatted_ua = f"{user_agent.browser.family} {user_agent.browser.version_string} / {user_agent.os.family} {user_agent.os.version_string}"
+        except Exception:
+            formatted_ua = ua_string[:255]
+
         ActivityLog.objects.create(
             user=request.user,
             action=action,
@@ -112,7 +121,7 @@ def create_log(request):
             investigacion_id=investigacion_id,
             ip_address=ip,
             computer_name=computer_name,
-            user_agent=request.META.get('HTTP_USER_AGENT', '')
+            user_agent=formatted_ua
         )
         return Response({'status': 'ok'})
     except Exception as e:

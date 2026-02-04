@@ -1,42 +1,16 @@
 CAMPOS_EVALUADOS = [
-    ### INFORMACION GENERAL
-    {"campo": "nombre_corto", "obligatorio": True, "valor": 0.5},
-    {"campo": "procedencia", "obligatorio": True, "valor": 0.5},
-    {"campo": "gravedad", "obligatorio": True, "valor": 0.5},
-    {"campo": "conductas", "obligatorio": True, "valor": 0.5},
-    {"campo": "gerencia_responsable", "obligatorio": True, "valor": 0.5},
     
-
-    ### TIEMPOS
-    {"campo": "fecha_reporte", "obligatorio": True, "valor": 0.5},
-    {"campo": "fecha_conocimiento_hechos", "obligatorio": True, "valor": 0.5},
-    {"campo": "fecha_prescripcion", "obligatorio": True, "valor": 0.5},
-   
-    ### LUGAR
-    {"campo": "lugar", "obligatorio": True, "valor": 0.5},
-    {"campo": "centro_trabajo", "obligatorio": True, "valor": 0.5},
-    {"campo": "observaciones", "obligatorio": True, "valor": 0.5},
-
-    ### PERSONAS
-    {"campo": "reportantes", "obligatorio": True, "valor": 0.5},
-    {"campo": "involucrados", "obligatorio": True, "valor": 0.5},
-    {"campo": "testigos", "obligatorio": True, "valor": 0.5},
-    {"campo": "investigadores", "obligatorio": True, "valor": 1},
-
-
-    ### SANCION (FINALIZAR)
-    {"campo": "sancion", "obligatorio": True, "valor": 5},
 ]
 
 DOCUMENTOS_REQUERIDOS = [
-    {"tipo": "Reporte", "valor": 7.7},
-    {"tipo": "Citatorio_Reportado", "valor": 7.7},
+    {"tipo": "Reporte", "valor": 20},
+    {"tipo": "Citatorio_Reportado", "valor": 20},
     {"tipo": "Citatorio_Ratificante", "valor": 7.7},
     {"tipo": "Citatorio_Testigo", "valor": 7.7},
     {"tipo": "Acta_Comparecencia_Ratificante", "valor": 7.7},
     {"tipo": "Acta_Testigo", "valor": 7.7},
     {"tipo": "Acta_Investigacion", "valor": 7.7},
-    {"tipo": "Dictamen", "valor": 7.7},
+    {"tipo": "Dictamen", "valor": 20},
     {"tipo": "Resultado", "valor": 7.7},
     {"tipo": "Pruebas", "valor": 7.7},
     {"tipo": "NotificacionConclusion", "valor": 10},

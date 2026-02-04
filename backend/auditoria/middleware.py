@@ -8,6 +8,7 @@ from django.utils.deprecation import MiddlewareMixin
 from django.contrib.auth.models import AnonymousUser
 from .models import ActivityLog
 from investigaciones.models import Investigacion
+from user_agents import parse
 
 logger = logging.getLogger(__name__)
 
@@ -58,17 +59,24 @@ class ActivityLoggingMiddleware(MiddlewareMixin):
             ip_address = self._get_client_ip(request)
             computer_name = self._get_hostname(ip_address)
 
+            ua_string = request.META.get('HTTP_USER_AGENT', '')
+            try:
+                user_agent = parse(ua_string)
+                formatted_ua = f"{user_agent.browser.family} {user_agent.browser.version_string} / {user_agent.os.family} {user_agent.os.version_string}"
+            except Exception:
+                formatted_ua = ua_string[:255] 
+
             # Crear registro
             try:
                 log_entry = ActivityLog.objects.create(
-                    user=request.user,
+                    user=request.user + region,
                     action=action,
                     endpoint=current_path,
                     method=request.method,
                     description=description,
                     ip_address=ip_address,
                     computer_name=computer_name,
-                    user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                    user_agent=formatted_ua,
                     investigacion=investigacion
                 )
             except Exception as e:
