@@ -64,13 +64,35 @@ class ReportanteSerializer(serializers.ModelSerializer):
         model = Reportante
         fields = [
             'id', 'ficha', 'nombre', 'nivel', 'categoria', 'puesto',
-            'edad', 'antiguedad', 'direccion'
+            'edad', 'antiguedad', 'direccion', 'es_externo'
         ]
         read_only_fields = ['id']
 
+    def validate(self, data):
+        es_externo = data.get('es_externo', False)
+        
+        # If updating, check instance value if not provided in data
+        if self.instance and 'es_externo' not in data:
+            es_externo = self.instance.es_externo
+
+        if not es_externo:
+            required_fields = ['ficha', 'nivel', 'categoria', 'puesto', 'edad', 'antiguedad', 'direccion']
+            errors = {}
+            for field in required_fields:
+                if not data.get(field) and (not self.instance or not getattr(self.instance, field)):
+                     # Check if present in data OR present in instance. 
+                     # Actually, standard required=True is relaxed. So we must check if value is present.
+                     val = data.get(field)
+                     if val is None or (isinstance(val, str) and not val.strip()):
+                         errors[field] = "Este campo es requerido."
+            
+            if errors:
+                raise serializers.ValidationError(errors)
+        return data
+
     def validate_ficha(self, value):
-        if not value.strip():
-            raise serializers.ValidationError("La ficha es requerida")
+        # We can't easily access es_externo here without looking at initial data, 
+        # but simpler to allow empty here and catch in validate() if not external
         return value
 
 class InvolucradoSerializer(serializers.ModelSerializer):
@@ -79,7 +101,7 @@ class InvolucradoSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'ficha', 'nombre', 'nivel', 'categoria', 'puesto',
             'edad', 'antiguedad', 'rfc', 'curp', 'direccion', 'tiene_antecedentes', 'regimen', 'jornada', 'sindicato', 'seccion_sindical',
-            'antecedentes_detalles'
+            'antecedentes_detalles', 'es_externo'
         ]
         read_only_fields = ['id', 'antecedentes_detalles']
         
@@ -123,18 +145,37 @@ class InvolucradoSerializer(serializers.ModelSerializer):
             
         return lista_antecedentes
 
+    def validate(self, data):
+        es_externo = data.get('es_externo', False)
+        
+        if self.instance and 'es_externo' not in data:
+            es_externo = self.instance.es_externo
+
+        if not es_externo:
+            # Note: rfc, curp are required per original model constraints, so we enforce them here.
+            # regimen, jornada were nullable but seemingly required in previous validation context?
+            # User reported errors for: nivel, edad, rfc, curp, direccion, regimen, jornada.
+            required_fields = ['ficha', 'nivel', 'categoria', 'puesto', 'edad', 'antiguedad', 'rfc', 'curp', 'direccion', 'regimen', 'jornada']
+            errors = {}
+            for field in required_fields:
+                 val = data.get(field)
+                 if val is None or (isinstance(val, str) and not val.strip()):
+                     errors[field] = "Este campo es requerido."
+            
+            if errors:
+                raise serializers.ValidationError(errors)
+        return data
+
     def validate_ficha(self, value):
-        if not value.strip():
-            raise serializers.ValidationError("La ficha es requerida")
         return value
 
     def validate_edad(self, value):
-        if value < 18 or value > 100:
-            raise serializers.ValidationError("La edad debe estar entre 18 y 100 años")
+        if value is not None and (value < 0 or value > 100):
+            raise serializers.ValidationError("La edad debe estar entre 0 y 100 años")
         return value
 
     def validate_antiguedad(self, value):
-        if value < 0:
+        if value is not None and value < 0:
             raise serializers.ValidationError("La antigüedad no puede ser negativa")
         return value
 

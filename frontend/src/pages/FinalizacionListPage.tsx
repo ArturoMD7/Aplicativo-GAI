@@ -659,8 +659,6 @@ function FinalizacionListPage() {
                 </div>
               )}
 
-
-              {/* 2. RECONSIDERACIÓN DE CONDUCTA (SOLO EN MODO RECONSIDER) */}
               {modalMode === 'RECONSIDER' && (
                 <div style={{ paddingTop: '20px', borderTop: '2px dashed #ddd' }}>
                   <h4 style={{ color: '#840016', marginTop: 0, marginBottom: '15px' }}><FiRefreshCw style={{ marginRight: '5px' }} /> Reconsideración</h4>
@@ -692,7 +690,6 @@ function FinalizacionListPage() {
                       />
                     </div>
 
-                    {/* FILE UPLOAD FOR RECONSIDERATION */}
                     <div>
                       <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500', fontSize: '0.9rem', color: '#444' }}>
                         Formato de Reconsideración (Obligatorio):

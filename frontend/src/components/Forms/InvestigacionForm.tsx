@@ -84,7 +84,9 @@ interface ReportanteForm {
   puesto: string;
   edad: number;
   antiguedad: number;
+
   direccion: string;
+  es_externo?: boolean;
 }
 
 interface InvolucradoForm {
@@ -105,6 +107,7 @@ interface InvolucradoForm {
   termino: string;
   fuente: string;
   centro_trabajo: string;
+  es_externo?: boolean;
 }
 
 interface TestigoForm {
@@ -215,12 +218,12 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
 
   const [reportanteActual, setReportanteActual] = useState<ReportanteForm>({
     ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
-    edad: 0, antiguedad: 0, direccion: ''
+    edad: 0, antiguedad: 0, direccion: '', es_externo: false
   });
 
   const [involucradoActual, setInvolucradoActual] = useState<InvolucradoForm>({
     ficha: '', nombre: '', nivel: '', categoria: '', puesto: '', fuente: '', termino: '', centro_trabajo: '',
-    edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: '', regimen: '', jornada: '', sindicato: '', seccion_sindical: ''
+    edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: '', regimen: '', jornada: '', sindicato: '', seccion_sindical: '', es_externo: false
   });
 
   const [testigoActual, setTestigoActual] = useState<TestigoForm>({
@@ -726,9 +729,16 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
   };
 
   const agregarReportante = () => {
-    if (!reportanteActual.ficha || !reportanteActual.nombre) {
-      alert('Complete la ficha y busque el empleado antes de agregar');
-      return;
+    if (reportanteActual.es_externo) {
+      if (!reportanteActual.nombre) {
+        alert('El nombre es obligatorio para reportantes externos');
+        return;
+      }
+    } else {
+      if (!reportanteActual.ficha || !reportanteActual.nombre) {
+        alert('Complete la ficha y busque el empleado antes de agregar');
+        return;
+      }
     }
 
     setFormState(prev => ({
@@ -738,7 +748,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
 
     setReportanteActual({
       ficha: '', nombre: '', nivel: '', categoria: '', puesto: '',
-      edad: 0, antiguedad: 0, direccion: ''
+      edad: 0, antiguedad: 0, direccion: '', es_externo: false
     });
   };
 
@@ -759,9 +769,16 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
   };
 
   const agregarInvolucrado = () => {
-    if (!involucradoActual.ficha || !involucradoActual.nombre) {
-      alert('Complete la ficha y busque el empleado antes de agregar');
-      return;
+    if (involucradoActual.es_externo) {
+      if (!involucradoActual.nombre) {
+        alert('El nombre es obligatorio para involucrados externos');
+        return;
+      }
+    } else {
+      if (!involucradoActual.ficha || !involucradoActual.nombre) {
+        alert('Complete la ficha y busque el empleado antes de agregar');
+        return;
+      }
     }
 
     const nuevoInvolucrado = {
@@ -785,7 +802,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
 
     setInvolucradoActual({
       ficha: '', nombre: '', fuente: '', nivel: '', categoria: '', puesto: '', termino: '', centro_trabajo: '',
-      edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: '', regimen: '', jornada: '', sindicato: '', seccion_sindical: ''
+      edad: 0, antiguedad: 0, rfc: '', curp: '', direccion: '', regimen: '', jornada: '', sindicato: '', seccion_sindical: '', es_externo: false
     });
     setAntecedentesEncontrados([]);
   };
@@ -1146,143 +1163,177 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
                 Personal Reportado
               </h3>
               <div className="admin-form-group">
-                <label>Ficha</label>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-
+                <div className="admin-checkbox-container" style={{ marginBottom: '10px' }}>
                   <input
-                    type="text"
-                    className="admin-input"
-                    value={involucradoActual.ficha}
-                    onChange={(e) => setInvolucradoActual(prev => ({ ...prev, ficha: e.target.value }))}
-                    onKeyDown={(e) => handleEnterBusqueda(e, involucradoActual.ficha, 'involucrado')}
-                    placeholder="Ingrese ficha y presione Enter o Tab"
+                    type="checkbox"
+                    className="admin-checkbox"
+                    checked={involucradoActual.es_externo || false}
+                    onChange={(e) => setInvolucradoActual(prev => ({
+                      ...prev,
+                      es_externo: e.target.checked,
+                      ficha: e.target.checked ? 'EXTERNO' : '',
+                      nombre: '',
+                      categoria: 'EXTERNO',
+                      puesto: 'EXTERNO'
+                    }))}
+                    id="involucrado_externo_check"
                   />
-
+                  <label className="admin-checkbox-label" htmlFor="involucrado_externo_check">Es Externo</label>
                 </div>
-
+                {!involucradoActual.es_externo ? (
+                  <>
+                    <label>Ficha</label>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={involucradoActual.ficha}
+                        onChange={(e) => setInvolucradoActual(prev => ({ ...prev, ficha: e.target.value }))}
+                        onKeyDown={(e) => handleEnterBusqueda(e, involucradoActual.ficha, 'involucrado')}
+                        placeholder="Ingrese ficha y presione Enter o Tab"
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div className="admin-form-group">
+                    <label>Nombre Completo del Personal Externo *</label>
+                    <input
+                      type="text"
+                      value={involucradoActual.nombre}
+                      className="admin-input"
+                      onChange={(e) => setInvolucradoActual(prev => ({ ...prev, nombre: e.target.value.toUpperCase() }))}
+                      placeholder="Ingrese el nombre"
+                    />
+                  </div>
+                )}
               </div>
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Fuente</label>
-                  <input type="text" value={involucradoActual.fuente} readOnly className="admin-readonly-field" />
-                </div>
-                <div className="admin-form-group">
-                  <label>Fecha de Término</label>
-                  {(() => {
-                    let isExceeded = false;
-                    if (formState.fecha_prescripcion && involucradoActual.termino) {
-                      try {
-                        const [pYear, pMonth, pDay] = formState.fecha_prescripcion.split('-').map(Number);
-                        const fechaPres = new Date(pYear, pMonth - 1, pDay);
 
-                        const [tDay, tMonth, tYear] = involucradoActual.termino.split('/').map(Number);
-                        const fechaTerm = new Date(tYear, tMonth - 1, tDay);
+              {!involucradoActual.es_externo && (
+                <>
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Fuente</label>
+                      <input type="text" value={involucradoActual.fuente} readOnly className="admin-readonly-field" />
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Fecha de Término</label>
+                      {(() => {
+                        let isExceeded = false;
+                        if (formState.fecha_prescripcion && involucradoActual.termino) {
+                          try {
+                            const [pYear, pMonth, pDay] = formState.fecha_prescripcion.split('-').map(Number);
+                            const fechaPres = new Date(pYear, pMonth - 1, pDay);
 
-                        if (fechaPres > fechaTerm) {
-                          isExceeded = true;
+                            const [tDay, tMonth, tYear] = involucradoActual.termino.split('/').map(Number);
+                            const fechaTerm = new Date(tYear, tMonth - 1, tDay);
+
+                            if (fechaPres > fechaTerm) {
+                              isExceeded = true;
+                            }
+                          } catch (e) {
+                            // Ignore parse errors
+                          }
                         }
-                      } catch (e) {
-                        // Ignore parse errors
-                      }
-                    }
 
-                    return (
-                      <>
-                        <input
-                          type="text"
-                          value={involucradoActual.termino}
-                          readOnly
-                          className="admin-readonly-field"
-                          style={isExceeded ? { border: '2px solid #dc3545', color: '#dc3545', fontWeight: 'bold' } : {}}
-                        />
-                        {isExceeded && (
-                          <small style={{ color: '#dc3545', display: 'block', marginTop: '5px', fontWeight: '600' }}>
-                            <i className="fas fa-exclamation-circle" style={{ marginRight: '5px' }}></i>
-                            ¡Atención! La prescripción excede el término de contrato
-                          </small>
-                        )}
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Nombre</label>
-                  <input type="text" value={involucradoActual.nombre} readOnly className="admin-readonly-field" />
-                </div>
-                <div className="admin-form-group">
-                  <label>Nivel</label>
-                  <input type="text" value={involucradoActual.nivel} readOnly className="admin-readonly-field" />
-                </div>
-              </div>
+                        return (
+                          <>
+                            <input
+                              type="text"
+                              value={involucradoActual.termino}
+                              readOnly
+                              className="admin-readonly-field"
+                              style={isExceeded ? { border: '2px solid #dc3545', color: '#dc3545', fontWeight: 'bold' } : {}}
+                            />
+                            {isExceeded && (
+                              <small style={{ color: '#dc3545', display: 'block', marginTop: '5px', fontWeight: '600' }}>
+                                <i className="fas fa-exclamation-circle" style={{ marginRight: '5px' }}></i>
+                                ¡Atención! La prescripción excede el término de contrato
+                              </small>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Nombre</label>
+                      <input type="text" value={involucradoActual.nombre} readOnly className="admin-readonly-field" />
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Nivel</label>
+                      <input type="text" value={involucradoActual.nivel} readOnly className="admin-readonly-field" />
+                    </div>
+                  </div>
 
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Categoría</label>
-                  <input type="text" value={involucradoActual.categoria} readOnly className="admin-readonly-field" />
-                </div>
-                <div className="admin-form-group">
-                  <label>Puesto</label>
-                  <input type="text" value={involucradoActual.puesto} readOnly className="admin-readonly-field" />
-                </div>
-              </div>
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Categoría</label>
+                      <input type="text" value={involucradoActual.categoria} readOnly className="admin-readonly-field" />
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Puesto</label>
+                      <input type="text" value={involucradoActual.puesto} readOnly className="admin-readonly-field" />
+                    </div>
+                  </div>
 
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Edad</label>
-                  <input type="number" value={involucradoActual.edad} readOnly className="admin-readonly-field" />
-                </div>
-                <div className="admin-form-group">
-                  <label>Antigüedad</label>
-                  <input type="number" value={involucradoActual.antiguedad} readOnly className="admin-readonly-field" />
-                </div>
-              </div>
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Edad</label>
+                      <input type="number" value={involucradoActual.edad} readOnly className="admin-readonly-field" />
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Antigüedad</label>
+                      <input type="number" value={involucradoActual.antiguedad} readOnly className="admin-readonly-field" />
+                    </div>
+                  </div>
 
-              <div className="admin-form-row">
-                <div className="admin-form-group" hidden={involucradoActual.ficha === ''}>
-                  <label>RFC</label>
-                  <input type="text" value={involucradoActual.rfc} readOnly className="admin-readonly-field" />
-                </div>
-                <div className="admin-form-group" hidden={involucradoActual.ficha === ''}>
-                  <label>CURP</label>
-                  <input type="text" value={involucradoActual.curp} readOnly className="admin-readonly-field" />
-                </div>
-              </div>
+                  <div className="admin-form-row">
+                    <div className="admin-form-group" hidden={involucradoActual.ficha === ''}>
+                      <label>RFC</label>
+                      <input type="text" value={involucradoActual.rfc} readOnly className="admin-readonly-field" />
+                    </div>
+                    <div className="admin-form-group" hidden={involucradoActual.ficha === ''}>
+                      <label>CURP</label>
+                      <input type="text" value={involucradoActual.curp} readOnly className="admin-readonly-field" />
+                    </div>
+                  </div>
 
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Dirección</label>
-                  <input type="text" value={involucradoActual.direccion} readOnly className="admin-readonly-field" />
-                </div>
-                <div className="admin-form-group">
-                  <label>Centro de Trabajo</label>
-                  <input type="text" value={involucradoActual.centro_trabajo} readOnly className="admin-readonly-field" />
-                </div>
-              </div>
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Dirección</label>
+                      <input type="text" value={involucradoActual.direccion} readOnly className="admin-readonly-field" />
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Centro de Trabajo</label>
+                      <input type="text" value={involucradoActual.centro_trabajo} readOnly className="admin-readonly-field" />
+                    </div>
+                  </div>
 
 
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Régimen</label>
-                  <input type="text" value={involucradoActual.regimen} readOnly className="admin-readonly-field" />
-                </div>
-                <div className="admin-form-group">
-                  <label>Jornada</label>
-                  <input type="text" value={involucradoActual.jornada} readOnly className="admin-readonly-field" />
-                </div>
-              </div>
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Régimen</label>
+                      <input type="text" value={involucradoActual.regimen} readOnly className="admin-readonly-field" />
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Jornada</label>
+                      <input type="text" value={involucradoActual.jornada} readOnly className="admin-readonly-field" />
+                    </div>
+                  </div>
 
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Sindicato</label>
-                  <input type="text" value={involucradoActual.sindicato} className="admin-input" />
-                </div>
-                <div className="admin-form-group">
-                  <label>Sección sindical</label>
-                  <input type="text" value={involucradoActual.seccion_sindical} className="admin-input" />
-                </div>
-              </div>
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Sindicato</label>
+                      <input type="text" value={involucradoActual.sindicato} className="admin-input" />
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Sección sindical</label>
+                      <input type="text" value={involucradoActual.seccion_sindical} className="admin-input" />
+                    </div>
+                  </div>
+                </>
+              )}
 
               {antecedentesEncontrados.length > 0 && involucradoActual.ficha && (
                 <div style={{
@@ -1483,53 +1534,87 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
 
               {/* Buscador de Reportante */}
               <div className="admin-form-group">
-                <label>Ficha</label>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <div className="admin-checkbox-container" style={{ marginBottom: '10px' }}>
                   <input
-                    type="text"
-                    className="admin-input"
-                    value={reportanteActual.ficha}
-                    onChange={(e) => setReportanteActual(prev => ({ ...prev, ficha: e.target.value }))}
-                    onKeyDown={(e) => handleEnterBusqueda(e, reportanteActual.ficha, 'reportante')} // Asegúrate de pasar 'reportante'
-                    placeholder="Ingrese ficha y presione Enter o Tab"
-                    style={{ flex: 1 }}
+                    type="checkbox"
+                    checked={reportanteActual.es_externo || false}
+                    onChange={(e) => setReportanteActual(prev => ({
+                      ...prev,
+                      es_externo: e.target.checked,
+                      ficha: e.target.checked ? 'EXTERNO' : '',
+                      nombre: '',
+                      categoria: 'EXTERNO',
+                      puesto: 'EXTERNO'
+                    }))}
+                    id="reportante_externo_check"
                   />
+                  <label style={{ marginLeft: '5px', fontSize: '0.9rem' }} htmlFor="reportante_externo_check">Es Externo</label>
                 </div>
+                {!reportanteActual.es_externo ? (
+                  <>
+                    <label>Ficha</label>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                      <input
+                        type="text"
+                        className="admin-input"
+                        value={reportanteActual.ficha}
+                        onChange={(e) => setReportanteActual(prev => ({ ...prev, ficha: e.target.value }))}
+                        onKeyDown={(e) => handleEnterBusqueda(e, reportanteActual.ficha, 'reportante')}
+                        placeholder="Ingrese ficha y presione Enter o Tab"
+                        style={{ flex: 1 }}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <div className="admin-form-group">
+                    <label>Nombre Completo del Reportante Externo *</label>
+                    <input
+                      type="text"
+                      className="admin-input"
+                      value={reportanteActual.nombre}
+                      onChange={(e) => setReportanteActual(prev => ({ ...prev, nombre: e.target.value.toUpperCase() }))}
+                      placeholder="Ingrese el nombre"
+                    />
+                  </div>
+                )}
               </div>
 
-              {/* Campos de lectura (Read Only) */}
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Nombre</label>
-                  <input type="text" value={reportanteActual.nombre} readOnly className="admin-readonly-field" />
-                </div>
-                <div className="admin-form-group">
-                  <label>Nivel</label>
-                  <input type="text" value={reportanteActual.nivel} readOnly className="admin-readonly-field" />
-                </div>
-              </div>
+              {!reportanteActual.es_externo && (
+                <>
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Nombre</label>
+                      <input type="text" value={reportanteActual.nombre} readOnly className="admin-readonly-field" />
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Nivel</label>
+                      <input type="text" value={reportanteActual.nivel} readOnly className="admin-readonly-field" />
+                    </div>
+                  </div>
 
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Categoría</label>
-                  <input type="text" value={reportanteActual.categoria} readOnly className="admin-readonly-field" />
-                </div>
-                <div className="admin-form-group">
-                  <label>Puesto</label>
-                  <input type="text" value={reportanteActual.puesto} readOnly className="admin-readonly-field" />
-                </div>
-              </div>
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Categoría</label>
+                      <input type="text" value={reportanteActual.categoria} readOnly className="admin-readonly-field" />
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Puesto</label>
+                      <input type="text" value={reportanteActual.puesto} readOnly className="admin-readonly-field" />
+                    </div>
+                  </div>
 
-              <div className="admin-form-row">
-                <div className="admin-form-group">
-                  <label>Edad</label>
-                  <input type="number" value={reportanteActual.edad || ''} readOnly className="admin-readonly-field" />
-                </div>
-                <div className="admin-form-group">
-                  <label>Antigüedad</label>
-                  <input type="number" value={reportanteActual.antiguedad || ''} readOnly className="admin-readonly-field" />
-                </div>
-              </div>
+                  <div className="admin-form-row">
+                    <div className="admin-form-group">
+                      <label>Edad</label>
+                      <input type="number" value={reportanteActual.edad || ''} readOnly className="admin-readonly-field" />
+                    </div>
+                    <div className="admin-form-group">
+                      <label>Antigüedad</label>
+                      <input type="number" value={reportanteActual.antiguedad || ''} readOnly className="admin-readonly-field" />
+                    </div>
+                  </div>
+                </>
+              )}
 
               <button
                 type="button"

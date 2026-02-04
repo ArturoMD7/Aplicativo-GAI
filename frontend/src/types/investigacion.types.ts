@@ -29,7 +29,9 @@ export interface Reportante extends BasePersona {
   edad: number;
   antiguedad: number;
   nivel: string;
+
   direccion: string;
+  es_externo?: boolean;
 }
 
 export interface Involucrado extends BasePersona {
@@ -47,7 +49,9 @@ export interface Involucrado extends BasePersona {
   seccion_sindical: string;
   fuente?: string;
   centro_trabajo: string;
+
   termino?: string;
+  es_externo?: boolean;
 }
 
 export interface Testigo extends Partial<BasePersona> {
@@ -192,7 +196,9 @@ export interface InvolucradoForm {
   curp: string;
   direccion: string;
   tiene_antecedentes?: boolean;
+
   antecedentes_detalles?: Antecedente[];
+  es_externo?: boolean;
 }
 
 export interface InvestigacionDetalle extends InvestigacionFormState {

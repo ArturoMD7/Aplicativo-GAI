@@ -200,14 +200,15 @@ class Investigador(UppercaseMixin, models.Model):
 
 class Reportante(UppercaseMixin, models.Model):
     investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='reportantes')
-    ficha = models.CharField(max_length=20)
+    ficha = models.CharField(max_length=20, null=True, blank=True)
     nombre = models.CharField(max_length=100)
-    nivel = models.CharField(max_length=50)
-    categoria = models.CharField(max_length=50)
-    puesto = models.CharField(max_length=100)
-    edad = models.IntegerField()
-    antiguedad = models.IntegerField()
-    direccion = models.CharField(max_length=200)
+    nivel = models.CharField(max_length=50, null=True, blank=True)
+    categoria = models.CharField(max_length=50, null=True, blank=True)
+    puesto = models.CharField(max_length=100, null=True, blank=True)
+    edad = models.IntegerField(null=True, blank=True)
+    antiguedad = models.IntegerField(null=True, blank=True)
+    direccion = models.CharField(max_length=200, null=True, blank=True)
+    es_externo = models.BooleanField(default=False)
 
 
 class Testigo(UppercaseMixin, models.Model):
@@ -253,20 +254,21 @@ class InvestigacionHistorico(UppercaseMixin, models.Model):
 
 class Involucrado(UppercaseMixin, models.Model):
     investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='involucrados')
-    ficha = models.CharField(max_length=20)
+    ficha = models.CharField(max_length=20, null=True, blank=True)
     nombre = models.CharField(max_length=100)
-    nivel = models.CharField(max_length=50)
-    categoria = models.CharField(max_length=50)
-    puesto = models.CharField(max_length=100)
-    edad = models.IntegerField()
-    antiguedad = models.IntegerField()
-    rfc = models.CharField(max_length=20)
-    curp = models.CharField(max_length=18)
-    direccion = models.CharField(max_length=200)
+    nivel = models.CharField(max_length=50, null=True, blank=True)
+    categoria = models.CharField(max_length=50, null=True, blank=True)
+    puesto = models.CharField(max_length=100, null=True, blank=True)
+    edad = models.IntegerField(null=True, blank=True)
+    antiguedad = models.IntegerField(null=True, blank=True)
+    rfc = models.CharField(max_length=20, null=True, blank=True)
+    curp = models.CharField(max_length=18, null=True, blank=True)
+    direccion = models.CharField(max_length=200, null=True, blank=True)
     tiene_antecedentes = models.BooleanField(default=False)
+    es_externo = models.BooleanField(default=False)
 
-    regimen = models.CharField(null=True, max_length=10)
-    jornada = models.CharField(null=True, max_length=10)
+    regimen = models.CharField(null=True, blank=True, max_length=10)
+    jornada = models.CharField(null=True, blank=True, max_length=10)
     sindicato = models.CharField(null=True, blank=True, max_length=50)
     seccion_sindical = models.CharField(null=True, blank=True, max_length=10)
 
