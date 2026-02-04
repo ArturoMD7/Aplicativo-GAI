@@ -104,27 +104,20 @@ class ActivityLoggingMiddleware(MiddlewareMixin):
         return is_duplicate
 
     def _should_exclude_path(self, path):
-        """Determina si una ruta debe ser excluida del logging"""
-        excluded_patterns = [
-            '/api/investigaciones/centros-coduni/',
-            '/api/investigaciones/centros-trabajo/', 
-            '/api/investigaciones/areas-por-centro/',
-            '/admin/jsi18n/',
-            '/api/user/profile/',
-            '/api/users/',
-            '/api/register/',
-            '/api/user/change-password/',
-            '/api/token/refresh',
-            '/api/token/verify',
-            '/api/auditoria/activity-logs/',  
-            '/api/auditoria/create-log/',
-            '/api/investigaciones/opciones/',
-    ]
+        """
+        Determina si una ruta debe ser excluida del logging AUTOMÁTICO.
+        Ahora, por defecto EXCLUIMOS TODO, excepto lo que esté en whitelist.
+        """
+        included_patterns = [
+            '/api/investigaciones/buscar-personal/',
+            '/api/investigaciones/buscar-empleado/',
+        ]
         
-        for pattern in excluded_patterns:
+        for pattern in included_patterns:
             if path.startswith(pattern):
-                return True
-        return False
+                return False
+                
+        return True
 
     def _get_description(self, request, action, response):
         """Genera descripción legible de la actividad"""
@@ -168,11 +161,6 @@ class ActivityLoggingMiddleware(MiddlewareMixin):
         if '/api/investigaciones/' in path:
             # Excluir logs genéricos si no coinciden con una regla anterior
             return None
-            
-            # if request.method == 'GET':
-            #     return 'Consultó datos del sistema de investigaciones'
-            # elif request.method == 'POST':
-            #     return 'Realizó operación en sistema de investigaciones'
         
         return f"{action} en {path}"
 

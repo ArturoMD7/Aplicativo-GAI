@@ -14,6 +14,7 @@ import apiClient from '../../api/apliClient';
 import Swal from 'sweetalert2';
 import './DocumentosModals.css';
 import DocumentPreviewModal from './DocumentPreviewModal';
+import { auditoriaService } from '../../api/auditoriaService';
 
 interface Documento {
   id: number;
@@ -59,12 +60,14 @@ const DocumentosModals: React.FC<Props> = ({ investigacionId, isOpen, onClose, n
   };
 
   const handleDownload = (doc: Documento) => {
+    auditoriaService.logAction('DOWNLOAD', `Descargó documento: ${doc.tipo} - ${doc.nombre_archivo}`, investigacionId || 0);
     saveAs(doc.archivo, doc.nombre_archivo);
   };
 
   const handlePreview = (doc: Documento) => {
     const ext = doc.nombre_archivo.split('.').pop()?.toLowerCase();
     if (ext === 'pdf' || ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) {
+      auditoriaService.logAction('VIEW', `Visualizó documento: ${doc.tipo} - ${doc.nombre_archivo}`, investigacionId || 0);
       setPreviewFile(doc);
     } else {
       Swal.fire({
@@ -163,6 +166,7 @@ const DocumentosModals: React.FC<Props> = ({ investigacionId, isOpen, onClose, n
       <DocumentPreviewModal
         documento={previewFile}
         onClose={() => setPreviewFile(null)}
+        investigacionId={investigacionId || undefined}
       />
     </>
   );

@@ -12,6 +12,7 @@ import { saveAs } from 'file-saver';
 import '../styles/InvestigacionPage.css';
 
 import { CONDUCTAS_POSIBLES, GERENCIA_CHOICES } from '../data/investigacionConstants';
+import { auditoriaService } from '../api/auditoriaService';
 
 type SortConfig = {
   key: keyof InvestigacionListado | null;
@@ -106,6 +107,10 @@ function InvestigacionListPage() {
 
   // --- FUNCIÓN PARA CAMBIAR ESTATUS ---
   const handleSeguimiento = async (id: number) => {
+    // Buscar la investigación para obtener el número de reporte si es posible, o loguear solo ID
+    const inv = investigaciones.find(i => i.id === id);
+    const numero = inv ? inv.numero_reporte : 'Desconocido';
+
     const result = await Swal.fire({
       title: '¿Pasar a Seguimiento?',
       text: "La investigación pasará a la bandeja de Seguimiento y desaparecerá de esta lista.",
@@ -117,6 +122,7 @@ function InvestigacionListPage() {
 
     if (result.isConfirmed) {
       try {
+        await auditoriaService.logAction('UPDATE', `Cambio de estatus a SEGUIMIENTO del reporte ${numero}`, id);
         await apiClient.patch(`/api/investigaciones/investigaciones/${id}/`, { estatus: 'SEGUIMIENTO' });
         setInvestigaciones(prev => prev.filter(item => item.id !== id));
         Swal.fire('Listo', 'La investigación se movió a seguimiento.', 'success');
@@ -151,6 +157,7 @@ function InvestigacionListPage() {
 
     if (result.isConfirmed) {
       try {
+        await auditoriaService.logAction('DELETE', `Eliminó el reporte ${numeroReporte}`, id);
         await apiClient.delete(`/api/investigaciones/investigaciones/${id}/`);
 
         setInvestigaciones(prev => prev.filter(item => item.id !== id));
@@ -172,16 +179,12 @@ function InvestigacionListPage() {
   };
 
   const handleEditClick = async (inv: InvestigacionListado) => {
-    try {
-      await apiClient.post('/api/auditoria/create-log/', {
-        action: 'UPDATE',
-        description: `Abrió formulario de edición para el reporte`,
-        investigacion_id: inv.id,
-        endpoint: `/investigaciones/editar/${inv.id}`
-      });
-    } catch (e) {
-      console.error("No se pudo registrar log de edición", e);
-    }
+    await auditoriaService.logAction(
+      'UPDATE',
+      'Abrió formulario de edición',
+      inv.id,
+      `/investigaciones/editar/${inv.id}`
+    );
     navigate(`/investigaciones/editar/${inv.id}`);
   };
 
@@ -510,7 +513,15 @@ function InvestigacionListPage() {
 
                       <ButtonIcon
                         variant="view"
-                        onClick={() => navigate(`/investigaciones/detalles/${inv.id}`, { state: { from: location.pathname } })}
+                        onClick={async () => {
+                          await auditoriaService.logAction(
+                            'VIEW',
+                            'Abrió detalles de investigación',
+                            inv.id,
+                            `/investigaciones/detalles/${inv.id}`
+                          );
+                          navigate(`/investigaciones/detalles/${inv.id}`, { state: { from: location.pathname } });
+                        }}
                         icon={<FiEye />}
                         title="Ver detalles"
                         size="medium"

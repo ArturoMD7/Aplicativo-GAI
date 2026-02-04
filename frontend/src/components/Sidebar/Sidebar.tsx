@@ -4,6 +4,7 @@ import './Layout.css';
 import { Link, useLocation } from 'react-router-dom';
 import pemexLogo from '../../assets/logo_min.png';
 import { GrDocumentTime } from "react-icons/gr";
+import { auditoriaService } from '../../api/auditoriaService';
 import { LuLogs } from "react-icons/lu";
 
 import {
@@ -83,6 +84,11 @@ function Sidebar({ onLogout }: SidebarProps) {
                 to={item.href}
                 className={`nav-link ${isActiveLink(item.href) ? 'active' : ''}`}
                 data-tooltip={item.label}
+                onClick={() => {
+                  if (item.label !== 'Inicio') {
+                    auditoriaService.logAction('VIEW', `Navegó al módulo ${item.label}`, undefined, item.href);
+                  }
+                }}
               >
                 <span className="icon">{item.icon}</span>
                 <span className="text">{item.label}</span>

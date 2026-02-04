@@ -14,6 +14,7 @@ import DocumentosModals from '../components/Modals/DocumentosModals';
 import Swal from 'sweetalert2';
 import CustomConductaSelect from '../components/Inputs/CustomConductaSelect';
 import { FiX } from 'react-icons/fi';
+import { auditoriaService } from '../api/auditoriaService';
 
 function FinalizacionListPage() {
   const [investigaciones, setInvestigaciones] = useState<InvestigacionListado[]>([]);
@@ -36,7 +37,7 @@ function FinalizacionListPage() {
   const [dataConcluir, setDataConcluir] = useState({
     id: 0,
     reconsideracion: false,
-    observaciones_reconsideracion: '', 
+    observaciones_reconsideracion: '',
     sancion: '',
     conducta: '',
     dias_suspension: '',
@@ -128,7 +129,7 @@ function FinalizacionListPage() {
 
       setHasNotificacion(!!notificacion);
       setHasNotificacion(!!notificacion);
-      setSelectedFileConcluir(null); 
+      setSelectedFileConcluir(null);
 
       const investigacion = investigaciones.find(inv => inv.id === id);
 
@@ -329,6 +330,7 @@ function FinalizacionListPage() {
 
   // Función para abrir el modal de documentos
   const handleOpenDocs = (id: number, numeroReporte: string) => {
+    auditoriaService.logAction('VIEW', 'Abrió documentos de finalización', id);
     setSelectedInvestigacionId(id);
     setSelectedReporteNum(numeroReporte);
     setIsDocModalOpen(true);
@@ -446,7 +448,10 @@ function FinalizacionListPage() {
                     <div className="action-buttons" style={{ justifyContent: 'center' }}>
                       <ButtonIcon
                         variant="edit"
-                        onClick={() => navigate(`/investigaciones/detalles/${inv.id}`, { state: { from: location.pathname } })}
+                        onClick={async () => {
+                          await auditoriaService.logAction('VIEW', 'Abrió detalles de investigación (Finalización)', inv.id, `/investigaciones/detalles/${inv.id}`);
+                          navigate(`/investigaciones/detalles/${inv.id}`, { state: { from: location.pathname } });
+                        }}
                         icon={<FiEye />}
                         title="Ver"
                         size="medium"

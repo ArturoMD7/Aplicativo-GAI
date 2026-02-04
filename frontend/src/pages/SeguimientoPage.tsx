@@ -14,6 +14,7 @@ import '../styles/InvestigacionPage.css';
 import DocumentPreviewModal from '../components/Modals/DocumentPreviewModal';
 import { InvestigacionForm } from '../components/Forms/InvestigacionForm';
 import CompletionProgressBar from '../components/DataDisplay/CompletionProgressBar';
+import { auditoriaService } from '../api/auditoriaService';
 
 const TIPOS_DOCUMENTOS = [
   'Reporte',
@@ -177,6 +178,7 @@ function SeguimientoPage() {
   };
 
   const handlePreview = (doc: Documento) => {
+    auditoriaService.logAction('VIEW', `Visualizó documento: ${doc.tipo} - ${doc.nombre_archivo}`, Number(id));
     const ext = doc.nombre_archivo.split('.').pop()?.toLowerCase();
     if (ext === 'pdf' || ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) {
       setPreviewFile(doc);
@@ -191,6 +193,7 @@ function SeguimientoPage() {
   };
 
   const handleDownload = (doc: Documento) => {
+    auditoriaService.logAction('DOWNLOAD', `Descargó documento: ${doc.tipo} - ${doc.nombre_archivo}`, Number(id));
     saveAs(doc.archivo, doc.nombre_archivo);
   };
 
@@ -869,6 +872,7 @@ function SeguimientoPage() {
       <DocumentPreviewModal
         documento={previewFile}
         onClose={() => setPreviewFile(null)}
+        investigacionId={id ? Number(id) : undefined}
       />
     </div >
   );

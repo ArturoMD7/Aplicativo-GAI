@@ -19,6 +19,7 @@ import { FiEdit } from 'react-icons/fi';
 import { FaArrowLeft } from "react-icons/fa";
 import Swal from 'sweetalert2';
 import DocumentPreviewModal from '../components/Modals/DocumentPreviewModal';
+import { auditoriaService } from '../api/auditoriaService';
 
 const initialState: InvestigacionFormState = {
   nombre_corto: '',
@@ -295,6 +296,7 @@ function InvestigacionFormPage() {
 
     if (fileName) {
       try {
+        await auditoriaService.logAction('DOWNLOAD', `Descargó constancia de habilitación ${no_constancia}`);
         const response = await apiClient.get(`/api/investigadores/constancias/${fileName}/`, {
           responseType: 'blob'
         });
@@ -881,6 +883,7 @@ function InvestigacionFormPage() {
       };
 
       if (isEditMode) {
+        await auditoriaService.logAction('UPDATE', `Actualizó investigación ${formState.numero_reporte || id}`, Number(id));
         await apiClient.put(`/api/investigaciones/investigaciones/${id}/`, dataToSubmit);
         await Swal.fire({
           icon: 'success',
@@ -890,6 +893,7 @@ function InvestigacionFormPage() {
       } else {
         const res = await apiClient.post('/api/investigaciones/investigaciones/', dataToSubmit);
         const nuevoReporte = res.data.numero_reporte || 'Asignado';
+        await auditoriaService.logAction('CREATE', `Creó nueva investigación con reporte ${nuevoReporte}`, res.data.id);
         await Swal.fire({
           icon: 'success',
           title: 'Creada',
@@ -2062,7 +2066,10 @@ function InvestigacionFormPage() {
                               {/* BOTÓN PREVISUALIZAR */}
                               <button
                                 type="button"
-                                onClick={() => setShowPdfModal(true)}
+                                onClick={() => {
+                                  auditoriaService.logAction('VIEW', `Visualizó constancia de habilitación ${investigadorActual.no_constancia}`);
+                                  setShowPdfModal(true);
+                                }}
                                 style={{
                                   display: 'flex',
                                   alignItems: 'center',
@@ -2121,6 +2128,7 @@ function InvestigacionFormPage() {
                               descripcion: 'Visualización de Constancia'
                             }}
                             onClose={() => setShowPdfModal(false)}
+                            investigacionId={id ? Number(id) : undefined}
                           />
                         )}
                       </>

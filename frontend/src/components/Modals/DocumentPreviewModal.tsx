@@ -4,6 +4,7 @@ import { saveAs } from 'file-saver';
 import './DocumentosModals.css';
 import Watermark from '@uiw/react-watermark';
 import apiClient from '../../api/apliClient';
+import { auditoriaService } from '../../api/auditoriaService';
 
 interface Documento {
     id: number;
@@ -26,10 +27,11 @@ interface UserHeaderProfile {
 interface DocumentPreviewModalProps {
     documento: Documento | null;
     onClose: () => void;
+    investigacionId?: number;
 }
 
 
-const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({ documento, onClose }) => {
+const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({ documento, onClose, investigacionId }) => {
     const [userProfile, setUserProfile] = useState<UserHeaderProfile | null>(null);
 
     useEffect(() => {
@@ -47,6 +49,7 @@ const DocumentPreviewModal: React.FC<DocumentPreviewModalProps> = ({ documento, 
     if (!documento) return null;
 
     const handleDownload = () => {
+        auditoriaService.logAction('DOWNLOAD', `Descargó documento desde vista previa: ${documento.nombre_archivo}`, investigacionId);
         saveAs(documento.archivo, documento.nombre_archivo);
     };
 

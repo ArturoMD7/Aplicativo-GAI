@@ -12,6 +12,7 @@ import '../styles/InvestigacionPage.css';
 import DocumentosModals from '../components/Modals/DocumentosModals';
 import Swal from 'sweetalert2';
 import { GERENCIA_CHOICES, CONDUCTAS_POSIBLES } from '../data/investigacionConstants';
+import { auditoriaService } from '../api/auditoriaService';
 
 type SortConfig = {
   key: keyof InvestigacionListado | null;
@@ -122,6 +123,7 @@ function SeguimientoListPage() {
 
     if (result.isConfirmed) {
       try {
+        await auditoriaService.logAction('UPDATE', `Pasó a FINALIZACIÓN el reporte (ID: ${inv.id})`, inv.id);
         await apiClient.patch(`/api/investigaciones/investigaciones/${inv.id}/`, { estatus: 'ENVIADA_A_CONCLUIR' });
         setInvestigaciones(prev => prev.filter(item => item.id !== inv.id));
         Swal.fire('Listo', 'La investigación se movió a finalización.', 'success');
@@ -133,16 +135,12 @@ function SeguimientoListPage() {
   };
 
   const handleEditClick = async (inv: InvestigacionListado) => {
-    try {
-      await apiClient.post('/api/auditoria/create-log/', {
-        action: 'UPDATE',
-        description: `Abrió expediente de seguimiento`,
-        investigacion_id: inv.id,
-        endpoint: `/investigaciones/seguimiento/${inv.id}`
-      });
-    } catch (e) {
-      console.error("No se pudo registrar log de seguimiento", e);
-    }
+    await auditoriaService.logAction(
+      'UPDATE',
+      'Abrió expediente de seguimiento',
+      inv.id,
+      `/investigaciones/seguimiento/${inv.id}`
+    );
     navigate(`/investigaciones/seguimiento/${inv.id}`, { state: { from: location.pathname } });
   };
 
@@ -160,6 +158,7 @@ function SeguimientoListPage() {
 
     if (result.isConfirmed) {
       try {
+        await auditoriaService.logAction('DELETE', `Eliminó el reporte de seguimiento ${numeroReporte}`, id);
         await apiClient.delete(`/api/investigaciones/investigaciones/${id}/`);
         setInvestigaciones(prev => prev.filter(item => item.id !== id));
         Swal.fire('¡Eliminado!', 'El registro ha sido eliminado correctamente.', 'success');
@@ -255,6 +254,7 @@ function SeguimientoListPage() {
 
   // Función para abrir el modal de documentos
   const handleOpenDocs = (id: number, numeroReporte: string) => {
+    auditoriaService.logAction('VIEW', 'Abrió documentos de seguimiento', id);
     setSelectedInvestigacionId(id);
     setSelectedReporteNum(numeroReporte);
     setIsDocModalOpen(true);
