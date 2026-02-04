@@ -5,15 +5,9 @@ CAMPOS_EVALUADOS = [
 DOCUMENTOS_REQUERIDOS = [
     {"tipo": "Reporte", "valor": 20},
     {"tipo": "Citatorio_Reportado", "valor": 20},
-    {"tipo": "Citatorio_Ratificante", "valor": 7.7},
-    {"tipo": "Citatorio_Testigo", "valor": 7.7},
-    {"tipo": "Acta_Comparecencia_Ratificante", "valor": 7.7},
-    {"tipo": "Acta_Testigo", "valor": 7.7},
-    {"tipo": "Acta_Investigacion", "valor": 7.7},
+    {"tipo": "Acta_Comparecencia_Ratificante", "valor": 20},
     {"tipo": "Dictamen", "valor": 20},
-    {"tipo": "Resultado", "valor": 7.7},
-    {"tipo": "Pruebas", "valor": 7.7},
-    {"tipo": "NotificacionConclusion", "valor": 10},
+    {"tipo": "Resultado", "valor": 20},
 ]
 
 
