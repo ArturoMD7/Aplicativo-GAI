@@ -600,6 +600,26 @@ function SeguimientoPage() {
                     </p>
                   </div>
                 </div>
+              ) : investigacion?.es_coadyuvancia ? (
+                <div style={{
+                  padding: '15px',
+                  backgroundColor: '#cce5ff',
+                  color: '#004085',
+                  borderRadius: '8px',
+                  border: '1px solid #b8daff',
+                  marginTop: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}>
+                  <FiCheckCircle size={24} />
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '16px' }}>Coadyuvancia Activa</h4>
+                    <p style={{ margin: '5px 0 0', fontSize: '14px' }}>
+                      Esta investigación ya tiene asignada una coadyuvancia.
+                    </p>
+                  </div>
+                </div>
               ) : (
                 <>
                   <div style={{
