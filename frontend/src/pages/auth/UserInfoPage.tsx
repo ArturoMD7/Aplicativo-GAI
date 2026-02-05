@@ -41,6 +41,7 @@ interface UserDashboardData {
         total: number;
         en_proceso: number;
         concluidas: number;
+        coadyuvadas: number;
     };
 }
 
@@ -286,6 +287,10 @@ const UserInfoPage = () => {
                             <div className="prod-row">
                                 <span className="prod-row-label">Concluidas</span>
                                 <span className="prod-row-value highlight-done">{stats.concluidas}</span>
+                            </div>
+                            <div className="prod-row">
+                                <span className="prod-row-label">Coadyuvadas</span>
+                                <span className="prod-row-value highlight-coadyuvada">{stats.coadyuvadas}</span>
                             </div>
                             <div className="prod-row total-row" style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #efefef' }}>
                                 <span className="prod-row-label" style={{ fontWeight: 700 }}>Total Investigaciones</span>

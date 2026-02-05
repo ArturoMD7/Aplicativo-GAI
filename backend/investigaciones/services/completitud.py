@@ -10,7 +10,6 @@ DOCUMENTOS_REQUERIDOS = [
     {"tipo": "Resultado", "valor": 20},
 ]
 
-
 def calcular_completitud(investigacion):
     valor_completo = 0
     campos_faltantes = []

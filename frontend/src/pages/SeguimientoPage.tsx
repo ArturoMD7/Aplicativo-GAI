@@ -5,10 +5,11 @@ import { saveAs } from 'file-saver';
 import {
   FiArrowLeft, FiUploadCloud, FiFileText, FiTrash2,
   FiCheckCircle, FiDownload, FiX, FiCalendar,
-  FiMapPin, FiHash, FiUsers, FiBriefcase,
-  FiHome, FiAlertTriangle, FiInfo, FiClock, FiEye
+  FiMapPin, FiHash, FiBriefcase,
+  FiAlertTriangle, FiInfo, FiEye
 } from 'react-icons/fi';
-import type { OpcionesDropdowns } from '../types/investigacion.types';
+import type { OpcionesDropdowns, Investigador } from '../types/investigacion.types';
+import InvestigadorSearch from '../components/Forms/InvestigadorSearch';
 import Swal from 'sweetalert2';
 import '../styles/InvestigacionPage.css';
 import DocumentPreviewModal from '../components/Modals/DocumentPreviewModal';
@@ -63,6 +64,45 @@ function SeguimientoPage() {
   const [dragActive, setDragActive] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const [userRole, setUserRole] = useState<string>('');
+
+  // States for Coadyuvancia/Atraccion
+  const [assignmentType, setAssignmentType] = useState<'coadyuvancia' | 'atraccion' | ''>('');
+  const [listaInvestigadores, setListaInvestigadores] = useState<{ ficha: string; nombre: string }[]>([]);
+  const [newInvestigator, setNewInvestigator] = useState<Investigador>({
+    ficha: '',
+    nombre: '',
+    categoria: '',
+    puesto: '',
+    extension: '',
+    email: '',
+    no_constancia: ''
+  });
+  const [isAssigning, setIsAssigning] = useState(false);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      let role = localStorage.getItem('userRole');
+
+      if (!role) {
+        try {
+          // Si no hay rol guardado, intentar obtenerlo
+          const profileRes = await apiClient.get('/api/user/profile/');
+          const groups = profileRes.data.groups;
+          if (groups && groups.length > 0) {
+            role = groups[0];
+            localStorage.setItem('userRole', role || '');
+          }
+        } catch (error) {
+          console.error("Error al obtener rol:", error);
+        }
+      }
+
+      setUserRole(role || '');
+    };
+    checkRole();
+  }, []);
+
   useEffect(() => {
     fetchData();
   }, [id]);
@@ -72,12 +112,17 @@ function SeguimientoPage() {
       setLoading(true);
       const resInv = await apiClient.get(`/api/investigaciones/investigaciones/${id}/`);
       setInvestigacion(resInv.data);
+      if (resInv.data.es_coadyuvancia) setAssignmentType('coadyuvancia');
+      else if (resInv.data.es_atracción) setAssignmentType('atraccion');
 
       const opcionesRes = await apiClient.get('/api/investigaciones/opciones/');
       setOpciones(opcionesRes.data);
 
       const resDocs = await apiClient.get(`/api/investigaciones/documentos/?investigacion_id=${id}`);
       setDocumentos(resDocs.data);
+
+      const resInvestigadores = await apiClient.get('/api/investigaciones/listar-investigadores/').catch(() => ({ data: [] }));
+      setListaInvestigadores(resInvestigadores.data);
     } catch (error) {
       console.error(error);
       Swal.fire('Error', 'No se pudieron cargar los datos', 'error');
@@ -295,6 +340,110 @@ function SeguimientoPage() {
     );
   };
 
+
+  const handleSearchInvestigator = async (ficha: string) => {
+    if (!ficha.trim()) return;
+
+    try {
+      // 1. Validar si es investigador autorizado
+      try {
+        const validacionRes = await apiClient.get(`/api/investigaciones/validar-investigador/?ficha=${ficha}`);
+        const datosInvestigadorAutorizado = validacionRes.data;
+
+        if (!datosInvestigadorAutorizado.es_investigador) {
+          throw new Error("No autorizado");
+        }
+
+        // 2. Buscar datos del empleado
+        const response = await apiClient.get(`/api/investigaciones/buscar-empleado/?ficha=${ficha}`);
+        const empleado = response.data;
+
+        setNewInvestigator({
+          ficha: empleado.ficha,
+          nombre: empleado.nombre,
+          categoria: empleado.categoria,
+          puesto: empleado.puesto,
+          email: empleado.email || '',
+          extension: empleado.extension || '',
+          no_constancia: datosInvestigadorAutorizado.no_constancia
+        });
+
+      } catch (err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'No autorizado',
+          text: 'La ficha ingresada no pertenece a un investigador activo con número de constancia registrado.',
+        });
+        setNewInvestigator(prev => ({ ...prev, ficha: '', nombre: '', no_constancia: '' }));
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire('Error', 'Error al buscar investigador', 'error');
+    }
+  };
+
+  const handleSaveAssignment = async () => {
+    if (!assignmentType) return;
+
+    try {
+      const payload: any = {
+        es_coadyuvancia: assignmentType === 'coadyuvancia',
+        es_atracción: assignmentType === 'atraccion'
+      };
+
+      if (assignmentType === 'atraccion') {
+        if (!newInvestigator.ficha) {
+          Swal.fire('Error', 'Debe buscar y seleccionar un nuevo investigador para Atracción', 'warning');
+          return;
+        }
+        // Replace investigators list with new one
+        // Important: The backend serializer expects 'investigadores' as a list of objects to create relations
+        payload.investigadores = [newInvestigator];
+      } else if (assignmentType === 'coadyuvancia') {
+        if (!newInvestigator.ficha) {
+          Swal.fire('Error', 'Debe buscar y seleccionar un investigador para agregar como Coadyuvante', 'warning');
+          return;
+        }
+        const existingInvestigators = investigacion.investigadores || [];
+
+        // Check for duplicates
+        if (existingInvestigators.some((inv: any) => inv.ficha === newInvestigator.ficha)) {
+          Swal.fire('Error', 'El investigador ya está asignado a esta investigación', 'warning');
+          return;
+        }
+
+        // Add new one marked as coadyuvante
+        const nuevoCoadyuvante = { ...newInvestigator, es_coadyuvante: true };
+
+        payload.investigadores = [...existingInvestigators, nuevoCoadyuvante];
+      }
+
+      setIsAssigning(true);
+      await apiClient.patch(`/api/investigaciones/investigaciones/${id}/`, payload);
+
+      Swal.fire('Éxito', 'Asignación actualizada correctamente.', 'success');
+
+      setNewInvestigator({
+        ficha: '',
+        nombre: '',
+        categoria: '',
+        puesto: '',
+        extension: '',
+        email: '',
+        no_constancia: ''
+      });
+
+      // Refresh data
+      fetchData();
+
+    } catch (error) {
+      console.error(error);
+      Swal.fire('Error', 'No se pudo actualizar la asignación', 'error');
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
   if (loading) return <div className="admin-register-container">Cargando investigación...</div>;
 
   return (
@@ -358,10 +507,10 @@ function SeguimientoPage() {
           </div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ color: '#840016', fontWeight: '600', marginBottom: '5px', fontSize: '14px' }}>
-              <FiMapPin /> Centro
+              <FiMapPin /> Conducta
             </div>
             <div style={{ fontSize: '16px', fontWeight: '600', color: '#333' }}>
-              {investigacion?.centro}
+              {investigacion?.conductas}
             </div>
           </div>
           <div style={{ textAlign: 'center' }}>
@@ -425,6 +574,124 @@ function SeguimientoPage() {
       {activeTab === 'documentos' ? (
         <div className="admin-register-form-container">
 
+          {/* SECCION PARA DETERMINAR COADYUVANCIA O ATRACCION solo ADMIN, ADMINCENTRAL Y SUPERVISORGAI */}
+          {['Admin', 'AdminCentral', 'SupervisorGAI'].includes(userRole) && (
+            <div className="admin-form-section" style={{ marginBottom: '30px' }}>
+              <h2 className="admin-section-title">
+                COADYUVANCIA O ATRACCION
+              </h2>
+              {investigacion?.es_atracción ? (
+                <div style={{
+                  padding: '15px',
+                  backgroundColor: '#d4edda',
+                  color: '#155724',
+                  borderRadius: '8px',
+                  border: '1px solid #c3e6cb',
+                  marginTop: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}>
+                  <FiCheckCircle size={24} />
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '16px' }}>Atracción Realizada</h4>
+                    <p style={{ margin: '5px 0 0', fontSize: '14px' }}>
+                      Esta investigación ya ha sido marcada como atracción.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div style={{
+                    display: 'flex',
+                    gap: '20px',
+                    marginTop: '20px',
+                    flexWrap: 'wrap'
+                  }}>
+                    <label style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      cursor: 'pointer',
+                      fontWeight: '500',
+                      color: '#334155'
+                    }}>
+                      <input
+                        type="radio"
+                        name="coadyuvancia_atraccion"
+                        value="coadyuvancia"
+                        checked={assignmentType === 'coadyuvancia'}
+                        onChange={() => setAssignmentType('coadyuvancia')}
+                        style={{
+                          width: '18px',
+                          height: '18px',
+                          cursor: 'pointer',
+                          accentColor: '#840016'
+                        }}
+                      />
+                      Coadyuvancia
+                    </label>
+                    <label style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      cursor: 'pointer',
+                      fontWeight: '500',
+                      color: '#334155'
+                    }}>
+                      <input
+                        type="radio"
+                        name="coadyuvancia_atraccion"
+                        value="atraccion"
+                        checked={assignmentType === 'atraccion'}
+                        onChange={() => setAssignmentType('atraccion')}
+                        style={{
+                          width: '18px',
+                          height: '18px',
+                          cursor: 'pointer',
+                          accentColor: '#840016'
+                        }}
+                      />
+                      Atracción
+                    </label>
+                  </div>
+
+                  {(assignmentType === 'atraccion' || assignmentType === 'coadyuvancia') && (
+                    <div style={{ marginTop: '20px', padding: '15px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                      <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>
+                        {assignmentType === 'atraccion' ? 'Nuevo Investigador (para Atracción):' : 'Agregar Coadyuvante:'}
+                      </label>
+                      <InvestigadorSearch
+                        investigador={newInvestigator}
+                        setInvestigador={setNewInvestigator}
+                        onSearch={(ficha) => handleSearchInvestigator(ficha)}
+                        listaInvestigadores={listaInvestigadores}
+                      />
+                    </div>
+                  )}
+
+                  <div style={{ marginTop: '20px' }}>
+                    <button
+                      onClick={handleSaveAssignment}
+                      disabled={isAssigning}
+                      style={{
+                        background: '#840016',
+                        color: 'white',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: '6px',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        opacity: isAssigning ? 0.7 : 1
+                      }}
+                    >
+                      {isAssigning ? 'Guardando...' : 'Guardar y Asignar'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           <div style={{
             display: 'grid',

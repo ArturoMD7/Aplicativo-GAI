@@ -58,6 +58,7 @@ class InvestigacionViewSet(viewsets.ModelViewSet):
         investigacion.observaciones_reconsideracion = request.data.get('observaciones_reconsideracion')
         investigacion.sancion = request.data.get('sancion')
         investigacion.conducta_definitiva = request.data.get('conducta_definitiva')
+        investigacion.es_coadyuvancia = request.data.get('es_coadyuvancia', False)
         
         dias = request.data.get('dias_suspension')
         if dias is not None and dias != '':
@@ -256,11 +257,13 @@ def user_dashboard_view(request, user_id):
     concluidas = inv_queryset.filter(estatus='CONCLUIDA').count()
     # En proceso: todas las que NO están concluidas
     en_proceso = inv_queryset.exclude(estatus='CONCLUIDA').count()
+    coadyuvadas = inv_queryset.filter(es_coadyuvancia=True).count()
 
     stats = {
         'total': total,
         'en_proceso': en_proceso,
         'concluidas': concluidas,
+        'coadyuvadas': coadyuvadas
     }
 
     return Response({

@@ -50,7 +50,7 @@ class InvestigadorSerializer(serializers.ModelSerializer):
         model = Investigador
         fields = [
             'id', 'ficha', 'nombre', 'categoria', 'puesto', 
-            'extension', 'email', 'no_constancia',
+            'extension', 'email', 'no_constancia', 'es_coadyuvante',
         ]
         read_only_fields = ['id']
 
@@ -228,6 +228,9 @@ class InvestigacionSerializer(serializers.ModelSerializer):
             # Sección 4: Evento
             'lugar', 'observaciones', 'fecha_evento', 'centro_trabajo',
             'antecedentes',
+
+            # Sección 4.1: Tipo de Investigación
+            'es_coadyuvancia', 'es_atracción',
             
             # Sección 5: Reconsideracion
             'reconsideracion', 'observaciones_reconsideracion', 'conducta_definitiva',

@@ -122,6 +122,11 @@ class Investigacion(UppercaseMixin,models.Model):
     fecha_conocimiento_hechos = models.DateField()
     fecha_prescripcion = models.DateField()
     economica = models.BooleanField(default=False)
+
+    # booleanos para determinar el tipo de investigación
+    es_coadyuvancia = models.BooleanField(default=False)
+    es_atracción = models.BooleanField(default=False)
+
     montoeconomico = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
     
     # Sección 3: Gerencia Responsable
@@ -197,6 +202,7 @@ class Investigador(UppercaseMixin, models.Model):
     extension = models.CharField(max_length=10, blank=True)
     email = models.EmailField(blank=True)
     no_constancia = models.CharField(max_length=50, blank=True)
+    es_coadyuvante = models.BooleanField(default=False, null=True)
 
 class Reportante(UppercaseMixin, models.Model):
     investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='reportantes')
