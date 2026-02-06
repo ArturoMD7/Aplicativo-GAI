@@ -6,7 +6,8 @@ import {
   FiArrowLeft, FiUploadCloud, FiFileText, FiTrash2,
   FiCheckCircle, FiDownload, FiX, FiCalendar,
   FiMapPin, FiHash, FiBriefcase,
-  FiAlertTriangle, FiInfo, FiEye
+  FiAlertTriangle, FiInfo, FiEye,
+  FiClock
 } from 'react-icons/fi';
 import type { OpcionesDropdowns, Investigador } from '../types/investigacion.types';
 import InvestigadorSearch from '../components/Forms/InvestigadorSearch';
@@ -18,15 +19,17 @@ import CompletionProgressBar from '../components/DataDisplay/CompletionProgressB
 import { auditoriaService } from '../api/auditoriaService';
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 
-
-const TIPOS_DOCUMENTOS = [
+const TIPOS_OBLIGATORIOS = [
   'Reporte',
   'Citatorio a persona reportada',
   'Acta Audiencia a persona reportada',
   'Dictamen',
   'Notificación a persona reportada',
   'Evidencia de medidas preventivas',
-  'Convenio de pago',
+  'Convenio de pago'
+];
+
+const TIPOS_COMPLEMENTARIOS = [
   'Citatorio',
   'Actas',
   'Pruebas',
@@ -96,6 +99,7 @@ function SeguimientoPage() {
   const [descripcionDoc, setDescripcionDoc] = useState('');
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [docCategory, setDocCategory] = useState<'obligatorios' | 'complementarios'>('obligatorios');
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [userRole, setUserRole] = useState<string>('');
@@ -810,25 +814,32 @@ function SeguimientoPage() {
                 <FiUploadCloud /> Subir Documento
               </h2>
 
-              <ButtonIcon
-                text="Obligatorios"
-                size="medium"
-              />
-
-              <button
-                style={{
-                  background: '#840016',
-                  color: 'white',
-                  border: 'none',
-                  padding: '10px 20px',
-                  borderRadius: '6px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  opacity: isAssigning ? 0.7 : 1
-                }}
-              >
-                Complementarios
-              </button>
+              <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                <ButtonIcon
+                  text="Obligatorios"
+                  onClick={() => { setDocCategory('obligatorios'); setTipoDoc(''); }}
+                  icon={<span />}
+                  color={docCategory === 'obligatorios' ? '#840016' : '#e2e8f0'}
+                  hoverColor={docCategory === 'obligatorios' ? '#a50121' : '#cbd5e1'}
+                  style={{
+                    flex: 1,
+                    color: docCategory === 'obligatorios' ? 'white' : '#64748b',
+                    justifyContent: 'center'
+                  }}
+                />
+                <ButtonIcon
+                  text="Complementarios"
+                  onClick={() => { setDocCategory('complementarios'); setTipoDoc(''); }}
+                  icon={<span />}
+                  color={docCategory === 'complementarios' ? '#840016' : '#e2e8f0'}
+                  hoverColor={docCategory === 'complementarios' ? '#a50121' : '#cbd5e1'}
+                  style={{
+                    flex: 1,
+                    color: docCategory === 'complementarios' ? 'white' : '#64748b',
+                    justifyContent: 'center'
+                  }}
+                />
+              </div>
 
               {investigacion?.conductas?.toLowerCase().includes('acoso sexual') &&
                 !documentos.some(d => d.tipo === 'Evidencia de medidas preventivas' || d.nombre_archivo.toLowerCase().includes('evidencia')) && (
@@ -908,7 +919,7 @@ function SeguimientoPage() {
                         }}
                         style={{ padding: '12px', background: 'white' }}
                       >
-                        {TIPOS_DOCUMENTOS.filter(tipo => {
+                        {(docCategory === 'obligatorios' ? TIPOS_OBLIGATORIOS : TIPOS_COMPLEMENTARIOS).filter(tipo => {
                           if (tipo === 'Evidencia de medidas preventivas') {
                             return investigacion?.conductas?.toLowerCase().includes('acoso sexual') ||
                               investigacion?.conductas?.toLowerCase().includes('hostigamiento');
