@@ -443,7 +443,7 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
             'gerencia_responsable', 'created_by_name', 'dias_restantes',
             'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos', 'investigadores', 'involucrados', 'reportantes',
             'estatus', 'conductas', 'detalles_conducta', 'sancion', 'conducta_definitiva',
-            'reconsideracion', 'observaciones_reconsideracion', 'dias_suspension'
+            'reconsideracion', 'observaciones_reconsideracion', 'dias_suspension', 'economica'
         ]
 
     def get_dias_restantes(self, obj):

@@ -403,21 +403,42 @@ class DocumentoInvestigacion(models.Model):
     investigacion = models.ForeignKey(Investigacion, on_delete=models.CASCADE, related_name='documentos')
     
     TIPO_DOC_CHOICES = [
-        ('Reporte', 'Reporte para investigación'),
-        ('Citatorio', 'Citatorio'),
-        ('Citatorio_Reportado', 'Citatorio Reportado'),
-        ('Citatorio_Ratificante', 'Citatorio Ratificante'),
-        ('Citatorio_Testigo', 'Citatorio Testigo'),
-        ('Acta', 'Acta'),
-        ('Acta_Comparecencia_Ratificante', 'Acta Comparecencia Ratificante'),
-        ('Acta_Testigo', 'Acta Testigo'),
-        ('Acta_Investigacion', 'Acta de Investigación (Reportados)'),
-        ('Pruebas', 'Pruebas'),
+        #se muestran como 5 principales y obligatorios
+        ('Reporte', 'Reporte'),
+        ('Citatorio_Reportado', 'Citatorio a persona reportada'),
+        ('Acta_Audiencia_Reportado', 'Acta Audiencia a persona reportada'),
         ('Dictamen', 'Dictamen'),
-        ('Resultado', 'Resultado de la investigación'),
-        #('Anexo', 'Anexo'),
-        ('NotificacionConclusion', 'Notificación de Conclusión'),
+        ('Notificacion_a_reportado', 'Notificación a persona reportada'),
+
+        ##hostigamiento y repercusion solo cuando el caso es acoso e implica repercusion economica
+
         ('Evidencia de medidas preventivas', 'Evidencia de medidas preventivas'),
+        ('Convenio de pago', 'Convenio pago'),
+    
+        #8 citatorios se despliegan cuando se selecciona citatorio
+        ('Citatorio', 'Citatorio'),
+        ('Citatorio_Reportante', 'Persona reportante'),
+        ('Citatorio_Testigo', 'Testigo de la persona reportante'),
+        ('Citatorio_Reportado_Testigo', 'Testigo de la persona reportada'),
+
+        #9 actas audiencias se despliegan cuando se selecciona actas
+        ('Actas', 'Actas Audiencias'),
+        ('Acta_Persona_Reportante', 'Persona reportante'),
+        ('Acta_Testigo', 'Testigo de la persona reportante'),
+        ('Acta_Reportado_Testigo', 'Testigo de la persona reportada'),
+
+        #10 pruebas
+        ('Pruebas', 'Pruebas'),
+
+        #11 notificacionln
+        ('Notificacion_LN_Reportante', 'Notificación LN o reportante y aplicación sistema'),
+        
+        #12 resicion
+        ('Resicion_Paraprocesal', 'Resición Paraprocesal'),
+        ('Resicion_Juridico_a_tribunal', 'Resición Jurídico a Tribunal'),
+
+        #son en otras ventanas...
+        ('NotificacionConclusion', 'Notificación de Conclusión'),
         ('Formato_Reconsideracion', 'Formato de Reconsideración'),
     ]
     tipo = models.CharField(max_length=50, choices=TIPO_DOC_CHOICES)

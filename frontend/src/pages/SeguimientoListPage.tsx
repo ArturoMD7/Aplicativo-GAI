@@ -112,6 +112,40 @@ function SeguimientoListPage() {
       }
     }
 
+    // Validación para Repercusión Económica
+    // @ts-ignore
+    if (inv.economica) {
+      try {
+        const resDocs = await apiClient.get(`/api/investigaciones/documentos/?investigacion_id=${inv.id}`);
+        const documentos = resDocs.data;
+
+        const tieneConvenio = documentos.some((d: any) =>
+          d.tipo === 'Convenio de pago' ||
+          d.nombre_archivo.toLowerCase().includes('convenio')
+        );
+
+        if (!tieneConvenio) {
+          Swal.fire({
+            title: 'Falta Documentación',
+            html: `
+              Esta investigación implica <strong>Repercusión Económica</strong>.<br/><br/>
+              No se puede enviar a finalización sin adjuntar el archivo: <br/>
+              <b>"Convenio de pago"</b>.
+            `,
+            icon: 'warning',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#840016'
+          });
+          return;
+        }
+
+      } catch (error) {
+        console.error("Error validando documentos:", error);
+        Swal.fire('Error', 'No se pudo validar la documentación. Intente de nuevo.', 'error');
+        return;
+      }
+    }
+
     const result = await Swal.fire({
       title: '¿Pasar a Finalización?',
       text: "La investigación pasará a la bandeja de Finalización y desaparecerá de esta lista.",

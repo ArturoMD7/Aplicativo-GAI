@@ -5,9 +5,9 @@ CAMPOS_EVALUADOS = [
 DOCUMENTOS_REQUERIDOS = [
     {"tipo": "Reporte", "valor": 20},
     {"tipo": "Citatorio_Reportado", "valor": 20},
-    {"tipo": "Acta_Comparecencia_Ratificante", "valor": 20},
+    {"tipo": "Acta_Audiencia_Reportado", "valor": 20},
     {"tipo": "Dictamen", "valor": 20},
-    {"tipo": "Resultado", "valor": 20},
+    {"tipo": "Notificacion_a_reportado", "valor": 20},
 ]
 
 def calcular_completitud(investigacion):

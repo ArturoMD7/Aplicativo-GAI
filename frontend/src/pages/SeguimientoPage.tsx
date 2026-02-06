@@ -19,18 +19,50 @@ import { auditoriaService } from '../api/auditoriaService';
 
 const TIPOS_DOCUMENTOS = [
   'Reporte',
-  'Citatorio',
-  'Acta',
+  'Citatorio a persona reportada',
+  'Acta Audiencia a persona reportada',
   'Dictamen',
-  'Resultado',
-  //'Anexo',
+  'Notificación a persona reportada',
+  'Evidencia de medidas preventivas',
+  'Convenio de pago',
+  'Citatorio',
+  'Actas',
   'Pruebas',
-  'Evidencia de medidas preventivas'
+  'Notificación LN o reportante y aplicación sistema',
+  'Resición Paraprocesal',
+  'Resición Jurídico a Tribunal'
 ];
 
 const SUBTIPOS_DOCUMENTOS = {
-  'Citatorio': ['Reportado', 'Ratificante', 'Testigo'],
-  'Acta': ['Comparecencia Ratificante', 'Testigo', 'Investigación (Reportados)']
+  'Citatorio': ['Persona reportante', 'Testigo de la persona reportante', 'Testigo de la persona reportada'],
+  'Actas': ['Persona reportante', 'Testigo de la persona reportante', 'Testigo de la persona reportada']
+};
+
+const DOCUMENT_MAPPING: { [key: string]: string } = {
+  'Reporte': 'Reporte',
+  'Citatorio a persona reportada': 'Citatorio_Reportado',
+  'Acta Audiencia a persona reportada': 'Acta_Audiencia_Reportado',
+  'Dictamen': 'Dictamen',
+  'Notificación a persona reportada': 'Notificacion_a_reportado',
+  'Evidencia de medidas preventivas': 'Evidencia de medidas preventivas',
+  'Convenio de pago': 'Convenio de pago',
+  'Pruebas': 'Pruebas',
+  'Notificación LN o reportante y aplicación sistema': 'Notificacion_LN_Reportante',
+  'Resición Paraprocesal': 'Resicion_Paraprocesal',
+  'Resición Jurídico a Tribunal': 'Resicion_Juridico_a_tribunal'
+};
+
+const SUBTYPE_KEY_MAPPING: { [key: string]: { [key: string]: string } } = {
+  'Citatorio': {
+    'Persona reportante': 'Citatorio_Reportante',
+    'Testigo de la persona reportante': 'Citatorio_Testigo',
+    'Testigo de la persona reportada': 'Citatorio_Reportado_Testigo'
+  },
+  'Actas': {
+    'Persona reportante': 'Acta_Persona_Reportante',
+    'Testigo de la persona reportante': 'Acta_Testigo',
+    'Testigo de la persona reportada': 'Acta_Reportado_Testigo'
+  }
 };
 
 
@@ -174,15 +206,20 @@ function SeguimientoPage() {
     e.preventDefault();
     if (!selectedFile || !id) return;
 
-    let tipoFinal = tipoDoc;
-    if (tipoDoc === 'Citatorio' && subTipoDoc) {
-      tipoFinal = `Citatorio_${subTipoDoc}`;
-    } else if (tipoDoc === 'Acta' && subTipoDoc) {
-      if (subTipoDoc === 'Investigación (Reportados)') {
-        tipoFinal = 'Acta_Investigacion';
-      } else {
-        tipoFinal = `Acta_${subTipoDoc.replace(' ', '_')}`;
+    let tipoFinal = '';
+
+    if (tipoDoc === 'Citatorio' || tipoDoc === 'Actas') {
+      if (subTipoDoc && SUBTYPE_KEY_MAPPING[tipoDoc]) {
+        tipoFinal = SUBTYPE_KEY_MAPPING[tipoDoc][subTipoDoc] || '';
       }
+    } else {
+      tipoFinal = DOCUMENT_MAPPING[tipoDoc] || '';
+    }
+
+    if (!tipoFinal) {
+      console.error("Tipo de documento no mapeado:", tipoDoc, subTipoDoc);
+      Swal.fire('Error', 'Error interno: Tipo de documento no válido para envío.', 'error');
+      return;
     }
 
     const formData = new FormData();
@@ -263,7 +300,55 @@ function SeguimientoPage() {
     }
   };
 
-  const finalizarInvestigacion = async () => {
+  const finalitzarInvestigacion = async () => {
+    // Validar documentos obligatorios
+
+    // 1. Evidencia de medidas preventivas (Acoso Sexual / Hostigamiento)
+    if (investigacion?.conductas && (investigacion.conductas.toLowerCase().includes('acoso sexual') || investigacion.conductas.toLowerCase().includes('hostigamiento'))) {
+      const tieneEvidencia = documentos.some(d =>
+        d.tipo === 'Evidencia de medidas preventivas' ||
+        d.nombre_archivo.toLowerCase().includes('evidencia')
+      );
+
+      if (!tieneEvidencia) {
+        Swal.fire({
+          title: 'Falta Documentación',
+          html: `
+                  Esta investigación es por <strong>Hostigamiento o Acoso Sexual</strong>.<br/><br/>
+                  No se puede concluir sin adjuntar el archivo: <br/>
+                  <b>"Evidencia de medidas preventivas"</b>.
+                `,
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#840016'
+        });
+        return;
+      }
+    }
+
+    // 2. Convenio de pago (Económica)
+    if (investigacion?.economica) {
+      const tieneConvenio = documentos.some(d =>
+        d.tipo === 'Convenio de pago' ||
+        d.nombre_archivo.toLowerCase().includes('convenio')
+      );
+
+      if (!tieneConvenio) {
+        Swal.fire({
+          title: 'Falta Documentación',
+          html: `
+                  Esta investigación implica <strong>Repercusión Económica</strong>.<br/><br/>
+                  No se puede concluir sin adjuntar el archivo: <br/>
+                  <b>"Convenio de pago"</b>.
+                `,
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#840016'
+        });
+        return;
+      }
+    }
+
     const result = await Swal.fire({
       title: '¿Concluir Investigación?',
       text: "El estatus cambiará a Concluida y no podrás subir más archivos.",
@@ -723,29 +808,55 @@ function SeguimientoPage() {
                 <FiUploadCloud /> Subir Documento
               </h2>
 
-              {investigacion?.conductas?.toLowerCase().includes('acoso sexual') && (
-                <div style={{
-                  background: '#fff3cd',
-                  color: '#856404',
-                  padding: '15px',
-                  borderRadius: '8px',
-                  border: '1px solid #ffeeba',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  marginBottom: '20px'
-                }}>
-                  <FiAlertTriangle style={{ fontSize: '24px' }} />
-                  <div>
-                    <strong>¡Atención!</strong>
-                    <p style={{ margin: '5px 0 0' }}>
-                      Al ser un caso de <strong>Hostigamiento o Acoso Sexual</strong>, es obligatorio adjuntar el archivo:
-                      <br />
-                      <em>"Evidencia de medidas preventivas"</em>.
-                    </p>
+              {investigacion?.conductas?.toLowerCase().includes('acoso sexual') &&
+                !documentos.some(d => d.tipo === 'Evidencia de medidas preventivas' || d.nombre_archivo.toLowerCase().includes('evidencia')) && (
+                  <div style={{
+                    background: '#fff3cd',
+                    color: '#856404',
+                    padding: '15px',
+                    borderRadius: '8px',
+                    border: '1px solid #ffeeba',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    marginBottom: '20px'
+                  }}>
+                    <FiAlertTriangle style={{ fontSize: '24px' }} />
+                    <div>
+                      <strong>¡Atención!</strong>
+                      <p style={{ margin: '5px 0 0' }}>
+                        Al ser un caso de <strong>Hostigamiento o Acoso Sexual</strong>, es obligatorio adjuntar el archivo:
+                        <br />
+                        <em>"Evidencia de medidas preventivas"</em>.
+                      </p>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+
+              {investigacion?.economica &&
+                !documentos.some(d => d.tipo === 'Convenio de pago' || d.nombre_archivo.toLowerCase().includes('convenio')) && (
+                  <div style={{
+                    background: '#cce5ff',
+                    color: '#004085',
+                    padding: '15px',
+                    borderRadius: '8px',
+                    border: '1px solid #b8daff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    marginBottom: '20px'
+                  }}>
+                    <FiAlertTriangle style={{ fontSize: '24px' }} />
+                    <div>
+                      <strong>¡Atención!</strong>
+                      <p style={{ margin: '5px 0 0' }}>
+                        Al implicar <strong>Repercusión Económica</strong>, es obligatorio adjuntar el archivo:
+                        <br />
+                        <em>"Convenio de pago"</em>.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
               {investigacion?.estatus === 'Concluida' ? (
                 <div style={{
@@ -775,14 +886,20 @@ function SeguimientoPage() {
                         }}
                         style={{ padding: '12px', background: 'white' }}
                       >
-                        {TIPOS_DOCUMENTOS.filter(tipo =>
-                          tipo !== 'Evidencia de medidas preventivas' ||
-                          investigacion?.conductas?.toLowerCase().includes('acoso sexual')
-                        ).map(tipo => (
+                        {TIPOS_DOCUMENTOS.filter(tipo => {
+                          if (tipo === 'Evidencia de medidas preventivas') {
+                            return investigacion?.conductas?.toLowerCase().includes('acoso sexual') ||
+                              investigacion?.conductas?.toLowerCase().includes('hostigamiento');
+                          }
+                          if (tipo === 'Convenio de pago') {
+                            return investigacion?.economica;
+                          }
+                          return true;
+                        }).map(tipo => (
                           <option key={tipo} value={tipo}>{tipo}</option>
                         ))}
                       </select>
-                      {(tipoDoc === 'Citatorio' || tipoDoc === 'Acta') && (
+                      {(tipoDoc === 'Citatorio' || tipoDoc === 'Actas') && (
                         <div className="admin-form-group">
                           <label>Subtipo de {tipoDoc}</label>
                           <select
@@ -928,7 +1045,7 @@ function SeguimientoPage() {
                     }}>
                       <button
                         type="button"
-                        onClick={finalizarInvestigacion}
+                        onClick={finalitzarInvestigacion}
                         style={{
                           background: '#28a745',
                           color: 'white',
