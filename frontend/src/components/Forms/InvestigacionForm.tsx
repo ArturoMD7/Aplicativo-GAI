@@ -993,7 +993,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
           >
             <h2 className="admin-section-title">
               <i className="fas fa-info-circle"></i>
-              Información General
+              Información del Reporte
             </h2>
 
             <div className="admin-form-row">
@@ -1141,23 +1141,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
             }
 
             <div className="admin-personas-section" style={{ marginTop: '30px', borderTop: '1px dashed #ccc', paddingTop: '20px' }}>
-              <div className="admin-form-group">
-                <label>Gerencia Jurisdiccional SCH *</label>
-                <div className="admin-input-with-icon">
-                  <i className="fas fa-briefcase"></i>
-                  <select
-                    name="gerencia_responsable"
-                    value={formState.gerencia_responsable}
-                    onChange={handleChange}
-                    required
-                    disabled={isGerenciaDisabled}
-                    className={isGerenciaDisabled ? 'admin-disabled-field' : ''}
-                  >
-                    <option value="">Seleccione...</option>
-                    {opciones?.gerencias.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
-                </div>
-              </div>
+
               <h3 style={{ color: '#2c3e50', fontSize: '1.1rem', marginBottom: '15px' }}>
                 <i className="fas fa-users" style={{ marginRight: '8px' }}></i>
                 Personal Reportado
@@ -1945,6 +1929,23 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
                       Investigadores
                     </h2>
                     <h3></h3>
+                    <div className="admin-form-group">
+                      <label>Gerencia Jurisdiccional SCH *</label>
+                      <div className="admin-input-with-icon">
+                        <i className="fas fa-briefcase"></i>
+                        <select
+                          name="gerencia_responsable"
+                          value={formState.gerencia_responsable}
+                          onChange={handleChange}
+                          required
+                          disabled={isGerenciaDisabled}
+                          className={isGerenciaDisabled ? 'admin-disabled-field' : ''}
+                        >
+                          <option value="">Seleccione...</option>
+                          {opciones?.gerencias.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                        </select>
+                      </div>
+                    </div>
                     <div className="admin-form-group">
                       <label>Ficha</label>
                       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', flexDirection: 'column', width: '100%' }}>

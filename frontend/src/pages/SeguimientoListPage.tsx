@@ -385,7 +385,7 @@ function SeguimientoListPage() {
                 <th onClick={() => requestSort('conductas')} style={{ cursor: 'pointer' }}>Conducta {getSortIcon('conductas')}</th>
                 <th onClick={() => requestSort('gravedad')} style={{ cursor: 'pointer' }}>Gravedad {getSortIcon('gravedad')}</th>
                 <th onClick={() => requestSort('gerencia_responsable')} style={{ cursor: 'pointer' }}>Región {getSortIcon('gerencia_responsable')}</th>
-                <th onClick={() => requestSort('fecha_reporte')} style={{ cursor: 'pointer' }}>Fecha Reporte {getSortIcon('fecha_reporte')}</th>
+                <th onClick={() => requestSort('fecha_reporte')} style={{ cursor: 'pointer' }}>Fecha de Registro {getSortIcon('fecha_reporte')}</th>
                 <th onClick={() => requestSort('fecha_prescripcion')} style={{ cursor: 'pointer' }}>Prescripción {getSortIcon('fecha_prescripcion')}</th>
                 <th style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => requestSort('dias_restantes')}>Días Rest. {getSortIcon('dias_restantes')}</th>
                 <th onClick={() => requestSort('created_by_name')} style={{ cursor: 'pointer' }}>Creado Por {getSortIcon('created_by_name')}</th>

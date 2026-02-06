@@ -396,7 +396,7 @@ function FinalizacionListPage() {
                 <th>Documento</th>
                 <th>Dirección</th>
                 <th>Relevancia</th>
-                <th>Fecha Reporte</th>
+                <th>Fecha de Registro</th>
                 <th style={{ textAlign: 'center' }}>Días en Proceso</th>
                 <th style={{ textAlign: 'center' }}>Acciones</th>
               </tr>

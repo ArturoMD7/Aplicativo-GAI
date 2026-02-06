@@ -16,6 +16,8 @@ import DocumentPreviewModal from '../components/Modals/DocumentPreviewModal';
 import { InvestigacionForm } from '../components/Forms/InvestigacionForm';
 import CompletionProgressBar from '../components/DataDisplay/CompletionProgressBar';
 import { auditoriaService } from '../api/auditoriaService';
+import ButtonIcon from '../components/Buttons/ButtonIcon';
+
 
 const TIPOS_DOCUMENTOS = [
   'Reporte',
@@ -584,7 +586,7 @@ function SeguimientoPage() {
           </div>
           <div style={{ textAlign: 'center' }}>
             <div style={{ color: '#840016', fontWeight: '600', marginBottom: '5px', fontSize: '14px' }}>
-              <FiCalendar /> Fecha Reporte
+              <FiCalendar /> Fecha de Registro
             </div>
             <div style={{ fontSize: '16px', fontWeight: '600', color: '#333' }}>
               {formatDate(investigacion?.fecha_reporte)}
@@ -661,9 +663,9 @@ function SeguimientoPage() {
 
           {/* SECCION PARA DETERMINAR COADYUVANCIA O ATRACCION solo ADMIN, ADMINCENTRAL Y SUPERVISORGAI */}
           {['Admin', 'AdminCentral', 'SupervisorGAI'].includes(userRole) && (
-            <div className="admin-form-section" style={{ marginBottom: '30px' }}>
+            <div className="admin-form-section" style={{ marginBottom: '10px' }}>
               <h2 className="admin-section-title">
-                COADYUVANCIA O ATRACCION
+                Coadyuvancia o Atracción
               </h2>
               {investigacion?.es_atracción ? (
                 <div style={{
@@ -807,6 +809,26 @@ function SeguimientoPage() {
               <h2 className="admin-section-title">
                 <FiUploadCloud /> Subir Documento
               </h2>
+
+              <ButtonIcon
+                text="Obligatorios"
+                size="medium"
+              />
+
+              <button
+                style={{
+                  background: '#840016',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px 20px',
+                  borderRadius: '6px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  opacity: isAssigning ? 0.7 : 1
+                }}
+              >
+                Complementarios
+              </button>
 
               {investigacion?.conductas?.toLowerCase().includes('acoso sexual') &&
                 !documentos.some(d => d.tipo === 'Evidencia de medidas preventivas' || d.nombre_archivo.toLowerCase().includes('evidencia')) && (
