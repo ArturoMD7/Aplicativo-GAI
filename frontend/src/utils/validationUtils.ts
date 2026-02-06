@@ -1,4 +1,3 @@
-aas
 export const REQUIRED_DOCS_MAP: { [key: string]: string } = {
     'Reporte': 'Reporte',
     'Citatorio a persona reportada': 'Citatorio_Reportado',
