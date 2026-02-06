@@ -15,6 +15,7 @@ import Swal from 'sweetalert2';
 import CustomConductaSelect from '../components/Inputs/CustomConductaSelect';
 import { FiX } from 'react-icons/fi';
 import { auditoriaService } from '../api/auditoriaService';
+import { getMissingDocuments } from '../utils/validationUtils';
 
 function FinalizacionListPage() {
   const [investigaciones, setInvestigaciones] = useState<InvestigacionListado[]>([]);
@@ -127,11 +128,30 @@ function FinalizacionListPage() {
       const docs = docsRes.data;
       const notificacion = docs.find((d: any) => d.tipo === 'NotificacionConclusion');
 
-      setHasNotificacion(!!notificacion);
+      // Validar documentos obligatorios antes de permitir abrir el modal
+      const investigacion = investigaciones.find(inv => inv.id === id);
+      const faltantes = getMissingDocuments(investigacion, docs);
+
+      if (faltantes.length > 0) {
+        const listaHtml = faltantes.map((doc: string) => `<li>${doc}</li>`).join(''); // Typed doc as string
+
+        Swal.fire({
+          title: 'Documentación Incompleta',
+          html: `
+            <p>No se puede proceder a la conclusión. Faltan los siguientes documentos obligatorios:</p>
+            <ul style="text-align: left; margin-top: 10px; margin-bottom: 20px; font-weight: bold; color: #840016;">
+              ${listaHtml}
+            </ul>
+          `,
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#840016'
+        });
+        return;
+      }
+
       setHasNotificacion(!!notificacion);
       setSelectedFileConcluir(null);
-
-      const investigacion = investigaciones.find(inv => inv.id === id);
 
       // Abrir Modal de Conclusión DIRECTAMENTE
       setDataConcluir({

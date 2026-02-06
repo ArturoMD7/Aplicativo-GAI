@@ -13,6 +13,7 @@ import DocumentosModals from '../components/Modals/DocumentosModals';
 import Swal from 'sweetalert2';
 import { GERENCIA_CHOICES, CONDUCTAS_POSIBLES } from '../data/investigacionConstants';
 import { auditoriaService } from '../api/auditoriaService';
+import { getMissingDocuments } from '../utils/validationUtils';
 
 type SortConfig = {
   key: keyof InvestigacionListado | null;
@@ -80,70 +81,33 @@ function SeguimientoListPage() {
   }, []);
 
   const handleFinalizacion = async (inv: InvestigacionListado) => {
-    if (inv.conductas && inv.conductas.toLowerCase().includes('acoso sexual')) {
-      try {
-        const resDocs = await apiClient.get(`/api/investigaciones/documentos/?investigacion_id=${inv.id}`);
-        const documentos = resDocs.data;
+    // Validar documentos obligatorios usando la utilidad
+    try {
+      const resDocs = await apiClient.get(`/api/investigaciones/documentos/?investigacion_id=${inv.id}`);
+      const documentos = resDocs.data;
+      const faltantes = getMissingDocuments(inv, documentos);
 
-        const tieneEvidencia = documentos.some((d: any) =>
-          d.tipo === 'Evidencia de medidas preventivas' ||
-          d.nombre_archivo.toLowerCase().includes('evidencia de medidas preventivas')
-        );
+      if (faltantes.length > 0) {
+        const listaHtml = faltantes.map((doc: string) => `<li>${doc}</li>`).join(''); // Typed doc as string
 
-        if (!tieneEvidencia) {
-          Swal.fire({
-            title: 'Falta Documentación',
-            html: `
-              Esta investigación es por <strong>Hostigamiento o Acoso Sexual</strong>.<br/><br/>
-              No se puede enviar a finalización sin adjuntar el archivo: <br/>
-              <b>"Evidencia de medidas preventivas"</b>.
-            `,
-            icon: 'warning',
-            confirmButtonText: 'Entendido',
-            confirmButtonColor: '#840016'
-          });
-          return;
-        }
-
-      } catch (error) {
-        console.error("Error validando documentos:", error);
-        Swal.fire('Error', 'No se pudo validar la documentación. Intente de nuevo.', 'error');
+        Swal.fire({
+          title: 'Documentación Incompleta',
+          html: `
+            <p>Para enviar a finalización, es obligatorio adjuntar los siguientes documentos:</p>
+            <ul style="text-align: left; margin-top: 10px; margin-bottom: 20px; font-weight: bold; color: #840016;">
+              ${listaHtml}
+            </ul>
+          `,
+          icon: 'warning',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#840016'
+        });
         return;
       }
-    }
-
-    // Validación para Repercusión Económica
-    // @ts-ignore
-    if (inv.economica) {
-      try {
-        const resDocs = await apiClient.get(`/api/investigaciones/documentos/?investigacion_id=${inv.id}`);
-        const documentos = resDocs.data;
-
-        const tieneConvenio = documentos.some((d: any) =>
-          d.tipo === 'Convenio de pago' ||
-          d.nombre_archivo.toLowerCase().includes('convenio')
-        );
-
-        if (!tieneConvenio) {
-          Swal.fire({
-            title: 'Falta Documentación',
-            html: `
-              Esta investigación implica <strong>Repercusión Económica</strong>.<br/><br/>
-              No se puede enviar a finalización sin adjuntar el archivo: <br/>
-              <b>"Convenio de pago"</b>.
-            `,
-            icon: 'warning',
-            confirmButtonText: 'Entendido',
-            confirmButtonColor: '#840016'
-          });
-          return;
-        }
-
-      } catch (error) {
-        console.error("Error validando documentos:", error);
-        Swal.fire('Error', 'No se pudo validar la documentación. Intente de nuevo.', 'error');
-        return;
-      }
+    } catch (error) {
+      console.error("Error validando documentos:", error);
+      Swal.fire('Error', 'No se pudo validar la documentación. Intente de nuevo.', 'error');
+      return;
     }
 
     const result = await Swal.fire({

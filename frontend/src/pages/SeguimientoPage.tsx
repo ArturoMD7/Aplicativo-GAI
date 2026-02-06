@@ -18,6 +18,7 @@ import { InvestigacionForm } from '../components/Forms/InvestigacionForm';
 import CompletionProgressBar from '../components/DataDisplay/CompletionProgressBar';
 import { auditoriaService } from '../api/auditoriaService';
 import ButtonIcon from '../components/Buttons/ButtonIcon';
+import { getMissingDocuments } from '../utils/validationUtils';
 
 const TIPOS_OBLIGATORIOS = [
   'Reporte',
@@ -307,52 +308,25 @@ function SeguimientoPage() {
   };
 
   const finalitzarInvestigacion = async () => {
-    // Validar documentos obligatorios
+    // Validar documentos obligatorios usando la utilidad centralizada
+    const faltantes = getMissingDocuments(investigacion, documentos);
 
-    // 1. Evidencia de medidas preventivas (Acoso Sexual / Hostigamiento)
-    if (investigacion?.conductas && (investigacion.conductas.toLowerCase().includes('acoso sexual') || investigacion.conductas.toLowerCase().includes('hostigamiento'))) {
-      const tieneEvidencia = documentos.some(d =>
-        d.tipo === 'Evidencia de medidas preventivas' ||
-        d.nombre_archivo.toLowerCase().includes('evidencia')
-      );
+    if (faltantes.length > 0) {
+      const listaHtml = faltantes.map(doc => `<li>${doc}</li>`).join('');
 
-      if (!tieneEvidencia) {
-        Swal.fire({
-          title: 'Falta Documentación',
-          html: `
-                  Esta investigación es por <strong>Hostigamiento o Acoso Sexual</strong>.<br/><br/>
-                  No se puede concluir sin adjuntar el archivo: <br/>
-                  <b>"Evidencia de medidas preventivas"</b>.
-                `,
-          icon: 'warning',
-          confirmButtonText: 'Entendido',
-          confirmButtonColor: '#840016'
-        });
-        return;
-      }
-    }
-
-    // 2. Convenio de pago (Económica)
-    if (investigacion?.economica) {
-      const tieneConvenio = documentos.some(d =>
-        d.tipo === 'Convenio de pago' ||
-        d.nombre_archivo.toLowerCase().includes('convenio')
-      );
-
-      if (!tieneConvenio) {
-        Swal.fire({
-          title: 'Falta Documentación',
-          html: `
-                  Esta investigación implica <strong>Repercusión Económica</strong>.<br/><br/>
-                  No se puede concluir sin adjuntar el archivo: <br/>
-                  <b>"Convenio de pago"</b>.
-                `,
-          icon: 'warning',
-          confirmButtonText: 'Entendido',
-          confirmButtonColor: '#840016'
-        });
-        return;
-      }
+      Swal.fire({
+        title: 'Documentación Incompleta',
+        html: `
+          <p>Para concluir la investigación, es obligatorio adjuntar los siguientes documentos:</p>
+          <ul style="text-align: left; margin-top: 10px; margin-bottom: 20px; font-weight: bold; color: #840016;">
+            ${listaHtml}
+          </ul>
+        `,
+        icon: 'warning',
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#840016'
+      });
+      return;
     }
 
     const result = await Swal.fire({
