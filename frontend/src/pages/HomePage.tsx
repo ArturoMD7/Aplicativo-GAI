@@ -22,6 +22,7 @@ import SeguimientoListPage from './SeguimientoListPage';
 import SeguimientoPage from './SeguimientoPage';
 import BuscarEmpleadoPage from './BuscarEmpleadoPage';
 import FinalizacionListPage from './FinalizacionListPage';
+import FinalizadosEditPage from './FinalizadosEditPage';
 import Watermark from '@uiw/react-watermark';
 import ResponsivaUploadModal from '../components/Modals/ResponsivaUploadModal';
 
@@ -135,6 +136,7 @@ function HomePage({ onLogout }: HomePageProps) {
               <Route path="/investigaciones/detalles/:id" element={<InvestigacionDetailsPage />} />
               <Route path="/investigaciones/seguimiento-lista" element={<SeguimientoListPage />} />
               <Route path="/investigaciones/finalizacion-lista" element={<FinalizacionListPage />} />
+              <Route path="/investigaciones/finalizadas/editar/:id" element={<FinalizadosEditPage />} />
               <Route path="/investigaciones/seguimiento/:id" element={<SeguimientoPage />} />
               <Route path="/buscar-empleado" element={<BuscarEmpleadoPage />} />
 

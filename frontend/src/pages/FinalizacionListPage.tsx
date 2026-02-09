@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiTrendingUp, FiEye, FiClock, FiFileText, FiUpload, FiFile, FiRefreshCw } from 'react-icons/fi';
+import { FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiTrendingUp, FiEye, FiClock, FiFileText, FiUpload, FiFile, FiRefreshCw, FiEdit } from 'react-icons/fi';
 import { MdDeleteForever } from "react-icons/md";
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import Pagination from '../components/Pagination';
@@ -495,6 +495,19 @@ function FinalizacionListPage() {
                           title="Reconsiderar Conducta/Sanción"
                           size="medium"
                           style={{ backgroundColor: '#6c757d', color: 'white' }}
+                        />
+                      )}
+                      {statusFilter === 'COMPLETED' && (
+                        <ButtonIcon
+                          variant="info"
+                          icon={<FiEdit />}
+                          onClick={async () => {
+                          await auditoriaService.logAction('EDIT', 'Abrió detalles de investigación (Finalización)', inv.id, `/investigaciones/finalizadas/editar/${inv.id}`);
+                          navigate(`/investigaciones/finalizadas/editar/${inv.id}`, { state: { from: location.pathname } });
+                          
+                        }}
+                          title="Editar Conducta/Sanción"
+                          size="medium"
                         />
                       )}
 
