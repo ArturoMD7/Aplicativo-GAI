@@ -11,6 +11,34 @@ DOCUMENTOS_REQUERIDOS = [
 ]
 
 def calcular_completitud(investigacion):
+    # Si es "Sin Elementos", la lógica es específica:
+    # Solo Reporte(20%) y Dictamen(80%)
+    if getattr(investigacion, 'sin_elementos', False):
+        valor_completo = 0
+        campos_faltantes = []
+        
+        docs = investigacion.documentos.all()
+        tipos_presentes = {d.tipo for d in docs}
+
+        # Reglas específicas para Sin Elementos
+        # 1. Reporte (20%)
+        if "Reporte" in tipos_presentes:
+            valor_completo += 20
+        else:
+            campos_faltantes.append("Documento: Reporte")
+
+        # 2. Dictamen (80%)
+        if "Dictamen" in tipos_presentes:
+            valor_completo += 80
+        else:
+            campos_faltantes.append("Documento: Dictamen")
+            
+        return {
+            "porcentaje": round(valor_completo, 2),
+            "faltantes": campos_faltantes
+        }
+
+    # Lógica Estándar (si no es sin_elementos)
     valor_completo = 0
     campos_faltantes = []
 

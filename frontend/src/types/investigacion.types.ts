@@ -109,6 +109,7 @@ export interface InvestigacionFormState {
   testigos: Testigo[];
   detalles_conducta?: string;
   porcentaje_completitud?: number;
+  sin_elementos?: boolean;
 }
 
 export interface OpcionesDropdowns {
@@ -150,6 +151,7 @@ export interface InvestigacionListado {
   dias_suspension?: number;
   observaciones_reconsideracion?: string;
   reconsideracion?: boolean;
+  sin_elementos?: boolean;
 }
 
 export interface Antecedente {
@@ -208,4 +210,5 @@ export interface InvestigacionDetalle extends InvestigacionFormState {
   reconsideracion?: boolean;
   observaciones_reconsideracion?: string;
   conducta_definitiva?: string;
+  sin_elementos?: boolean;
 }

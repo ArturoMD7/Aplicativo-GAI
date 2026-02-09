@@ -9,6 +9,19 @@ export const REQUIRED_DOCS_MAP: { [key: string]: string } = {
 export const getMissingDocuments = (investigacion: any, documentos: any[]): string[] => {
     const missing: string[] = [];
 
+    // 0. Check for "Sin Elementos" Special Case
+    if (investigacion?.sin_elementos) {
+        // Only Reporte and Dictamen required
+        const requiredSpecial = ['Reporte', 'Dictamen'];
+
+        requiredSpecial.forEach(reqType => {
+            const exists = documentos.some(d => d.tipo === reqType);
+            if (!exists) missing.push(reqType);
+        });
+
+        return missing;
+    }
+
     // 1. Check Mandatory Base Docs
     Object.entries(REQUIRED_DOCS_MAP).forEach(([friendlyName, backendKey]) => {
         // Check if doc exists by backendKey (tipo)

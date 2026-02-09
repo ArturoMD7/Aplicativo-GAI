@@ -19,6 +19,7 @@ import CompletionProgressBar from '../components/DataDisplay/CompletionProgressB
 import { auditoriaService } from '../api/auditoriaService';
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import { getMissingDocuments } from '../utils/validationUtils';
+import { IoRadioButtonOff } from 'react-icons/io5';
 
 const TIPOS_OBLIGATORIOS = [
   'Reporte',
@@ -509,6 +510,36 @@ function SeguimientoPage() {
     }
   };
 
+  const handleToggleSinElementos = async (checked: boolean) => {
+    try {
+      // 1. Update backend
+      await apiClient.patch(`/api/investigaciones/investigaciones/${id}/`, { sin_elementos: checked });
+
+      // 2. Update local state optimistic
+      setInvestigacion((prev: any) => ({ ...prev, sin_elementos: checked }));
+
+      // 3. Refresh data to calculate new progress percentage
+      fetchData();
+
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+
+      Toast.fire({
+        icon: 'success',
+        title: checked ? 'Marcado como "Sin Elementos"' : 'Desmarcado "Sin Elementos"'
+      });
+
+    } catch (error) {
+      console.error(error);
+      Swal.fire('Error', 'No se pudo actualizar el estado de la investigación', 'error');
+    }
+  };
+
   if (loading) return <div className="admin-register-container">Cargando investigación...</div>;
 
   return (
@@ -778,6 +809,25 @@ function SeguimientoPage() {
             </div>
           )}
 
+          {/* SECCION "SIN ELEMENTOS" (Solo Admins/Supervisores si se requiere restricción, por ahora abierto o según rol) */}
+          <div className="admin-form-section" style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '15px', background: '#fff', padding: '15px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+            <div style={{ flex: 1 }}>
+              <h3 style={{ margin: '0 0 5px 0', fontSize: '16px', color: '#2d3748' }}>Investigación Sin Elementos</h3>
+              <p style={{ margin: 0, fontSize: '14px', color: '#718096' }}>
+                Marque esta casilla si la investigación no cuenta con elementos suficientes. Esto ajustará los documentos obligatorios a solo <b>Reporte</b> y <b>Dictamen</b>.
+              </p>
+            </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: '600', color: '#2d3748' }}>
+              <input
+                type="checkbox"
+                checked={!!investigacion?.sin_elementos}
+                onChange={(e) => handleToggleSinElementos(e.target.checked)}
+                style={{ width: '20px', height: '20px', accentColor: '#840016', cursor: 'pointer' }}
+              />
+              Sin Elementos
+            </label>
+          </div>
+
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr 1.5fr',
@@ -787,6 +837,7 @@ function SeguimientoPage() {
               <h2 className="admin-section-title">
                 <FiUploadCloud /> Subir Documento
               </h2>
+              
 
               <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
                 <ButtonIcon

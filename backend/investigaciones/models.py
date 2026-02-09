@@ -126,6 +126,7 @@ class Investigacion(UppercaseMixin,models.Model):
     # booleanos para determinar el tipo de investigación
     es_coadyuvancia = models.BooleanField(default=False)
     es_atracción = models.BooleanField(default=False)
+    sin_elementos = models.BooleanField(default=False)
 
     montoeconomico = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
     

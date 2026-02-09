@@ -230,7 +230,7 @@ class InvestigacionSerializer(serializers.ModelSerializer):
             'antecedentes',
 
             # Sección 4.1: Tipo de Investigación
-            'es_coadyuvancia', 'es_atracción',
+            'es_coadyuvancia', 'es_atracción', 'sin_elementos',
             
             # Sección 5: Reconsideracion
             'reconsideracion', 'observaciones_reconsideracion', 'conducta_definitiva',
@@ -443,7 +443,7 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
             'gerencia_responsable', 'created_by_name', 'dias_restantes',
             'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos', 'investigadores', 'involucrados', 'reportantes',
             'estatus', 'conductas', 'detalles_conducta', 'sancion', 'conducta_definitiva',
-            'reconsideracion', 'observaciones_reconsideracion', 'dias_suspension', 'economica'
+            'reconsideracion', 'observaciones_reconsideracion', 'dias_suspension', 'economica', 'sin_elementos'
         ]
 
     def get_dias_restantes(self, obj):
