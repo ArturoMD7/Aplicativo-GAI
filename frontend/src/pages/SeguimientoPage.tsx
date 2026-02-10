@@ -465,6 +465,7 @@ function SeguimientoPage() {
         // Replace investigators list with new one
         // Important: The backend serializer expects 'investigadores' as a list of objects to create relations
         payload.investigadores = [newInvestigator];
+        payload.gerencia_responsable = 'GAI';
       } else if (assignmentType === 'coadyuvancia') {
         if (!newInvestigator.ficha) {
           Swal.fire('Error', 'Debe buscar y seleccionar un investigador para agregar como Coadyuvante', 'warning');
@@ -486,6 +487,10 @@ function SeguimientoPage() {
 
       setIsAssigning(true);
       await apiClient.patch(`/api/investigaciones/investigaciones/${id}/`, payload);
+
+      if (assignmentType === 'atraccion') {
+        setInvestigacion((prev: any) => ({ ...prev, gerencia_responsable: 'GAI' }));
+      }
 
       Swal.fire('Éxito', 'Asignación actualizada correctamente.', 'success');
 
@@ -837,7 +842,7 @@ function SeguimientoPage() {
               <h2 className="admin-section-title">
                 <FiUploadCloud /> Subir Documento
               </h2>
-              
+
 
               <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
                 <ButtonIcon
