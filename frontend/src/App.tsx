@@ -13,6 +13,9 @@ function App() {
       setIsAuthenticated(true);
     }
 
+
+    // comentado temporalmente para poder hacer pruebas
+    /*
     // Block right click
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
@@ -32,6 +35,7 @@ function App() {
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('keydown', handleKeyDown);
     };
+    */
   }, []);
 
   const handleLoginSuccess = () => {
