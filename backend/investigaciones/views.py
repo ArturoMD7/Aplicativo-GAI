@@ -405,7 +405,7 @@ def buscar_empleado_view(request):
             cursor.execute("""
                 SELECT ficha, nombres, nivel_plaza, catego, mc_stext, edad, antig,
                        rfc + homoclave as rfc, curp, direccion_coduni,
-                       grupo, jorna, sec_sin, termino, cve_desc_centro
+                       grupo, jorna, sec_sin, termino, cve_desc_centro, subdireccion_coduni
                 FROM [00_tablero_dg]
                 WHERE ficha = %s
             """, [ficha_buscada])
@@ -432,6 +432,7 @@ def buscar_empleado_view(request):
                     'termino': f"{termino_raw[6:8]}/{termino_raw[4:6]}/{termino_raw[:4]}",  
                     'sindicato': "STPRM" if row[12] else "",
                     'centro_trabajo': row[14],
+                    'subdireccion': row[15],
                     'fuente': 'Activos'
                 }
 

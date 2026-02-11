@@ -15,7 +15,8 @@ const initialState: Baja = {
     costo_plaza: '',
     costo_nueva_plaza: '',
     ahorro: 0,
-    dir: '',
+    direccion: '',
+    subdireccion: '',
     region: 'NORTE', // Default per choices
     tramite: 'LIQUIDACIÓN', // Default
     liquidacion_neta: 0,
@@ -31,6 +32,7 @@ const initialState: Baja = {
     confirmacion_descenso: false,
     observaciones_2: '',
     cancelada: false,
+    fuente: '',
     comentarios: '',
 };
 
@@ -94,8 +96,11 @@ function BajaFormPage() {
                 nombre: empleado.nombre || '',
                 nivel: empleado.nivel || '',
                 antiguedad: empleado.antiguedad || 0,
-                posicion: empleado.puesto || '', // Mapping puesto to posicion
-                // Mapping other fields if available and matching
+                posicion: empleado.puesto || '',
+                direccion: empleado.direccion || '',
+                subdireccion: empleado.subdireccion || '',
+                fuente: empleado.fuente || '',
+
             }));
 
             const Toast = Swal.mixin({
@@ -166,10 +171,72 @@ function BajaFormPage() {
 
                 <form onSubmit={handleSubmit}>
                     {/* Sección 1: Datos del Empleado */}
-                    <section className="admin-form-section">
+                    <section className="admin-form-section "
+                        style={{ gridColumn: '1 / -1' }}>
                         <h2 className="admin-section-title">
-                            <FiUser /> Datos del Empleado
+                            <FiUser /> Datos de SAAI
                         </h2>
+                        <div className="admin-form-row">
+                            <div className="admin-form-group">
+                                <label>Origen</label>
+                                <input
+                                    type="text"
+                                    name="origen"
+                                    value={formState.origen}
+                                    onChange={handleChange}
+                                    className="admin-input"
+                                />
+                            </div>
+
+                            <div className="admin-form-group">
+                                <label>Fecha Ejecución</label>
+                                <input
+                                    type="date"
+                                    name="fecha_ejecucion"
+                                    value={formState.fecha_ejecucion || ''}
+                                    onChange={handleChange}
+                                    className="admin-input"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="admin-form-row">
+                            <div className="admin-form-group">
+                                <label>Trámite</label>
+                                <select
+                                    name="tramite"
+                                    value={formState.tramite}
+                                    onChange={handleChange}
+                                    className="admin-select"
+                                >
+                                    <option value="LIQUIDACIÓN">LIQUIDACIÓN</option>
+                                    <option value="DESCENSO">DESCENSO</option>
+                                    <option value="JUBILACIÓN">JUBILACIÓN</option>
+                                    <option value="RESCATADO(A)">RESCATADO(A)</option>
+                                </select>
+                            </div>
+                            <div className="admin-form-group">
+                                <label>Estatus</label>
+                                <select
+                                    name="status"
+                                    value={formState.status}
+                                    onChange={handleChange}
+                                    className="admin-select"
+                                >
+                                    <option value="RECHAZÓ">RECHAZÓ</option>
+                                    <option value="ACEPTÓ">ACEPTÓ</option>
+                                    <option value="AUSENCIA">AUSENCIA</option>
+                                    <option value="PENDIENTE">PENDIENTE</option>
+                                    <option value="RESCATADO(A)">RESCATADO(A)</option>
+                                    <option value="SIN CONTRATO VIGENTE">SIN CONTRATO VIGENTE</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <h3 style={{ color: '#2c3e50', fontSize: '1.1rem', marginBottom: '15px' }}>
+                            <i className="fas fa-bullhorn" style={{ marginRight: '8px' }}></i>
+                            Datos de personal
+                        </h3>
 
                         <div className="admin-form-row">
                             <div className="admin-form-group">
@@ -207,7 +274,20 @@ function BajaFormPage() {
                                     maxLength={40}
                                     className="admin-input"
                                     placeholder="Nombre completo"
-                                    readOnly // Optional: make readOnly if always fetched
+                                    readOnly
+                                />
+                            </div>
+                        </div>
+                        <div className="admin-form-row">
+                            <div className="admin-form-group">
+                                <label>Fuente</label>
+                                <input
+                                    type="text"
+                                    name="fuente"
+                                    value={formState.fuente}
+                                    onChange={handleChange}
+                                    maxLength={2}
+                                    className="admin-input"
                                 />
                             </div>
                         </div>
@@ -266,13 +346,34 @@ function BajaFormPage() {
                                 <label>Dirección</label>
                                 <input
                                     type="text"
-                                    name="dir"
-                                    value={formState.dir}
+                                    name="direccion"
+                                    value={formState.direccion}
                                     onChange={handleChange}
                                     maxLength={10}
                                     className="admin-input"
                                 />
                             </div>
+                            <div className="admin-form-group">
+                                <label>Subdirección</label>
+                                <input
+                                    type="text"
+                                    name="subdireccion"
+                                    value={formState.subdireccion}
+                                    onChange={handleChange}
+                                    maxLength={10}
+                                    className="admin-input"
+                                />
+                            </div>
+                        </div>
+
+
+                        <h3 style={{ color: '#2c3e50', fontSize: '1.1rem', marginBottom: '15px' }}>
+                            <i className="fas fa-bullhorn" style={{ marginRight: '8px' }}></i>
+                            Datos de ....
+                        </h3>
+
+                        <div className="admin-form-row">
+
                             <div className="admin-form-group">
                                 <label>Región</label>
                                 <select
@@ -289,13 +390,6 @@ function BajaFormPage() {
                                 </select>
                             </div>
                         </div>
-                    </section>
-
-                    {/* Sección 2: Datos Económicos */}
-                    <section className="admin-form-section">
-                        <h2 className="admin-section-title">
-                            <FiDollarSign /> Datos Económicos
-                        </h2>
                         <div className="admin-form-row">
                             <div className="admin-form-group">
                                 <label>Costo Plaza</label>
@@ -343,45 +437,26 @@ function BajaFormPage() {
                                 />
                             </div>
                         </div>
+                        <div className="admin-form-group">
+                            <label>Observaciones</label>
+                            <textarea
+                                name="observaciones"
+                                value={formState.observaciones}
+                                onChange={handleChange}
+                                className="admin-textarea"
+                            />
+                        </div>
+
+
                     </section>
 
                     {/* Sección 3: Trámite y Estatus */}
-                    <section className="admin-form-section">
+                    <section className="admin-form-section "
+                        style={{ gridColumn: '1 / -1' }}>
                         <h2 className="admin-section-title">
-                            <FiFileText /> Trámite y Estatus
+                            <FiFileText /> Datos de GIMP
                         </h2>
-                        <div className="admin-form-row">
-                            <div className="admin-form-group">
-                                <label>Trámite</label>
-                                <select
-                                    name="tramite"
-                                    value={formState.tramite}
-                                    onChange={handleChange}
-                                    className="admin-select"
-                                >
-                                    <option value="LIQUIDACIÓN">LIQUIDACIÓN</option>
-                                    <option value="DESCENSO">DESCENSO</option>
-                                    <option value="JUBILACIÓN">JUBILACIÓN</option>
-                                    <option value="RESCATADO(A)">RESCATADO(A)</option>
-                                </select>
-                            </div>
-                            <div className="admin-form-group">
-                                <label>Estatus</label>
-                                <select
-                                    name="status"
-                                    value={formState.status}
-                                    onChange={handleChange}
-                                    className="admin-select"
-                                >
-                                    <option value="RECHAZÓ">RECHAZÓ</option>
-                                    <option value="ACEPTÓ">ACEPTÓ</option>
-                                    <option value="AUSENCIA">AUSENCIA</option>
-                                    <option value="PENDIENTE">PENDIENTE</option>
-                                    <option value="RESCATADO(A)">RESCATADO(A)</option>
-                                    <option value="SIN CONTRATO VIGENTE">SIN CONTRATO VIGENTE</option>
-                                </select>
-                            </div>
-                        </div>
+
 
                         <div className="admin-form-row">
                             <div className="admin-form-group">
@@ -397,29 +472,6 @@ function BajaFormPage() {
                                 </select>
                             </div>
                             <div className="admin-form-group">
-                                <label>Fecha Ejecución</label>
-                                <input
-                                    type="date"
-                                    name="fecha_ejecucion"
-                                    value={formState.fecha_ejecucion || ''}
-                                    onChange={handleChange}
-                                    className="admin-input"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="admin-form-row">
-                            <div className="admin-form-group">
-                                <label>Origen</label>
-                                <input
-                                    type="text"
-                                    name="origen"
-                                    value={formState.origen}
-                                    onChange={handleChange}
-                                    className="admin-input"
-                                />
-                            </div>
-                            <div className="admin-form-group">
                                 <label>Cambio Plaza</label>
                                 <input
                                     type="text"
@@ -430,25 +482,41 @@ function BajaFormPage() {
                                     className="admin-input"
                                 />
                             </div>
+
+                        </div>
+
+                        <div className="admin-checkbox-container" style={{ marginTop: '1rem', flexWrap: 'wrap', gap: '2rem' }}>
+                            <label className="admin-checkbox-container">
+                                <input type="checkbox" name="libre" checked={formState.libre} onChange={handleChange} />
+                                <span>Libre</span>
+                            </label>
+                            <label className="admin-checkbox-container">
+                                <input type="checkbox" name="confirmacion_descenso" checked={formState.confirmacion_descenso} onChange={handleChange} />
+                                <span>Confirmación Descenso</span>
+                            </label>
                         </div>
                     </section>
 
                     {/* Sección 4: Observaciones y Detalles */}
-                    <section className="admin-form-section">
+                    <section className="admin-form-section "
+                        style={{ gridColumn: '1 / -1' }}>
                         <h2 className="admin-section-title">
-                            <FiInfo /> Observaciones y Detalles
+                            <FiInfo /> Datos de GOIE
                         </h2>
+
                         <div className="admin-form-group">
-                            <label>Observaciones</label>
-                            <textarea
-                                name="observaciones"
-                                value={formState.observaciones}
+                            <label>Fecha de Registro</label>
+                            <input
+                                type="date"
+                                name="fecha_registro"
+                                value={formState.fecha_registro}
                                 onChange={handleChange}
-                                className="admin-textarea"
+                                className="admin-input"
                             />
                         </div>
+
                         <div className="admin-form-group">
-                            <label>Observaciones 2</label>
+                            <label>Observaciones GOIE</label>
                             <textarea
                                 name="observaciones_2"
                                 value={formState.observaciones_2}
@@ -467,14 +535,7 @@ function BajaFormPage() {
                         </div>
 
                         <div className="admin-checkbox-container" style={{ marginTop: '1rem', flexWrap: 'wrap', gap: '2rem' }}>
-                            <label className="admin-checkbox-container">
-                                <input type="checkbox" name="libre" checked={formState.libre} onChange={handleChange} />
-                                <span>Libre</span>
-                            </label>
-                            <label className="admin-checkbox-container">
-                                <input type="checkbox" name="confirmacion_descenso" checked={formState.confirmacion_descenso} onChange={handleChange} />
-                                <span>Confirmación Descenso</span>
-                            </label>
+
                             <label className="admin-checkbox-container">
                                 <input type="checkbox" name="cancelada" checked={formState.cancelada} onChange={handleChange} />
                                 <span>Cancelada</span>

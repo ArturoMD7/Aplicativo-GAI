@@ -7,7 +7,9 @@ export interface Baja {
     costo_plaza: string;
     costo_nueva_plaza: string;
     ahorro?: number;
-    dir: string;
+    direccion: string;
+    subdireccion: string;
+    fuente: string;
     region: string;
     tramite: string;
     liquidacion_neta?: number;
