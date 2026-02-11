@@ -1,0 +1,33 @@
+export interface Baja {
+    id?: number;
+    ficha: string;
+    nombre: string;
+    nivel: string;
+    nuevo_nivel: string;
+    costo_plaza: string;
+    costo_nueva_plaza: string;
+    ahorro?: number;
+    dir: string;
+    region: string;
+    tramite: string;
+    liquidacion_neta?: number;
+    observaciones?: string;
+    status: string;
+    fecha_ejecucion?: string;
+    origen?: string;
+    sap: 'PENDIENTE' | 'APLICADO';
+    posicion?: string;
+    cambio_plaza?: string;
+    antiguedad?: number;
+    libre: boolean;
+    confirmacion_descenso: boolean;
+    observaciones_2?: string;
+    cancelada: boolean;
+    comentarios?: string;
+    fecha_registro?: string;
+    created_by_name?: string;
+}
+
+export interface BajaListado extends Baja {
+    // Extends Baja in case we need list-specific fields later
+}

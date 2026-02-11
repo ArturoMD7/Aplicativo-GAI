@@ -27,6 +27,7 @@ const navItems = [
   { label: "Logs", icon: <LuLogs />, href: "/logs" },
 
 
+  { label: "Bajas", icon: <FiFileText />, href: "/bajas" },
 ];
 
 type SidebarProps = {

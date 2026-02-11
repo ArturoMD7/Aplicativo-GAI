@@ -1,5 +1,4 @@
 // src/pages/HomePage.tsx
-import React from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import apiClient from '../api/apliClient';
@@ -25,9 +24,10 @@ import FinalizacionListPage from './FinalizacionListPage';
 import FinalizadosEditPage from './FinalizadosEditPage';
 import Watermark from '@uiw/react-watermark';
 import ResponsivaUploadModal from '../components/Modals/ResponsivaUploadModal';
+import BajaListPage from './Bajas/BajaListPage';
+import BajaFormPage from './Bajas/BajaFormPage';
 
-const style = { width: '100%', maxWidth: '100%', height: 200, display: 'block' };
-const text = `React makes it painless to create interactive UIs.`;
+
 
 
 type HomePageProps = {
@@ -139,6 +139,10 @@ function HomePage({ onLogout }: HomePageProps) {
               <Route path="/investigaciones/finalizadas/editar/:id" element={<FinalizadosEditPage />} />
               <Route path="/investigaciones/seguimiento/:id" element={<SeguimientoPage />} />
               <Route path="/buscar-empleado" element={<BuscarEmpleadoPage />} />
+
+              <Route path="/bajas" element={<BajaListPage />} />
+              <Route path="/bajas/nuevo" element={<BajaFormPage />} />
+              <Route path="/bajas/editar/:id" element={<BajaFormPage />} />
 
 
               {/* Ruta de 'no encontrado' (opcional) */}

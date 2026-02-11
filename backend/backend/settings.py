@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'investigaciones',
     'auditoria',
     'investigadores',
+    'bajas',
 ]
 
 REST_FRAMEWORK = {

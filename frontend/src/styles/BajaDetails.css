@@ -1,0 +1,482 @@
+/* BajaDetails.css */
+
+.admin-register-container {
+    width: 100%;
+    max-width: 100%;
+    padding: 20px 40px;
+    box-sizing: border-box;
+}
+
+.admin-register-form-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.admin-register-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.admin-register-header h1 {
+    color: #840016;
+    margin-bottom: 8px;
+    font-size: 2rem;
+}
+
+.admin-register-header p {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.admin-register-form-container {
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+}
+
+.admin-form-section {
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+    border: 1px solid #ecf0f1;
+}
+
+.admin-form-section:last-of-type {
+    margin-bottom: 30px;
+}
+
+.admin-section-title {
+    color: #840016;
+    margin-bottom: 25px;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-section-title i {
+    font-size: 1.2rem;
+}
+
+/* Campos de formulario */
+.admin-form-group {
+    margin-bottom: 20px;
+}
+
+.admin-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.admin-form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #333;
+}
+
+.admin-input-with-icon {
+    position: relative;
+}
+
+.admin-input-with-icon i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7f8c8d;
+    z-index: 1;
+}
+
+.admin-readonly-field {
+    width: 100%;
+    padding: 12px 16px 12px 40px;
+    border: 1px solid #dcdfe4;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: #f8f9fa;
+    color: #666;
+    cursor: not-allowed;
+}
+
+.admin-textarea {
+    resize: vertical;
+    min-height: 120px;
+    font-family: inherit;
+}
+
+/* Grid de fechas */
+.admin-dates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.admin-date-card {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #840016;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.admin-date-card i {
+    font-size: 1.5rem;
+    color: #840016;
+}
+
+.admin-date-card h4 {
+    margin: 0 0 5px 0;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+.admin-date-card p {
+    margin: 0;
+    color: #840016;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+/* Checkbox de solo lectura */
+.admin-checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-readonly-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: not-allowed;
+}
+
+/* Secciones de personas */
+.admin-personas-section {
+    margin-top: 25px;
+}
+
+.admin-personas-section h3 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    border-bottom: 2px solid #840016;
+    padding-bottom: 5px;
+}
+
+.admin-personas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+.admin-persona-card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.admin-persona-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.admin-persona-header h4 {
+    margin: 0;
+    color: #333;
+    font-size: 1rem;
+}
+
+.admin-ficha {
+    background: #840016;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    font-weight: 500;
+}
+
+.admin-persona-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-label {
+    font-weight: 600;
+    color: #555;
+    font-size: 0.85em;
+}
+
+.admin-value {
+    color: #333;
+    font-size: 0.85em;
+    text-align: right;
+}
+
+/* Badges */
+.admin-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.admin-badge-primary {
+    background: #e8f4fd;
+    color: #007bff;
+}
+
+.admin-badge-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.admin-badge-secondary {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+/* Estados y mensajes */
+.admin-no-data {
+    text-align: center;
+    color: #7f8c8d;
+    font-style: italic;
+    padding: 30px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px dashed #dcdfe4;
+}
+
+.admin-alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.admin-alert-error {
+    background: #fde8e8;
+    color: #e74c3c;
+    border: 1px solid #fbcbcb;
+}
+
+.admin-alert-success {
+    background: #d5f4e6;
+    color: #27ae60;
+    border: 1px solid #b8e8d0;
+}
+
+/* Acciones del formulario */
+.admin-form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.admin-submit-button {
+    background: #840016;
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex: 1;
+    max-width: 250px;
+}
+
+.admin-submit-button:hover {
+    background: #a50121;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(132, 0, 22, 0.3);
+}
+
+.admin-back-button {
+    background: #95a5a6;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+    flex: 1;
+    max-width: 200px;
+}
+
+.admin-back-button:hover {
+    background: #7f8c8d;
+    transform: translateY(-1px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .admin-register-container {
+        padding: 16px;
+    }
+
+    .admin-register-form-container {
+        padding: 20px;
+    }
+
+    .admin-form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .admin-dates-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-personas-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-form-actions {
+        flex-direction: column;
+    }
+
+    .admin-submit-button,
+    .admin-back-button {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-register-header h1 {
+        font-size: 1.75rem;
+    }
+
+    .admin-register-header p {
+        font-size: 1rem;
+    }
+
+    .admin-persona-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .admin-detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+
+    .admin-value {
+        text-align: left;
+    }
+}
+
+/* Estilos específicos para el botón en el formulario */
+.admin-personas-section .btn-icon {
+    min-width: auto !important;
+    padding: 6px 10px !important;
+    font-size: 0.85rem !important;
+}
+
+.admin-personas-section .btn-icon-small {
+    padding: 4px 8px !important;
+    min-height: 30px !important;
+}
+
+.admin-register-form-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 95%;
+}
+
+.admin-register-form-container form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+    align-items: start;
+}
+
+.admin-form-section {
+    background: #fff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #ecf0f1;
+    margin-bottom: 0;
+    height: 100%;
+}
+
+.admin-alert,
+.admin-form-actions {
+    grid-column: 1 / -1;
+}
+
+
+@media (max-width: 1200px) {
+    .admin-register-form-container {
+        max-width: 900px;
+    }
+
+    .admin-register-form-container form {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+.admin-input,
+.admin-select,
+.admin-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #dcdfe4;
+    border-radius: 8px;
+    font-size: 1rem;
+    background: #fff;
+    color: #333;
+    transition: border-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.admin-input:focus,
+.admin-select:focus,
+.admin-textarea:focus {
+    border-color: #840016;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(132, 0, 22, 0.1);
+}
+
+.admin-input-flex {
+    flex: 1;
+}
