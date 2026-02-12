@@ -415,7 +415,9 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
     dias_restantes = serializers.SerializerMethodField()
     semaforo = serializers.SerializerMethodField()
     total_involucrados = serializers.SerializerMethodField()
+
     total_testigos = serializers.SerializerMethodField()
+    tipo_investigacion = serializers.SerializerMethodField()
 
     investigadores = serializers.SlugRelatedField(
         many=True, 
@@ -443,7 +445,7 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
             'gerencia_responsable', 'created_by_name', 'dias_restantes',
             'semaforo', 'total_involucrados', 'total_testigos', 'created_at', 'fecha_conocimiento_hechos', 'investigadores', 'involucrados', 'reportantes',
             'estatus', 'conductas', 'detalles_conducta', 'sancion', 'conducta_definitiva',
-            'reconsideracion', 'observaciones_reconsideracion', 'dias_suspension', 'economica', 'sin_elementos'
+            'reconsideracion', 'observaciones_reconsideracion', 'dias_suspension', 'economica', 'sin_elementos', 'tipo_investigacion'
         ]
 
     def get_dias_restantes(self, obj):
@@ -472,6 +474,13 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
 
     def get_total_testigos(self, obj):
         return obj.testigos.count()
+
+    def get_tipo_investigacion(self, obj):
+        if obj.es_coadyuvancia:
+            return "COADYUVANCIA"
+        if obj.es_atracción:
+            return "ATRACCIÓN"
+        return None
 
 class AntecedenteSerializer(serializers.Serializer):
     origen = serializers.CharField() 

@@ -37,7 +37,7 @@ const navItems: NavItem[] = [
     ]
   },
   {
-    label: "Bajas",
+    label: "Terminaciones y UR",
     icon: <LuFileDown />,
     href: "#",
     subItems: [

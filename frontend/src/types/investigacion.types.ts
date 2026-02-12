@@ -131,6 +131,7 @@ export interface InvestigacionListado {
   nombre_corto: string;
   gravedad: string;
   gerencia_responsable: string;
+  tipo_investigacion: string;
   fecha_prescripcion: string;
   fecha_reporte: string;
   created_by_name: string;

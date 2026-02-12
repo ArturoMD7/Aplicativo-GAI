@@ -216,13 +216,11 @@ button.nav-link {
 
 .submenu.open {
   max-height: 500px;
-  /* Adjust as needed */
   transition: max-height 0.3s ease-in;
 }
 
 .submenu-link {
   padding-left: 52px;
-  /* Indent sub-items */
   font-size: 0.9rem;
   display: flex;
   align-items: center;

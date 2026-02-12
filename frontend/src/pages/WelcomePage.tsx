@@ -389,7 +389,7 @@ function WelcomePage() {
               </div>
             </div>
             <div className="toggle-buttons">
-              <button style={buttonStyle(activeTab === 'recent')} onClick={() => setActiveTab('recent')}>Recientes (5)</button>
+              <button style={buttonStyle(activeTab === 'recent')} onClick={() => setActiveTab('recent')}>Recientes</button>
               <button style={buttonStyle(activeTab === 'expiring')} onClick={() => setActiveTab('expiring')}>Por Vencer</button>
             </div>
           </div>

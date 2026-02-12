@@ -414,7 +414,7 @@ function FinalizacionListPage() {
                 <th style={{ width: '60px', textAlign: 'center' }}>Docs</th>
                 <th>No. Reporte</th>
                 <th>Documento</th>
-                <th>Dirección</th>
+                <th>Tipo</th>
                 <th>Relevancia</th>
                 <th>Fecha de Registro</th>
                 <th style={{ textAlign: 'center' }}>Días en Proceso</th>
@@ -450,7 +450,7 @@ function FinalizacionListPage() {
                   </td>
 
                   <td style={{ fontWeight: 500 }}>{inv.nombre_corto}</td>
-                  <td className="text-muted">{inv.direccion}</td>
+                  <td className="text-muted">{inv.tipo_investigacion}</td>
 
                   <td>
                     <span className={`gravedad-badge ${getGravedadClass(inv.gravedad)}`}>
