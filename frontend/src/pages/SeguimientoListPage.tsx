@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiEdit, FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiFileText, FiTrendingUp, FiFilter, FiChevronUp, FiChevronDown } from 'react-icons/fi';
+import { FiEdit, FiSearch, FiDownload, FiAlertCircle, FiCheckCircle, FiFileText, FiTrendingUp, FiChevronUp, FiChevronDown } from 'react-icons/fi';
 import { MdDeleteForever } from "react-icons/md";
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import Pagination from '../components/Pagination';
@@ -11,7 +11,7 @@ import { saveAs } from 'file-saver';
 import '../styles/InvestigacionPage.css';
 import DocumentosModals from '../components/Modals/DocumentosModals';
 import Swal from 'sweetalert2';
-import { GERENCIA_CHOICES, CONDUCTAS_POSIBLES } from '../data/investigacionConstants';
+import InvestigacionFilters from '../components/Filters/InvestigacionFilters';
 import { auditoriaService } from '../api/auditoriaService';
 import { getMissingDocuments } from '../utils/validationUtils';
 
@@ -313,24 +313,12 @@ function SeguimientoListPage() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', marginLeft: '1px', flexWrap: 'wrap', gap: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <FiFilter style={{ color: '#666', marginRight: '5px' }} />
-          <select value={selectedGerencia} onChange={(e) => setSelectedGerencia(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}>
-            <option value="">Todas las Gerencias</option>
-            {GERENCIA_CHOICES.map(g => <option key={g} value={g}>{g}</option>)}
-          </select>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <FiFilter style={{ color: '#666', marginRight: '5px' }} />
-          <select value={selectedConducta} onChange={(e) => setSelectedConducta(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}>
-            <option value="">Todas las Conductas</option>
-            {CONDUCTAS_POSIBLES.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </div>
-
-      </div>
+      <InvestigacionFilters
+        selectedGerencia={selectedGerencia}
+        onGerenciaChange={setSelectedGerencia}
+        selectedConducta={selectedConducta}
+        onConductaChange={setSelectedConducta}
+      />
 
       {loading && <div className="loading-message">Cargando...</div>}
       {error && <div className="error-message"><FiAlertCircle style={{ marginRight: 8 }} /> {error}</div>}

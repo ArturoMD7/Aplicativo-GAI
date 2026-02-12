@@ -13,6 +13,7 @@ import '../styles/InvestigacionPage.css';
 import DocumentosModals from '../components/Modals/DocumentosModals';
 import Swal from 'sweetalert2';
 import CustomConductaSelect from '../components/Inputs/CustomConductaSelect';
+import InvestigacionFilters from '../components/Filters/InvestigacionFilters';
 import { FiX } from 'react-icons/fi';
 import { auditoriaService } from '../api/auditoriaService';
 import { getMissingDocuments } from '../utils/validationUtils';
@@ -32,6 +33,10 @@ function FinalizacionListPage() {
   const [selectedReporteNum, setSelectedReporteNum] = useState('');
   const [statusFilter, setStatusFilter] = useState<'PENDING' | 'COMPLETED'>('PENDING');
   const [userRole, setUserRole] = useState<string>('');
+
+  // Filters
+  const [selectedGerencia, setSelectedGerencia] = useState('');
+  const [selectedConducta, setSelectedConducta] = useState('');
 
   // Estados para Modal de Conclusión (Reconsideración)
   const [isConcluirModalOpen, setIsConcluirModalOpen] = useState(false);
@@ -294,7 +299,10 @@ function FinalizacionListPage() {
       statusMatch = ['CONCLUIDA', 'Concluida'].includes(inv.estatus);
     }
 
-    return searchMatch && statusMatch;
+    const matchesGerencia = selectedGerencia ? inv.gerencia_responsable === selectedGerencia : true;
+    const matchesConducta = selectedConducta ? inv.conductas === selectedConducta : true;
+
+    return searchMatch && statusMatch && matchesGerencia && matchesConducta;
   });
 
   const formatDate = (str: string) => {
@@ -403,6 +411,13 @@ function FinalizacionListPage() {
         />
       </div>
 
+      <InvestigacionFilters
+        selectedGerencia={selectedGerencia}
+        onGerenciaChange={setSelectedGerencia}
+        selectedConducta={selectedConducta}
+        onConductaChange={setSelectedConducta}
+      />
+
       {loading && <div className="loading-message">Cargando...</div>}
       {error && <div className="error-message"><FiAlertCircle style={{ marginRight: 8 }} /> {error}</div>}
 
@@ -415,6 +430,7 @@ function FinalizacionListPage() {
                 <th>No. Reporte</th>
                 <th>Documento</th>
                 <th>Tipo</th>
+                <th>Conducta</th>
                 <th>Relevancia</th>
                 <th>Fecha de Registro</th>
                 <th style={{ textAlign: 'center' }}>Días en Proceso</th>
@@ -451,6 +467,7 @@ function FinalizacionListPage() {
 
                   <td style={{ fontWeight: 500 }}>{inv.nombre_corto}</td>
                   <td className="text-muted">{inv.tipo_investigacion}</td>
+                  <td className="text-muted">{inv.conductas}</td>
 
                   <td>
                     <span className={`gravedad-badge ${getGravedadClass(inv.gravedad)}`}>
@@ -502,10 +519,10 @@ function FinalizacionListPage() {
                           variant="info"
                           icon={<FiEdit />}
                           onClick={async () => {
-                          await auditoriaService.logAction('EDIT', 'Abrió detalles de investigación (Finalización)', inv.id, `/investigaciones/finalizadas/editar/${inv.id}`);
-                          navigate(`/investigaciones/finalizadas/editar/${inv.id}`, { state: { from: location.pathname } });
-                          
-                        }}
+                            await auditoriaService.logAction('EDIT', 'Abrió detalles de investigación (Finalización)', inv.id, `/investigaciones/finalizadas/editar/${inv.id}`);
+                            navigate(`/investigaciones/finalizadas/editar/${inv.id}`, { state: { from: location.pathname } });
+
+                          }}
                           title="Editar Conducta/Sanción"
                           size="medium"
                         />

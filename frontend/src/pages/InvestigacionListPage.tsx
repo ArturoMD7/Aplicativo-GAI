@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/apliClient';
 import type { InvestigacionListado } from '../types/investigacion.types';
-import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload, FiAlertCircle, FiTrendingUp, FiFilter, FiChevronUp, FiChevronDown, FiCheckCircle, FiClock } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiFileText, FiEye, FiSearch, FiDownload, FiAlertCircle, FiTrendingUp, FiChevronUp, FiChevronDown, FiCheckCircle, FiClock } from 'react-icons/fi';
 import { MdDeleteForever } from "react-icons/md";
 import ButtonIcon from '../components/Buttons/ButtonIcon';
 import Pagination from '../components/Pagination';
@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
 import { saveAs } from 'file-saver';
 import '../styles/InvestigacionPage.css';
 
-import { CONDUCTAS_POSIBLES, GERENCIA_CHOICES } from '../data/investigacionConstants';
+import InvestigacionFilters from '../components/Filters/InvestigacionFilters';
 import { auditoriaService } from '../api/auditoriaService';
 
 type SortConfig = {
@@ -30,7 +30,7 @@ function InvestigacionListPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedGerencia, setSelectedGerencia] = useState('');
-  const [selectedSancion, setSelectedSancion] = useState('');
+  const [selectedConducta, setSelectedConducta] = useState('');
   const [showMenu, setShowMenu] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'ascending' });
   const [userRole, setUserRole] = useState<string>('');
@@ -138,10 +138,7 @@ function InvestigacionListPage() {
     setShowMenu(false);
   };
 
-  const handleSancionSelect = (sancionKey: string) => {
-    setSelectedGerencia(sancionKey);
-    setShowMenu(false);
-  };
+
 
   const handleDelete = async (id: number, numeroReporte: string) => {
     const result = await Swal.fire({
@@ -208,7 +205,7 @@ function InvestigacionListPage() {
       String(value).toLowerCase().includes(texto)
     );
     const matchesGerencia = selectedGerencia ? inv.gerencia_responsable === selectedGerencia : true;
-    const matchesSancion = selectedSancion ? inv.conductas === selectedSancion : true;
+    const matchesSancion = selectedConducta ? inv.conductas === selectedConducta : true;
 
     return matchesSearch && matchesGerencia && matchesSancion;
   });
@@ -410,24 +407,12 @@ function InvestigacionListPage() {
           />
         </div>
       )}
-      <div style={{ display: 'flex', alignItems: 'center', marginLeft: '1px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
-          <FiFilter style={{ color: '#666', marginRight: '5px' }} />
-          <select value={selectedGerencia} onChange={(e) => setSelectedGerencia(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}>
-            <option value="">Todas las Gerencias</option>
-            {GERENCIA_CHOICES.map(g => <option key={g} value={g}>{g}</option>)}
-          </select>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', marginLeft: '20px' }}>
-          <FiFilter style={{ color: '#666', marginRight: '5px' }} />
-          <select value={selectedSancion} onChange={(e) => setSelectedSancion(e.target.value)} style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}>
-            <option value="">Todas las Conductas</option>
-            {CONDUCTAS_POSIBLES.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
-        </div>
-
-      </div>
+      <InvestigacionFilters
+        selectedGerencia={selectedGerencia}
+        onGerenciaChange={setSelectedGerencia}
+        selectedConducta={selectedConducta}
+        onConductaChange={setSelectedConducta}
+      />
 
 
       {loading && <div className="loading-message">Cargando investigaciones...</div>}
