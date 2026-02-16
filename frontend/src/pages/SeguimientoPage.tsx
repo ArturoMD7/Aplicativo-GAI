@@ -36,8 +36,8 @@ const TIPOS_COMPLEMENTARIOS = [
   'Actas',
   'Pruebas',
   'Notificación LN o reportante y aplicación sistema',
-  'Resición Paraprocesal',
-  'Resición Jurídico a Tribunal'
+  'Documento Paraprocesal',
+  'Documento del Jurídico al Tribunal'
 ];
 
 const SUBTIPOS_DOCUMENTOS = {
@@ -55,8 +55,8 @@ const DOCUMENT_MAPPING: { [key: string]: string } = {
   'Convenio de pago': 'Convenio de pago',
   'Pruebas': 'Pruebas',
   'Notificación LN o reportante y aplicación sistema': 'Notificacion_LN_Reportante',
-  'Resición Paraprocesal': 'Resicion_Paraprocesal',
-  'Resición Jurídico a Tribunal': 'Resicion_Juridico_a_tribunal'
+  'Documento Paraprocesal': 'Resicion_Paraprocesal',
+  'Documento del Jurídico al Tribunal': 'Resicion_Juridico_a_tribunal'
 };
 
 const SUBTYPE_KEY_MAPPING: { [key: string]: { [key: string]: string } } = {

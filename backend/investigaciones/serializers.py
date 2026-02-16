@@ -480,6 +480,8 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
             return "COADYUVANCIA"
         if obj.es_atracción:
             return "ATRACCIÓN"
+        else:
+            return "NORMAL"
         return None
 
 class AntecedenteSerializer(serializers.Serializer):

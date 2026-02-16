@@ -435,8 +435,8 @@ class DocumentoInvestigacion(models.Model):
         ('Notificacion_LN_Reportante', 'Notificación LN o reportante y aplicación sistema'),
         
         #12 resicion
-        ('Resicion_Paraprocesal', 'Resición Paraprocesal'),
-        ('Resicion_Juridico_a_tribunal', 'Resición Jurídico a Tribunal'),
+        ('Resicion_Paraprocesal', 'Documento Paraprocesal'),
+        ('Resicion_Juridico_a_tribunal', 'Documento del Jurídico al Tribunal'),
 
         #son en otras ventanas...
         ('NotificacionConclusion', 'Notificación de Conclusión'),

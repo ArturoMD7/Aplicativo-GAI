@@ -369,7 +369,7 @@ function BajaFormPage() {
 
                         <h3 style={{ color: '#2c3e50', fontSize: '1.1rem', marginBottom: '15px' }}>
                             <i className="fas fa-bullhorn" style={{ marginRight: '8px' }}></i>
-                            Datos de ....
+                            Datos de Movimiento
                         </h3>
 
                         <div className="admin-form-row">

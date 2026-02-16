@@ -427,9 +427,10 @@ function FinalizacionListPage() {
             <thead>
               <tr>
                 <th style={{ width: '60px', textAlign: 'center' }}>Docs</th>
+                <th>Tipo</th>
                 <th>No. Reporte</th>
                 <th>Documento</th>
-                <th>Tipo</th>
+
                 <th>Conducta</th>
                 <th>Relevancia</th>
                 <th>Fecha de Registro</th>
@@ -460,13 +461,14 @@ function FinalizacionListPage() {
                       <FiFileText />
                     </button>
                   </td>
+                  <td className="text-muted">{inv.tipo_investigacion}</td>
 
                   <td className="col-reporte">
                     {inv.numero_reporte}
                   </td>
 
                   <td style={{ fontWeight: 500 }}>{inv.nombre_corto}</td>
-                  <td className="text-muted">{inv.tipo_investigacion}</td>
+
                   <td className="text-muted">{inv.conductas}</td>
 
                   <td>

@@ -329,6 +329,7 @@ function SeguimientoListPage() {
             <thead>
               <tr>
                 <th style={{ width: '60px', textAlign: 'center' }}>Docs</th>
+                <th onClick={() => requestSort('tipo_investigacion')} style={{ cursor: 'pointer' }}>Tipo{getSortIcon('tipo_investigacion')}</th>
                 <th onClick={() => requestSort('numero_reporte')} style={{ cursor: 'pointer' }}>No. Reporte {getSortIcon('numero_reporte')}</th>
                 <th onClick={() => requestSort('nombre_corto')} style={{ cursor: 'pointer' }}>Documento de Origen {getSortIcon('nombre_corto')}</th>
                 <th>Investigadores</th>
@@ -337,7 +338,7 @@ function SeguimientoListPage() {
                 <th onClick={() => requestSort('conductas')} style={{ cursor: 'pointer' }}>Conducta {getSortIcon('conductas')}</th>
                 <th onClick={() => requestSort('gravedad')} style={{ cursor: 'pointer' }}>Gravedad {getSortIcon('gravedad')}</th>
                 <th onClick={() => requestSort('gerencia_responsable')} style={{ cursor: 'pointer' }}>Región {getSortIcon('gerencia_responsable')}</th>
-                <th onClick={() => requestSort('tipo_investigacion')} style={{ cursor: 'pointer' }}>Tipo{getSortIcon('tipo_investigacion')}</th>
+
                 <th onClick={() => requestSort('fecha_reporte')} style={{ cursor: 'pointer' }}>Fecha de Registro {getSortIcon('fecha_reporte')}</th>
                 <th onClick={() => requestSort('fecha_prescripcion')} style={{ cursor: 'pointer' }}>Prescripción {getSortIcon('fecha_prescripcion')}</th>
                 <th style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => requestSort('dias_restantes')}>Días Rest. {getSortIcon('dias_restantes')}</th>
@@ -369,6 +370,8 @@ function SeguimientoListPage() {
                     </button>
                   </td>
 
+                  <td className="text-muted">{inv.tipo_investigacion}</td>
+
                   <td className="col-reporte">
                     {inv.numero_reporte || <span className="text-muted">Sin asignar</span>}
                   </td>
@@ -387,7 +390,7 @@ function SeguimientoListPage() {
                   </td>
 
                   <td className="text-muted">{inv.gerencia_responsable}</td>
-                  <td className="text-muted">{inv.tipo_investigacion}</td>
+
                   <td>{formatDate(inv.fecha_reporte)}</td>
                   <td>{formatDate(inv.fecha_prescripcion)}</td>
 

@@ -37,11 +37,11 @@ const navItems: NavItem[] = [
     ]
   },
   {
-    label: "Terminaciones y UR",
+    label: "Movimientos",
     icon: <LuFileDown />,
     href: "#",
     subItems: [
-      { label: "Bajas", href: "/bajas" }
+      { label: "Movimientos", href: "/bajas" }
     ]
   },
   { label: "Buscar Empleado", icon: <FiSearch />, href: "/buscar-empleado" },
