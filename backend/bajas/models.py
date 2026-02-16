@@ -15,14 +15,14 @@ class Baja(UppercaseMixin, models.Model):
     ficha = models.CharField(max_length=15)
     nombre = models.CharField(max_length=40)
     nivel = models.CharField(max_length=2)  # "NUM(2)" -> CharField or IntegerField. Using Char for broader compatibility if needed, or Int. User said NUM(2). Let's use CharField(2) to be safe with "01", "02".
-    nuevo_nivel = models.CharField(max_length=2)
+    nuevo_nivel = models.CharField(max_length=2,null=True, blank=True)
     
     # Catalogos
-    costo_plaza = models.CharField(max_length=100) # CATALOGO
-    costo_nueva_plaza = models.CharField(max_length=100) # CATALOGO
+    costo_plaza = models.CharField(max_length=100,null=True, blank=True) # CATALOGO
+    costo_nueva_plaza = models.CharField(max_length=100,null=True, blank=True) # CATALOGO
     
     ahorro = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True) # DINERO
-    dir = models.CharField(max_length=10) # DIR(VARCHAR10) - Assuming Direccion
+    dir = models.CharField(max_length=10)
 
     REGION_CHOICES = [
         ('NORTE', 'NORTE'),
@@ -62,19 +62,19 @@ class Baja(UppercaseMixin, models.Model):
         ('PENDIENTE', 'PENDIENTE'),
         ('APLICADO', 'APLICADO'),
     ]
-    sap = models.CharField(max_length=20, choices=SAP_CHOICES, default='PENDIENTE')
+    sap = models.CharField(max_length=20, choices=SAP_CHOICES, default='PENDIENTE', null=True, blank=True)
     
     posicion = models.CharField(max_length=20, null=True, blank=True)
     cambio_plaza = models.CharField(max_length=8, null=True, blank=True) 
     antiguedad = models.IntegerField(null=True, blank=True) 
     
-    libre = models.BooleanField(default=False) 
-    confirmacion_descenso = models.BooleanField(default=False) # BOOL
+    libre = models.BooleanField(default=False, null=True, blank=True) 
+    confirmacion_descenso = models.BooleanField(default=False, null=True, blank=True) 
     
     observaciones_2 = models.CharField(max_length=100, null=True, blank=True)
-    cancelada = models.BooleanField(default=False) # BOOL
+    cancelada = models.BooleanField(default=False, null=True, blank=True) 
     comentarios = models.CharField(max_length=100, null=True, blank=True)
-    fecha_registro = models.DateField(auto_now_add=True) # FECHA_REGISTRO(FECHA) - auto_now_add seems appropriate
+    fecha_registro = models.DateField(auto_now_add=True,null=True, blank=True) 
     
     # Auditoría standards (reusing from other models)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='bajas_creadas')

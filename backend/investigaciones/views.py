@@ -405,7 +405,7 @@ def buscar_empleado_view(request):
             cursor.execute("""
                 SELECT ficha, nombres, nivel_plaza, catego, mc_stext, edad, antig,
                        rfc + homoclave as rfc, curp, direccion_coduni,
-                       grupo, jorna, sec_sin, termino, cve_desc_centro, subdireccion_coduni
+                       grupo, jorna, sec_sin, termino, cve_desc_centro, subdireccion_coduni, regional
                 FROM [00_tablero_dg]
                 WHERE ficha = %s
             """, [ficha_buscada])
@@ -433,6 +433,7 @@ def buscar_empleado_view(request):
                     'sindicato': "STPRM" if row[12] else "",
                     'centro_trabajo': row[14],
                     'subdireccion': row[15],
+                    'regional': row[16],
                     'fuente': 'Activos'
                 }
 
@@ -440,7 +441,7 @@ def buscar_empleado_view(request):
                 cursor.execute("""
                     SELECT ficha, nombres, nivel_plaza, catego, edad, 
                            rfc + homoclave as rfc, curp,
-                           grupo, jorna, fec_term, cve_desc_centro
+                           grupo, jorna, fec_term, cve_desc_centro, regional
                     FROM [ultimo_contrato_activo]
                     WHERE ficha = %s
                 """, [ficha_buscada])
@@ -467,6 +468,7 @@ def buscar_empleado_view(request):
                         'seccion_sindical': "No",
                         'sindicato': "No",
                         'centro_trabajo': row[10],
+                        'regional': row[11],
                         'fuente': 'Ultimo contrato'
                     }
 

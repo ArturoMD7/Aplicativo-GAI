@@ -383,7 +383,7 @@
     }
 
     .admin-register-header p {
-        font-size: 1rem;
+        font-size: 1.1rem;
     }
 
     .admin-persona-header {
@@ -479,4 +479,17 @@
 
 .admin-input-flex {
     flex: 1;
+}
+
+/* Estilos para campos de solo lectura dentro de un grupo readOnly */
+.admin-form-group.readOnly input {
+    background-color: #f8f9fa;
+    color: #666;
+    cursor: not-allowed;
+    border-color: #e9ecef;
+}
+
+.admin-form-group.readOnly input:focus {
+    box-shadow: none;
+    border-color: #dcdfe4;
 }

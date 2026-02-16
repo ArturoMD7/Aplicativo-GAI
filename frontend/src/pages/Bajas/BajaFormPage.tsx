@@ -17,11 +17,11 @@ const initialState: Baja = {
     ahorro: 0,
     direccion: '',
     subdireccion: '',
-    region: 'NORTE', // Default per choices
-    tramite: 'LIQUIDACIÓN', // Default
+    region: 'NORTE',
+    tramite: 'LIQUIDACIÓN',
     liquidacion_neta: 0,
     observaciones: '',
-    status: 'RECHAZÓ', // Default
+    status: 'RECHAZÓ',
     fecha_ejecucion: '',
     origen: '',
     sap: 'PENDIENTE',
@@ -33,6 +33,7 @@ const initialState: Baja = {
     observaciones_2: '',
     cancelada: false,
     fuente: '',
+    regional: '',
     comentarios: '',
 };
 
@@ -64,6 +65,67 @@ function BajaFormPage() {
         }
     };
 
+    const formatNumber = (num: number | string): string => {
+        if (!num) return '';
+        const parts = num.toString().split('.');
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return parts.join('.');
+    };
+
+    const parseNumber = (str: string): string => {
+        return str.replace(/,/g, '');
+    };
+
+    const handleCurrencyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        const cleanValue = value.replace(/[^0-9.]/g, '');
+        if ((cleanValue.match(/\./g) || []).length > 1) return;
+        if (cleanValue.includes('.')) {
+            const [, decimal] = cleanValue.split('.');
+            if (decimal.length > 2) return;
+        }
+
+        const formatted = formatNumber(cleanValue);
+        setFormState(prev => ({ ...prev, [name]: formatted }));
+    };
+
+    const handleCurrencyChangeNumber = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        // Validate input
+        const cleanValue = value.replace(/[^0-9.]/g, '');
+        if ((cleanValue.match(/\./g) || []).length > 1) return;
+        if (cleanValue.includes('.')) {
+            const [, decimal] = cleanValue.split('.');
+            if (decimal.length > 2) return;
+        }
+
+        const numericValue = cleanValue === '' ? 0 : parseFloat(cleanValue);
+        setFormState(prev => ({ ...prev, [name]: numericValue }));
+    };
+
+    // Calculate Ahorro whenever costs or tramite change
+    useEffect(() => {
+        const costoPlazaRaw = parseNumber(formState.costo_plaza || '0');
+        const costoNuevaPlazaRaw = parseNumber(formState.costo_nueva_plaza || '0');
+
+        const cp = parseFloat(costoPlazaRaw) || 0;
+        const cnp = parseFloat(costoNuevaPlazaRaw) || 0;
+
+        let ahorro = 0;
+        if (formState.tramite === 'DESCENSO') {
+            ahorro = cp - cnp;
+        } else {
+            ahorro = cp - cnp;
+        }
+
+        setFormState(prev => {
+            if (prev.ahorro !== ahorro) {
+                return { ...prev, ahorro };
+            }
+            return prev;
+        });
+    }, [formState.costo_plaza, formState.costo_nueva_plaza, formState.tramite]);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
         let processedValue: any = value;
@@ -91,6 +153,31 @@ function BajaFormPage() {
             const response = await apiClient.get(`/api/investigaciones/buscar-empleado/?ficha=${ficha}`);
             const empleado = response.data;
 
+            const regionalEmpleado = empleado.regional || '';
+            let regionAsignada = 'NORTE';
+
+            if (regionalEmpleado) {
+                const regionalUpper = regionalEmpleado.toUpperCase();
+                if (['NORTE', 'SUR', 'SURESTE', 'ALTIPLANO', 'GAI'].includes(regionalUpper)) {
+                    regionAsignada = regionalUpper;
+                }
+                else if (regionalUpper.includes('SUR') && !regionalUpper.includes('SURESTE')) {
+                    regionAsignada = 'SUR';
+                }
+                else if (regionalUpper.includes('NORTE')) {
+                    regionAsignada = 'NORTE';
+                }
+                else if (regionalUpper.includes('SURESTE')) {
+                    regionAsignada = 'SURESTE';
+                }
+                else if (regionalUpper.includes('ALTIPLANO')) {
+                    regionAsignada = 'ALTIPLANO';
+                }
+                else if (regionalUpper.includes('GAI')) {
+                    regionAsignada = 'GAI';
+                }
+            }
+
             setFormState(prev => ({
                 ...prev,
                 nombre: empleado.nombre || '',
@@ -100,7 +187,8 @@ function BajaFormPage() {
                 direccion: empleado.direccion || '',
                 subdireccion: empleado.subdireccion || '',
                 fuente: empleado.fuente || '',
-
+                regional: empleado.regional || '',
+                region: regionAsignada,
             }));
 
             const Toast = Swal.mixin({
@@ -263,7 +351,7 @@ function BajaFormPage() {
                                     }} onClick={() => buscarEmpleado(formState.ficha)} />
                                 </div>
                             </div>
-                            <div className="admin-form-group">
+                            <div className="admin-form-group readOnly ">
                                 <label>Nombre *</label>
                                 <input
                                     type="text"
@@ -279,7 +367,7 @@ function BajaFormPage() {
                             </div>
                         </div>
                         <div className="admin-form-row">
-                            <div className="admin-form-group">
+                            <div className="admin-form-group readOnly ">
                                 <label>Fuente</label>
                                 <input
                                     type="text"
@@ -288,12 +376,24 @@ function BajaFormPage() {
                                     onChange={handleChange}
                                     maxLength={2}
                                     className="admin-input"
+                                    readOnly
+                                />
+                            </div>
+                            <div className="admin-form-group readOnly ">
+                                <label>Regional</label>
+                                <input
+                                    type="text"
+                                    name="regional"
+                                    value={formState.regional}
+                                    onChange={handleChange}
+                                    className="admin-input"
+                                    readOnly
                                 />
                             </div>
                         </div>
 
                         <div className="admin-form-row">
-                            <div className="admin-form-group">
+                            <div className="admin-form-group readOnly ">
                                 <label>Nivel Actual</label>
                                 <input
                                     type="text"
@@ -302,6 +402,7 @@ function BajaFormPage() {
                                     onChange={handleChange}
                                     maxLength={2}
                                     className="admin-input"
+                                    readOnly
                                 />
                             </div>
                             <div className="admin-form-group">
@@ -318,7 +419,7 @@ function BajaFormPage() {
                         </div>
 
                         <div className="admin-form-row">
-                            <div className="admin-form-group">
+                            <div className="admin-form-group readOnly ">
                                 <label>Antigüedad (Años)</label>
                                 <input
                                     type="number"
@@ -326,9 +427,10 @@ function BajaFormPage() {
                                     value={formState.antiguedad}
                                     onChange={handleChange}
                                     className="admin-input"
+                                    readOnly
                                 />
                             </div>
-                            <div className="admin-form-group">
+                            <div className="admin-form-group readOnly ">
                                 <label>Posición</label>
                                 <input
                                     type="text"
@@ -337,12 +439,13 @@ function BajaFormPage() {
                                     onChange={handleChange}
                                     maxLength={20}
                                     className="admin-input"
+                                    readOnly
                                 />
                             </div>
                         </div>
 
                         <div className="admin-form-row">
-                            <div className="admin-form-group">
+                            <div className="admin-form-group readOnly ">
                                 <label>Dirección</label>
                                 <input
                                     type="text"
@@ -351,9 +454,10 @@ function BajaFormPage() {
                                     onChange={handleChange}
                                     maxLength={10}
                                     className="admin-input"
+                                    readOnly
                                 />
                             </div>
-                            <div className="admin-form-group">
+                            <div className="admin-form-group readOnly">
                                 <label>Subdirección</label>
                                 <input
                                     type="text"
@@ -362,6 +466,7 @@ function BajaFormPage() {
                                     onChange={handleChange}
                                     maxLength={10}
                                     className="admin-input"
+                                    readOnly
                                 />
                             </div>
                         </div>
@@ -397,43 +502,47 @@ function BajaFormPage() {
                                     type="text"
                                     name="costo_plaza"
                                     value={formState.costo_plaza}
-                                    onChange={handleChange}
+                                    onChange={handleCurrencyChange}
                                     className="admin-input"
+                                    placeholder="0.00"
                                 />
                             </div>
-                            <div className="admin-form-group">
-                                <label>Costo Nueva Plaza</label>
-                                <input
-                                    type="text"
-                                    name="costo_nueva_plaza"
-                                    value={formState.costo_nueva_plaza}
-                                    onChange={handleChange}
-                                    className="admin-input"
-                                />
-                            </div>
+                            {formState.tramite === 'DESCENSO' && (
+                                <div className="admin-form-group">
+                                    <label>Costo Nueva Plaza</label>
+                                    <input
+                                        type="text"
+                                        name="costo_nueva_plaza"
+                                        value={formState.costo_nueva_plaza}
+                                        onChange={handleCurrencyChange}
+                                        className="admin-input"
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         <div className="admin-form-row">
                             <div className="admin-form-group">
                                 <label>Ahorro</label>
                                 <input
-                                    type="number"
-                                    step="0.01"
+                                    type="text"
                                     name="ahorro"
-                                    value={formState.ahorro}
-                                    onChange={handleChange}
+                                    value={formatNumber(formState.ahorro || 0)}
+                                    readOnly
                                     className="admin-input"
+                                    placeholder="0.00"
                                 />
                             </div>
                             <div className="admin-form-group">
                                 <label>Liquidación Neta</label>
                                 <input
-                                    type="number"
-                                    step="0.01"
+                                    type="text"
                                     name="liquidacion_neta"
-                                    value={formState.liquidacion_neta}
-                                    onChange={handleChange}
+                                    value={formatNumber(formState.liquidacion_neta || 0)}
+                                    onChange={handleCurrencyChangeNumber}
                                     className="admin-input"
+                                    placeholder="0.00"
                                 />
                             </div>
                         </div>

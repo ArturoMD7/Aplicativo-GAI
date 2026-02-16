@@ -10,6 +10,7 @@ export interface Baja {
     direccion: string;
     subdireccion: string;
     fuente: string;
+    regional: string;
     region: string;
     tramite: string;
     liquidacion_neta?: number;
@@ -17,14 +18,14 @@ export interface Baja {
     status: string;
     fecha_ejecucion?: string;
     origen?: string;
-    sap: 'PENDIENTE' | 'APLICADO';
+    sap?: 'PENDIENTE' | 'APLICADO';
     posicion?: string;
     cambio_plaza?: string;
     antiguedad?: number;
-    libre: boolean;
-    confirmacion_descenso: boolean;
+    libre?: boolean;
+    confirmacion_descenso?: boolean;
     observaciones_2?: string;
-    cancelada: boolean;
+    cancelada?: boolean;
     comentarios?: string;
     fecha_registro?: string;
     created_by_name?: string;
