@@ -27,6 +27,7 @@ export interface Baja {
     observaciones_2?: string;
     cancelada?: boolean;
     comentarios?: string;
+    estatus_baja?: 'REGISTRO' | 'SEGUIMIENTO' | 'FINALIZACION' | 'CONCLUIDA';
     fecha_registro?: string;
     created_by_name?: string;
 }

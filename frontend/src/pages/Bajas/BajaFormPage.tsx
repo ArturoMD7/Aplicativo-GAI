@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../../api/apliClient';
 import type { Baja } from '../../types/baja.types';
 import ButtonIcon from '../../components/Buttons/ButtonIcon';
-import { FiSave, FiArrowLeft, FiUser, FiDollarSign, FiFileText, FiInfo, FiSearch } from 'react-icons/fi';
+import { FiSave, FiArrowLeft, FiUser, FiFileText, FiInfo, FiSearch } from 'react-icons/fi';
 import Swal from 'sweetalert2';
 import '../../styles/BajaDetails.css';
 
@@ -242,6 +242,20 @@ function BajaFormPage() {
 
     if (loading && isEditMode && !formState.id) return <div className="loading-message">Cargando...</div>;
 
+    // Logic for phases
+    const status = formState.estatus_baja || 'REGISTRO';
+
+    // SAAI (inc Personal & Movimiento) - Editable ONLY in REGISTRO
+    const isSaaiLocked = status !== 'REGISTRO';
+
+    // GIMP - Visible in SEGUIMIENTO+, Editable in SEGUIMIENTO
+    const showGimp = ['SEGUIMIENTO', 'FINALIZACION', 'CONCLUIDA'].includes(status);
+    const isGimpLocked = status !== 'SEGUIMIENTO';
+
+    // GOIE - Visible in FINALIZACION+, Editable in FINALIZACION
+    const showGoie = ['FINALIZACION', 'CONCLUIDA'].includes(status);
+    const isGoieLocked = status !== 'FINALIZACION';
+
     return (
         <div className="admin-register-container">
             <div className="admin-register-form-container">
@@ -259,7 +273,7 @@ function BajaFormPage() {
 
                 <form onSubmit={handleSubmit}>
                     {/* Sección 1: Datos del Empleado */}
-                    <section className="admin-form-section "
+                    <section className={`admin-form-section ${isSaaiLocked ? 'readOnly' : ''}`}
                         style={{ gridColumn: '1 / -1' }}>
                         <h2 className="admin-section-title">
                             <FiUser /> Datos de SAAI
@@ -273,6 +287,7 @@ function BajaFormPage() {
                                     value={formState.origen}
                                     onChange={handleChange}
                                     className="admin-input"
+                                    readOnly={isSaaiLocked}
                                 />
                             </div>
 
@@ -284,6 +299,7 @@ function BajaFormPage() {
                                     value={formState.fecha_ejecucion || ''}
                                     onChange={handleChange}
                                     className="admin-input"
+                                    readOnly={isSaaiLocked}
                                 />
                             </div>
                         </div>
@@ -296,6 +312,7 @@ function BajaFormPage() {
                                     value={formState.tramite}
                                     onChange={handleChange}
                                     className="admin-select"
+                                    disabled={isSaaiLocked}
                                 >
                                     <option value="LIQUIDACIÓN">LIQUIDACIÓN</option>
                                     <option value="DESCENSO">DESCENSO</option>
@@ -310,6 +327,7 @@ function BajaFormPage() {
                                     value={formState.status}
                                     onChange={handleChange}
                                     className="admin-select"
+                                    disabled={isSaaiLocked}
                                 >
                                     <option value="RECHAZÓ">RECHAZÓ</option>
                                     <option value="ACEPTÓ">ACEPTÓ</option>
@@ -340,15 +358,18 @@ function BajaFormPage() {
                                         maxLength={15}
                                         className="admin-input"
                                         placeholder="Número de ficha (Presione Enter)"
+                                        readOnly={isSaaiLocked}
                                     />
-                                    <FiSearch style={{
-                                        position: 'absolute',
-                                        right: '10px',
-                                        top: '50%',
-                                        transform: 'translateY(-50%)',
-                                        color: '#666',
-                                        cursor: 'pointer'
-                                    }} onClick={() => buscarEmpleado(formState.ficha)} />
+                                    {!isSaaiLocked && (
+                                        <FiSearch style={{
+                                            position: 'absolute',
+                                            right: '10px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            color: '#666',
+                                            cursor: 'pointer'
+                                        }} onClick={() => buscarEmpleado(formState.ficha)} />
+                                    )}
                                 </div>
                             </div>
                             <div className="admin-form-group readOnly ">
@@ -414,6 +435,7 @@ function BajaFormPage() {
                                     onChange={handleChange}
                                     maxLength={2}
                                     className="admin-input"
+                                    readOnly={isSaaiLocked}
                                 />
                             </div>
                         </div>
@@ -486,6 +508,7 @@ function BajaFormPage() {
                                     value={formState.region}
                                     onChange={handleChange}
                                     className="admin-select"
+                                    disabled={isSaaiLocked}
                                 >
                                     <option value="NORTE">NORTE</option>
                                     <option value="SUR">SUR</option>
@@ -505,6 +528,7 @@ function BajaFormPage() {
                                     onChange={handleCurrencyChange}
                                     className="admin-input"
                                     placeholder="0.00"
+                                    readOnly={isSaaiLocked}
                                 />
                             </div>
                             {formState.tramite === 'DESCENSO' && (
@@ -517,6 +541,7 @@ function BajaFormPage() {
                                         onChange={handleCurrencyChange}
                                         className="admin-input"
                                         placeholder="0.00"
+                                        readOnly={isSaaiLocked}
                                     />
                                 </div>
                             )}
@@ -543,6 +568,7 @@ function BajaFormPage() {
                                     onChange={handleCurrencyChangeNumber}
                                     className="admin-input"
                                     placeholder="0.00"
+                                    readOnly={isSaaiLocked}
                                 />
                             </div>
                         </div>
@@ -553,6 +579,7 @@ function BajaFormPage() {
                                 value={formState.observaciones}
                                 onChange={handleChange}
                                 className="admin-textarea"
+                                readOnly={isSaaiLocked}
                             />
                         </div>
 
@@ -560,97 +587,106 @@ function BajaFormPage() {
                     </section>
 
                     {/* Sección 3: Trámite y Estatus */}
-                    <section className="admin-form-section "
-                        style={{ gridColumn: '1 / -1' }}>
-                        <h2 className="admin-section-title">
-                            <FiFileText /> Datos de GIMP
-                        </h2>
+                    {showGimp && (
+                        <section className={`admin-form-section ${isGimpLocked ? 'readOnly' : ''}`}
+                            style={{ gridColumn: '1 / -1' }}>
+                            <h2 className="admin-section-title">
+                                <FiFileText /> Datos de GIMP
+                            </h2>
 
 
-                        <div className="admin-form-row">
-                            <div className="admin-form-group">
-                                <label>SAP Status</label>
-                                <select
-                                    name="sap"
-                                    value={formState.sap}
-                                    onChange={handleChange}
-                                    className="admin-select"
-                                >
-                                    <option value="PENDIENTE">PENDIENTE</option>
-                                    <option value="APLICADO">APLICADO</option>
-                                </select>
+                            <div className="admin-form-row">
+                                <div className="admin-form-group">
+                                    <label>SAP Status</label>
+                                    <select
+                                        name="sap"
+                                        value={formState.sap}
+                                        onChange={handleChange}
+                                        className="admin-select"
+                                        disabled={isGimpLocked}
+                                    >
+                                        <option value="PENDIENTE">PENDIENTE</option>
+                                        <option value="APLICADO">APLICADO</option>
+                                    </select>
+                                </div>
+                                <div className="admin-form-group">
+                                    <label>Cambio Plaza</label>
+                                    <input
+                                        type="text"
+                                        name="cambio_plaza"
+                                        value={formState.cambio_plaza}
+                                        onChange={handleChange}
+                                        maxLength={8}
+                                        className="admin-input"
+                                        readOnly={isGimpLocked}
+                                    />
+                                </div>
+
                             </div>
+
+                            <div className="admin-checkbox-container" style={{ marginTop: '1rem', flexWrap: 'wrap', gap: '2rem' }}>
+                                <label className="admin-checkbox-container">
+                                    <input type="checkbox" name="libre" checked={formState.libre} onChange={handleChange} disabled={isGimpLocked} />
+                                    <span>Libre</span>
+                                </label>
+                                <label className="admin-checkbox-container">
+                                    <input type="checkbox" name="confirmacion_descenso" checked={formState.confirmacion_descenso} onChange={handleChange} disabled={isGimpLocked} />
+                                    <span>Confirmación Descenso</span>
+                                </label>
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Sección 4: Observaciones y Detalles */}
+                    {showGoie && (
+                        <section className={`admin-form-section ${isGoieLocked ? 'readOnly' : ''}`}
+                            style={{ gridColumn: '1 / -1' }}>
+                            <h2 className="admin-section-title">
+                                <FiInfo /> Datos de GOIE
+                            </h2>
+
                             <div className="admin-form-group">
-                                <label>Cambio Plaza</label>
+                                <label>Fecha de Registro</label>
                                 <input
-                                    type="text"
-                                    name="cambio_plaza"
-                                    value={formState.cambio_plaza}
+                                    type="date"
+                                    name="fecha_registro"
+                                    value={formState.fecha_registro}
                                     onChange={handleChange}
-                                    maxLength={8}
                                     className="admin-input"
+                                    readOnly={isGoieLocked}
                                 />
                             </div>
 
-                        </div>
+                            <div className="admin-form-group">
+                                <label>Observaciones GOIE</label>
+                                <textarea
+                                    name="observaciones_2"
+                                    value={formState.observaciones_2}
+                                    onChange={handleChange}
+                                    className="admin-textarea"
+                                    readOnly={isGoieLocked}
+                                />
+                            </div>
+                            <div className="admin-form-group">
+                                <label>Comentarios</label>
+                                <textarea
+                                    name="comentarios"
+                                    value={formState.comentarios}
+                                    onChange={handleChange}
+                                    className="admin-textarea"
+                                    readOnly={isGoieLocked}
+                                />
+                            </div>
 
-                        <div className="admin-checkbox-container" style={{ marginTop: '1rem', flexWrap: 'wrap', gap: '2rem' }}>
-                            <label className="admin-checkbox-container">
-                                <input type="checkbox" name="libre" checked={formState.libre} onChange={handleChange} />
-                                <span>Libre</span>
-                            </label>
-                            <label className="admin-checkbox-container">
-                                <input type="checkbox" name="confirmacion_descenso" checked={formState.confirmacion_descenso} onChange={handleChange} />
-                                <span>Confirmación Descenso</span>
-                            </label>
-                        </div>
-                    </section>
+                            <div className="admin-checkbox-container" style={{ marginTop: '1rem', flexWrap: 'wrap', gap: '2rem' }}>
 
-                    {/* Sección 4: Observaciones y Detalles */}
-                    <section className="admin-form-section "
-                        style={{ gridColumn: '1 / -1' }}>
-                        <h2 className="admin-section-title">
-                            <FiInfo /> Datos de GOIE
-                        </h2>
-
-                        <div className="admin-form-group">
-                            <label>Fecha de Registro</label>
-                            <input
-                                type="date"
-                                name="fecha_registro"
-                                value={formState.fecha_registro}
-                                onChange={handleChange}
-                                className="admin-input"
-                            />
-                        </div>
-
-                        <div className="admin-form-group">
-                            <label>Observaciones GOIE</label>
-                            <textarea
-                                name="observaciones_2"
-                                value={formState.observaciones_2}
-                                onChange={handleChange}
-                                className="admin-textarea"
-                            />
-                        </div>
-                        <div className="admin-form-group">
-                            <label>Comentarios</label>
-                            <textarea
-                                name="comentarios"
-                                value={formState.comentarios}
-                                onChange={handleChange}
-                                className="admin-textarea"
-                            />
-                        </div>
-
-                        <div className="admin-checkbox-container" style={{ marginTop: '1rem', flexWrap: 'wrap', gap: '2rem' }}>
-
-                            <label className="admin-checkbox-container">
-                                <input type="checkbox" name="cancelada" checked={formState.cancelada} onChange={handleChange} />
-                                <span>Cancelada</span>
-                            </label>
-                        </div>
-                    </section>
+                                <label className="admin-checkbox-container">
+                                    <input type="checkbox" name="cancelada" checked={formState.cancelada} onChange={handleChange} disabled={isGoieLocked} />
+                                    <span>Cancelada</span>
+                                </label>
+                            </div>
+                        </section>
+                    )}
 
                     <div className="admin-form-actions">
                         <ButtonIcon

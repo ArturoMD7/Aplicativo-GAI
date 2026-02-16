@@ -12,7 +12,9 @@ import '../../styles/InvestigacionPage.css'; // Reusing styles
 
 function BajaListPage() {
     const navigate = useNavigate();
-    const [bajas, setBajas] = useState<BajaListado[]>([]);
+    const [currentView, setCurrentView] = useState<'REGISTRO' | 'SEGUIMIENTO' | 'FINALIZACION' | 'CONCLUIDA'>('REGISTRO');
+    const [allBajas, setAllBajas] = useState<BajaListado[]>([]);
+    const [bajas, setBajas] = useState<BajaListado[]>([]); // Displayed bajas
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
@@ -30,12 +32,52 @@ function BajaListPage() {
         setLoading(true);
         try {
             const response = await apiClient.get('/api/bajas/bajas/');
-            setBajas(response.data);
+            setAllBajas(response.data);
+            setBajas(response.data); // Initialize with all
         } catch (err: any) {
             console.error('Error fetching bajas:', err);
             setError('No se pudo cargar la lista de bajas.');
         } finally {
             setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (!allBajas) return;
+
+        let filtered = allBajas.filter(baja => {
+            const status = baja.estatus_baja || 'REGISTRO'; // Default to REGISTRO if undefined
+            return status === currentView;
+        });
+
+        setBajas(filtered);
+        setCurrentPage(1);
+    }, [allBajas, currentView]);
+
+    const handleStatusChange = async (id: number, nuevoStatus: string, ficha: string) => {
+        const result = await Swal.fire({
+            title: `¿Pasar a ${nuevoStatus}?`,
+            text: `El registro de la ficha ${ficha} cambiará a etapa de ${nuevoStatus}.`,
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, cambiar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await apiClient.patch(`/api/bajas/bajas/${id}/`, { estatus_baja: nuevoStatus });
+
+                // Update local state
+                setAllBajas(prev => prev.map(item =>
+                    item.id === id ? { ...item, estatus_baja: nuevoStatus as any } : item
+                ));
+
+                Swal.fire('Actualizado', `El registro pasó a ${nuevoStatus}.`, 'success');
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'No se pudo cambiar el estatus.', 'error');
+            }
         }
     };
 
@@ -54,7 +96,7 @@ function BajaListPage() {
         if (result.isConfirmed) {
             try {
                 await apiClient.delete(`/api/bajas/bajas/${id}/`);
-                setBajas(prev => prev.filter(item => item.id !== id));
+                setAllBajas(prev => prev.filter(item => item.id !== id));
                 Swal.fire('Eliminado', 'El registro ha sido eliminado.', 'success');
             } catch (err) {
                 console.error(err);
@@ -79,13 +121,13 @@ function BajaListPage() {
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Bajas');
         const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
         const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-        saveAs(blob, `Bajas_${new Date().toISOString().split('T')[0]}.xlsx`);
+        saveAs(blob, `Bajas_${currentView}_${new Date().toISOString().split('T')[0]}.xlsx`);
     };
 
     return (
         <div className="admin-page">
             <div className="page-header">
-                <h1><FiFileText /> Módulo de Bajas</h1>
+                <h1><FiFileText /> Módulo de Bajas ({currentView})</h1>
                 <div className="header-actions">
                     <div className="search-box">
                         <FiSearch className="search-icon" />
@@ -97,8 +139,50 @@ function BajaListPage() {
                         />
                     </div>
                     <ButtonIcon variant="view" icon={<FiDownload />} text="Exportar" onClick={exportToExcel} size="medium" />
-                    <ButtonIcon variant="add" to="/bajas/nuevo" icon={<FiPlus />} text="Nuevo" size="medium" />
+                    {currentView === 'REGISTRO' && (
+                        <ButtonIcon variant="add" to="/bajas/nuevo" icon={<FiPlus />} text="Nuevo" size="medium" />
+                    )}
                 </div>
+            </div>
+
+            {/* View Toggles */}
+            <div className="view-toggles" style={{ display: 'flex', gap: '8px', marginLeft: '20px', marginBottom: '10px' }}>
+                <ButtonIcon
+                    variant="custom"
+                    color={currentView === 'REGISTRO' ? '#840016' : '#6c757d'}
+                    hoverColor={currentView === 'REGISTRO' ? '#640011' : '#5a6268'}
+                    onClick={() => setCurrentView('REGISTRO')}
+                    icon={<FiFileText />}
+                    text="Registro"
+                    size="medium"
+                />
+                <ButtonIcon
+                    variant="custom"
+                    color={currentView === 'SEGUIMIENTO' ? '#840016' : '#6c757d'}
+                    hoverColor={currentView === 'SEGUIMIENTO' ? '#640011' : '#5a6268'}
+                    onClick={() => setCurrentView('SEGUIMIENTO')}
+                    icon={<FiAlertCircle />}
+                    text="Seguimiento"
+                    size="medium"
+                />
+                <ButtonIcon
+                    variant="custom"
+                    color={currentView === 'FINALIZACION' ? '#840016' : '#6c757d'}
+                    hoverColor={currentView === 'FINALIZACION' ? '#640011' : '#5a6268'}
+                    onClick={() => setCurrentView('FINALIZACION')}
+                    icon={<FiFileText />}
+                    text="Por Finalizar"
+                    size="medium"
+                />
+                <ButtonIcon
+                    variant="custom"
+                    color={currentView === 'CONCLUIDA' ? '#840016' : '#6c757d'}
+                    hoverColor={currentView === 'CONCLUIDA' ? '#640011' : '#5a6268'}
+                    onClick={() => setCurrentView('CONCLUIDA')}
+                    icon={<FiFileText />}
+                    text="Concluidas"
+                    size="medium"
+                />
             </div>
 
             {loading && <div className="loading-message">Cargando bajas...</div>}
@@ -137,13 +221,54 @@ function BajaListPage() {
                                     <td>{baja.fecha_ejecucion}</td>
                                     <td>
                                         <div className="action-buttons">
-                                            <ButtonIcon
-                                                variant="edit"
-                                                onClick={() => navigate(`/bajas/editar/${baja.id}`)}
-                                                icon={<FiEdit />}
-                                                title="Editar"
-                                                size="medium"
-                                            />
+                                            {/* View/Edit Button logic */}
+                                            {currentView === 'CONCLUIDA' ? (
+                                                <ButtonIcon
+                                                    variant="view"
+                                                    onClick={() => navigate(`/bajas/editar/${baja.id}`)}
+                                                    icon={<FiFileText />}
+                                                    title="Ver Detalles"
+                                                    size="medium"
+                                                />
+                                            ) : (
+                                                <ButtonIcon
+                                                    variant="edit"
+                                                    onClick={() => navigate(`/bajas/editar/${baja.id}`)}
+                                                    icon={<FiEdit />}
+                                                    title="Editar"
+                                                    size="medium"
+                                                />
+                                            )}
+
+                                            {/* Transitions */}
+                                            {currentView === 'REGISTRO' && (
+                                                <ButtonIcon
+                                                    variant="view"
+                                                    onClick={() => handleStatusChange(baja.id!, 'SEGUIMIENTO', baja.ficha)}
+                                                    icon={<FiAlertCircle />}
+                                                    title="Pasar a Seguimiento"
+                                                    size="medium"
+                                                />
+                                            )}
+                                            {currentView === 'SEGUIMIENTO' && (
+                                                <ButtonIcon
+                                                    variant="view"
+                                                    onClick={() => handleStatusChange(baja.id!, 'FINALIZACION', baja.ficha)}
+                                                    icon={<FiFileText />}
+                                                    title="Pasar a Finalización"
+                                                    size="medium"
+                                                />
+                                            )}
+                                            {currentView === 'FINALIZACION' && (
+                                                <ButtonIcon
+                                                    variant="view" // Maybe different icon/variant for conclude
+                                                    onClick={() => handleStatusChange(baja.id!, 'CONCLUIDA', baja.ficha)}
+                                                    icon={<FiFileText />}
+                                                    title="Concluir"
+                                                    size="medium"
+                                                />
+                                            )}
+
                                             {(['Admin', 'AdminCentral'].includes(userRole) || userRole.startsWith('Supervisor')) && (
                                                 <ButtonIcon
                                                     variant="delete"

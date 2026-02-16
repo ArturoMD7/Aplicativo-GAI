@@ -22,7 +22,11 @@ class Baja(UppercaseMixin, models.Model):
     costo_nueva_plaza = models.CharField(max_length=100,null=True, blank=True) # CATALOGO
     
     ahorro = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True) # DINERO
-    dir = models.CharField(max_length=10)
+    # Renamed from dir to direccion and increased length
+    direccion = models.CharField(max_length=100, null=True, blank=True)
+    subdireccion = models.CharField(max_length=100, null=True, blank=True)
+    fuente = models.CharField(max_length=50, null=True, blank=True)
+    regional = models.CharField(max_length=100, null=True, blank=True)
 
     REGION_CHOICES = [
         ('NORTE', 'NORTE'),
@@ -64,7 +68,7 @@ class Baja(UppercaseMixin, models.Model):
     ]
     sap = models.CharField(max_length=20, choices=SAP_CHOICES, default='PENDIENTE', null=True, blank=True)
     
-    posicion = models.CharField(max_length=20, null=True, blank=True)
+    posicion = models.CharField(max_length=150, null=True, blank=True)
     cambio_plaza = models.CharField(max_length=8, null=True, blank=True) 
     antiguedad = models.IntegerField(null=True, blank=True) 
     
@@ -80,6 +84,15 @@ class Baja(UppercaseMixin, models.Model):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='bajas_creadas')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # Workflow Status
+    ESTATUS_BAJA_CHOICES = [
+        ('REGISTRO', 'REGISTRO'),
+        ('SEGUIMIENTO', 'SEGUIMIENTO'),
+        ('FINALIZACION', 'FINALIZACION'),
+        ('CONCLUIDA', 'CONCLUIDA'),
+    ]
+    estatus_baja = models.CharField(max_length=20, choices=ESTATUS_BAJA_CHOICES, default='REGISTRO')
 
     def __str__(self):
         return f"{self.ficha} - {self.nombre}"
