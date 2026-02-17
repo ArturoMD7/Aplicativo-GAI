@@ -4,6 +4,7 @@ export interface Baja {
     nombre: string;
     nivel: string;
     nuevo_nivel: string;
+    grado?: string;
     costo_plaza: string;
     costo_nueva_plaza: string;
     ahorro?: number;

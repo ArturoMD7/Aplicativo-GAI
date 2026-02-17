@@ -16,6 +16,7 @@ class Baja(UppercaseMixin, models.Model):
     nombre = models.CharField(max_length=40)
     nivel = models.CharField(max_length=2)  # "NUM(2)" -> CharField or IntegerField. Using Char for broader compatibility if needed, or Int. User said NUM(2). Let's use CharField(2) to be safe with "01", "02".
     nuevo_nivel = models.CharField(max_length=2,null=True, blank=True)
+    grado = models.CharField(max_length=5, null=True, blank=True)
     
     # Catalogos
     costo_plaza = models.CharField(max_length=100,null=True, blank=True) # CATALOGO

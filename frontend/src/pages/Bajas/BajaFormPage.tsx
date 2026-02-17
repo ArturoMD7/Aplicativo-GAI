@@ -186,7 +186,13 @@ function BajaFormPage() {
         const cnp = parseFloat(costoNuevaPlazaRaw) || 0;
 
         let ahorro = 0;
-        if (formState.tramite === 'DESCENSO') {
+        if (cnp > cp) {
+            Swal.fire('Error', 'El costo de la nueva plaza debe ser menor al costo de la plaza actual.', 'error');
+            return;
+        }
+        if (cnp == 0) {
+            ahorro = 0;
+        } else if (formState.tramite === 'DESCENSO') {
             ahorro = cp - cnp;
         } else {
             ahorro = cp - cnp;
@@ -629,20 +635,34 @@ function BajaFormPage() {
                             <div className="admin-form-row">
                                 <div className="admin-form-group">
                                     <label>Grado (Obligatorio para nivel {formState.nivel})</label>
-                                    <input
-                                        type="text"
-                                        value={empleadoMeta.grado}
+                                    <select
+                                        value={formState.grado || ''}
                                         onChange={async (e) => {
                                             const newGrado = e.target.value;
+
+                                            // Update form state with new grade
+                                            setFormState(prev => ({ ...prev, grado: newGrado }));
+
+                                            // Update local meta state for consistency if needed, though formState is source of truth now for saving
                                             setEmpleadoMeta(prev => ({ ...prev, grado: newGrado }));
 
                                             // Re-fetch cost when grade changes
                                             const newCosto = await fetchCostoPlaza(formState.nivel, empleadoMeta.jornada, newGrado);
-                                            setFormState(prev => ({ ...prev, costo_plaza: newCosto }));
+                                            setFormState(prev => ({ ...prev, costo_plaza: newCosto, grado: newGrado }));
                                         }}
-                                        className="admin-input"
-                                        placeholder="Ingrese Grado"
-                                    />
+                                        className="admin-select"
+                                    >
+                                        <option value="">Seleccione Grado</option>
+                                        {formState.nivel === '44' && ['G1', 'G2', 'G3', 'G4', 'G5'].map(g => (
+                                            <option key={g} value={g}>{g}</option>
+                                        ))}
+                                        {formState.nivel === '45' && ['S1', 'S2', 'S3', 'S4', 'S5'].map(g => (
+                                            <option key={g} value={g}>{g}</option>
+                                        ))}
+                                        {formState.nivel === '46' && ['D1', 'D2'].map(g => (
+                                            <option key={g} value={g}>{g}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
                         )}
@@ -726,7 +746,7 @@ function BajaFormPage() {
                             </div>
                         </div>
                         <div className="admin-form-row">
-                            <div className="admin-form-group">
+                            <div className="admin-form-group readOnly">
                                 <label>Costo Plaza</label>
                                 <input
                                     type="text"
@@ -735,7 +755,7 @@ function BajaFormPage() {
                                     onChange={handleCurrencyChange}
                                     className="admin-input"
                                     placeholder="0.00"
-                                    readOnly={isSaaiLocked}
+                                    readOnly
                                 />
                             </div>
                             {formState.tramite === 'DESCENSO' && (
@@ -755,17 +775,19 @@ function BajaFormPage() {
                         </div>
 
                         <div className="admin-form-row">
-                            <div className="admin-form-group">
-                                <label>Ahorro</label>
-                                <input
-                                    type="text"
-                                    name="ahorro"
-                                    value={formatNumber(formState.ahorro || 0)}
-                                    readOnly
-                                    className="admin-input"
-                                    placeholder="0.00"
-                                />
-                            </div>
+                            {formState.tramite === 'DESCENSO' && (
+                                <div className="admin-form-group readOnly">
+                                    <label>Ahorro</label>
+                                    <input
+                                        type="text"
+                                        name="ahorro"
+                                        value={formatNumber(formState.ahorro || 0)}
+                                        readOnly
+                                        className="admin-input"
+                                        placeholder="0.00"
+                                    />
+                                </div>
+                            )}
                             <div className="admin-form-group">
                                 <label>Liquidación Neta</label>
                                 <input
