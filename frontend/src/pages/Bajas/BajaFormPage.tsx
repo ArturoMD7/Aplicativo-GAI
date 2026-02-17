@@ -310,31 +310,81 @@ function BajaFormPage() {
         }
     };
 
+    const [pendingUploads, setPendingUploads] = useState<{ tipo: string, file: File }[]>([]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validate basic fields
+        if (!formState.ficha || !formState.nombre) {
+            Swal.fire('Error', 'Por favor complete los campos obligatorios', 'error');
+            return;
+        }
+
+        // Validation for Grado
+        if (['44', '45', '46'].includes(formState.nivel) && !formState.grado) {
+            Swal.fire('Atención', `Debe seleccionar un Grado para el nivel ${formState.nivel}`, 'warning');
+            return;
+        }
+
         setLoading(true);
 
         try {
+            let newId = id;
+
             if (isEditMode && id) {
                 await apiClient.put(`/api/bajas/bajas/${id}/`, formState);
                 Swal.fire('Actualizado', 'Registro actualizado correctamente', 'success');
             } else {
-                await apiClient.post('/api/bajas/bajas/', formState);
-                Swal.fire('Guardado', 'Registro creado correctamente', 'success');
+                const response = await apiClient.post('/api/bajas/bajas/', formState);
+                newId = response.data.id;
+                // Swal.fire('Guardado', 'Registro creado correctamente', 'success'); // Don't show success yet if uploads pending
             }
+
+            // Process Pending Uploads if creating or editing
+            if (pendingUploads.length > 0 && newId) {
+                const uploadPromises = pendingUploads.map(async (upload) => {
+                    const formData = new FormData();
+                    formData.append('baja', newId!);
+                    formData.append('tipo', upload.tipo);
+                    formData.append('archivo', upload.file);
+
+                    return apiClient.post('/api/bajas/documentos-bajas/', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                });
+
+                await Promise.all(uploadPromises);
+            }
+
+            Swal.fire('Listo', 'Registro y documentos guardados correctamente', 'success');
             navigate('/bajas');
         } catch (err: any) {
             console.error(err);
-            Swal.fire('Error', 'Error al guardar el registro.', 'error');
+            Swal.fire('Error', 'Error al guardar el registro o documentos.', 'error');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, tipo: string) => {
-        if (!e.target.files || e.target.files.length === 0 || !id) return;
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement> | { target: { files: FileList | null } }, tipo: string) => {
+        if (!e.target.files || e.target.files.length === 0) return;
 
         const file = e.target.files[0];
+
+        // If creating (no ID), just queue it
+        if (!id) {
+            setPendingUploads(prev => {
+                // Remove existing if replacing
+                const filtered = prev.filter(p => p.tipo !== tipo);
+                return [...filtered, { tipo, file }];
+            });
+            // Reset input value to allow re-selection if needed? 
+            // Actually difficult with React styling, but let's assume it works.
+            return;
+        }
+
+        // Existing logic for immediate upload if editing
         const formData = new FormData();
         formData.append('baja', id);
         formData.append('tipo', tipo);
@@ -362,7 +412,6 @@ function BajaFormPage() {
             Swal.fire('Error', 'Error al subir el documento', 'error');
         } finally {
             setUploadingDoc(null);
-            e.target.value = '';
         }
     };
 
@@ -436,6 +485,27 @@ function BajaFormPage() {
                 confirmButtonColor: '#840016'
             });
         }
+    };
+
+    // Drag and Drop Handlers
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>, tipo: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            // Mock event object to reuse handleFileUpload logic
+            const mockEvent = { target: { files: e.dataTransfer.files } };
+            handleFileUpload(mockEvent, tipo);
+        }
+    };
+
+    const handleDeletePending = (tipo: string) => {
+        setPendingUploads(prev => prev.filter(p => p.tipo !== tipo));
     };
 
     if (loading && isEditMode && !formState.id) return <div className="loading-message">Cargando...</div>;
@@ -923,10 +993,19 @@ function BajaFormPage() {
                         <div className="admin-docs-grid">
                             {DOCUMENT_TYPES.map(tipo => {
                                 const doc = documentos.find(d => d.tipo === tipo);
+                                const pendingDoc = pendingUploads.find(p => p.tipo === tipo);
+                                const isUploaded = !!doc;
+                                const isPending = !!pendingDoc;
+
                                 return (
-                                    <div key={tipo} className={`admin-doc-card ${doc ? 'uploaded' : ''}`}>
+                                    <div
+                                        key={tipo}
+                                        className={`admin-doc-card ${isUploaded || isPending ? 'uploaded' : ''}`}
+                                        onDragOver={handleDragOver}
+                                        onDrop={(e) => handleDrop(e, tipo)}
+                                    >
                                         {/* Header Title inside the box if doc exists, or just part of layout */}
-                                        {doc ? (
+                                        {isUploaded ? (
                                             <div className="admin-doc-content">
                                                 <div className="admin-doc-icon-wrapper">
                                                     <FiFileText className="admin-doc-icon-svg" />
@@ -934,13 +1013,13 @@ function BajaFormPage() {
 
                                                 <h4 className="admin-doc-title">{tipo}</h4>
                                                 <p className="admin-doc-date">
-                                                    {new Date(doc.uploaded_at).toLocaleDateString()}
+                                                    {new Date(doc!.uploaded_at).toLocaleDateString()}
                                                 </p>
 
                                                 <div className="admin-doc-actions">
                                                     <button
                                                         type="button"
-                                                        onClick={() => handlePreview(doc)}
+                                                        onClick={() => handlePreview(doc!)}
                                                         className="admin-doc-btn view"
                                                         title="Ver"
                                                     >
@@ -949,7 +1028,7 @@ function BajaFormPage() {
 
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleDownload(doc)}
+                                                        onClick={() => handleDownload(doc!)}
                                                         className="admin-doc-btn download"
                                                         title="Descargar"
                                                     >
@@ -957,9 +1036,31 @@ function BajaFormPage() {
                                                     </button>
                                                     <button
                                                         type="button"
-                                                        onClick={() => handleDeleteDocument(doc.id)}
+                                                        onClick={() => handleDeleteDocument(doc!.id)}
                                                         className="admin-doc-btn delete"
                                                         title="Eliminar"
+                                                    >
+                                                        <FiTrash2 />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ) : isPending ? (
+                                            <div className="admin-doc-content">
+                                                <div className="admin-doc-icon-wrapper">
+                                                    <FiFileText className="admin-doc-icon-svg" style={{ color: '#d35400' }} />
+                                                </div>
+                                                <h4 className="admin-doc-title">{tipo}</h4>
+                                                <p className="admin-doc-date" style={{ color: '#d35400', fontWeight: 'bold' }}>
+                                                    Pendiente de guardar
+                                                </p>
+                                                <p className="admin-upload-subtext">{pendingDoc!.file.name}</p>
+
+                                                <div className="admin-doc-actions">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeletePending(tipo)}
+                                                        className="admin-doc-btn delete"
+                                                        title="Quitar"
                                                     >
                                                         <FiTrash2 />
                                                     </button>

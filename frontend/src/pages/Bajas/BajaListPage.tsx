@@ -270,6 +270,7 @@ function BajaListPage() {
                                 <th onClick={() => requestSort('nivel')} style={{ cursor: 'pointer' }}>Nivel {getSortIcon('nivel')}</th>
                                 <th onClick={() => requestSort('nuevo_nivel')} style={{ cursor: 'pointer' }}>Nuevo Nivel {getSortIcon('nuevo_nivel')}</th>
                                 <th onClick={() => requestSort('region')} style={{ cursor: 'pointer' }}>Región {getSortIcon('region')}</th>
+                                <th onClick={() => requestSort('tramite')} style={{ cursor: 'pointer' }}>Tramite {getSortIcon('tramite')}</th>
                                 <th onClick={() => requestSort('status')} style={{ cursor: 'pointer' }}>Estatus {getSortIcon('status')}</th>
                                 <th onClick={() => requestSort('sap')} style={{ cursor: 'pointer' }}>SAP {getSortIcon('sap')}</th>
                                 <th onClick={() => requestSort('fecha_ejecucion')} style={{ cursor: 'pointer' }}>Fecha Ejecución {getSortIcon('fecha_ejecucion')}</th>
@@ -304,6 +305,7 @@ function BajaListPage() {
                                     <td>{baja.nivel}</td>
                                     <td>{baja.nuevo_nivel}</td>
                                     <td>{baja.region}</td>
+                                    <td>{baja.tramite}</td>
                                     <td>{baja.status}</td>
                                     <td>
                                         <span className={`status-badge ${baja.sap === 'APLICADO' ? 'success' : 'warning'}`}>
