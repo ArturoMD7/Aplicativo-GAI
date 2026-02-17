@@ -915,90 +915,90 @@ function BajaFormPage() {
                         </section>
                     )}
 
-                    {isEditMode && (
-                        <section className="admin-form-section admin-full-width">
-                            <h2 className="admin-section-title">
-                                <FiFileText /> Documentos de Baja
-                            </h2>
-                            <div className="admin-docs-grid">
-                                {DOCUMENT_TYPES.map(tipo => {
-                                    const doc = documentos.find(d => d.tipo === tipo);
-                                    return (
-                                        <div key={tipo} className={`admin-doc-card ${doc ? 'uploaded' : ''}`}>
-                                            {/* Header Title inside the box if doc exists, or just part of layout */}
-                                            {doc ? (
-                                                <div className="admin-doc-content">
-                                                    <div className="admin-doc-icon-wrapper">
-                                                        <FiFileText className="admin-doc-icon-svg" />
-                                                    </div>
 
-                                                    <h4 className="admin-doc-title">{tipo}</h4>
-                                                    <p className="admin-doc-date">
-                                                        {new Date(doc.uploaded_at).toLocaleDateString()}
-                                                    </p>
-
-                                                    <div className="admin-doc-actions">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handlePreview(doc)}
-                                                            className="admin-doc-btn view"
-                                                            title="Ver"
-                                                        >
-                                                            <FiEye />
-                                                        </button>
-
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleDownload(doc)}
-                                                            className="admin-doc-btn download"
-                                                            title="Descargar"
-                                                        >
-                                                            <FiDownload />
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => handleDeleteDocument(doc.id)}
-                                                            className="admin-doc-btn delete"
-                                                            title="Eliminar"
-                                                        >
-                                                            <FiTrash2 />
-                                                        </button>
-                                                    </div>
+                    <section className="admin-form-section admin-full-width">
+                        <h2 className="admin-section-title">
+                            <FiFileText /> Documentos de Baja
+                        </h2>
+                        <div className="admin-docs-grid">
+                            {DOCUMENT_TYPES.map(tipo => {
+                                const doc = documentos.find(d => d.tipo === tipo);
+                                return (
+                                    <div key={tipo} className={`admin-doc-card ${doc ? 'uploaded' : ''}`}>
+                                        {/* Header Title inside the box if doc exists, or just part of layout */}
+                                        {doc ? (
+                                            <div className="admin-doc-content">
+                                                <div className="admin-doc-icon-wrapper">
+                                                    <FiFileText className="admin-doc-icon-svg" />
                                                 </div>
-                                            ) : (
-                                                <div className="admin-upload-wrapper">
-                                                    <div className="admin-upload-type-label">
-                                                        {tipo}
-                                                    </div>
-                                                    {uploadingDoc === tipo ? (
-                                                        <div className="spinner-border text-secondary admin-spinner" role="status">
-                                                            <span className="sr-only">Cargando...</span>
-                                                        </div>
-                                                    ) : (
-                                                        <label htmlFor={`file-upload-${tipo}`} className="admin-upload-label">
-                                                            <FiUploadCloud className="admin-upload-icon" />
-                                                            <p className="admin-upload-text">
-                                                                Arrastra tu archivo aquí o <span className="admin-upload-highlight">haz clic para seleccionar</span>
-                                                            </p>
-                                                            <small className="admin-upload-subtext">Soporta: PDF, Word, Imágenes (Máx. 10MB)</small>
-                                                        </label>
-                                                    )}
-                                                    <input
-                                                        id={`file-upload-${tipo}`}
-                                                        type="file"
-                                                        accept=".pdf,.jpg,.jpeg,.png"
-                                                        onChange={(e) => handleFileUpload(e, tipo)}
-                                                        style={{ display: 'none' }}
-                                                        disabled={!!uploadingDoc}
-                                                    />
+
+                                                <h4 className="admin-doc-title">{tipo}</h4>
+                                                <p className="admin-doc-date">
+                                                    {new Date(doc.uploaded_at).toLocaleDateString()}
+                                                </p>
+
+                                                <div className="admin-doc-actions">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handlePreview(doc)}
+                                                        className="admin-doc-btn view"
+                                                        title="Ver"
+                                                    >
+                                                        <FiEye />
+                                                    </button>
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDownload(doc)}
+                                                        className="admin-doc-btn download"
+                                                        title="Descargar"
+                                                    >
+                                                        <FiDownload />
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteDocument(doc.id)}
+                                                        className="admin-doc-btn delete"
+                                                        title="Eliminar"
+                                                    >
+                                                        <FiTrash2 />
+                                                    </button>
                                                 </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </section>
-                    )}
+                                            </div>
+                                        ) : (
+                                            <div className="admin-upload-wrapper">
+                                                <div className="admin-upload-type-label">
+                                                    {tipo}
+                                                </div>
+                                                {uploadingDoc === tipo ? (
+                                                    <div className="spinner-border text-secondary admin-spinner" role="status">
+                                                        <span className="sr-only">Cargando...</span>
+                                                    </div>
+                                                ) : (
+                                                    <label htmlFor={`file-upload-${tipo}`} className="admin-upload-label">
+                                                        <FiUploadCloud className="admin-upload-icon" />
+                                                        <p className="admin-upload-text">
+                                                            Arrastra tu archivo aquí o <span className="admin-upload-highlight">haz clic para seleccionar</span>
+                                                        </p>
+                                                        <small className="admin-upload-subtext">Soporta: PDF, Word, Imágenes (Máx. 10MB)</small>
+                                                    </label>
+                                                )}
+                                                <input
+                                                    id={`file-upload-${tipo}`}
+                                                    type="file"
+                                                    accept=".pdf,.jpg,.jpeg,.png"
+                                                    onChange={(e) => handleFileUpload(e, tipo)}
+                                                    style={{ display: 'none' }}
+                                                    disabled={!!uploadingDoc}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+
 
                     <div className="admin-form-actions">
                         <ButtonIcon
