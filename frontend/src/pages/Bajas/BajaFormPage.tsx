@@ -3,9 +3,40 @@ import { useParams, useNavigate } from 'react-router-dom';
 import apiClient from '../../api/apliClient';
 import type { Baja } from '../../types/baja.types';
 import ButtonIcon from '../../components/Buttons/ButtonIcon';
-import { FiSave, FiArrowLeft, FiUser, FiFileText, FiInfo, FiSearch } from 'react-icons/fi';
+import { FiSave, FiArrowLeft, FiUser, FiFileText, FiInfo, FiSearch, FiTrash2, FiDownload, FiEye, FiUploadCloud } from 'react-icons/fi';
 import Swal from 'sweetalert2';
 import '../../styles/BajaDetails.css';
+import DocumentPreviewModal from '../../components/Modals/DocumentPreviewModal';
+import { auditoriaService } from '../../api/auditoriaService';
+
+interface DocumentoBaja {
+    id: number;
+    baja: number;
+    tipo: string;
+    archivo: string;
+    descripcion?: string;
+    uploaded_at: string;
+}
+
+// Interface compatible with DocumentPreviewModal
+interface Documento {
+    id: number;
+    tipo: string;
+    nombre_archivo: string;
+    archivo: string;
+    uploaded_at: string;
+    descripcion: string;
+}
+
+
+
+const DOCUMENT_TYPES = [
+    'Solicitud',
+    'Formato de conformidad',
+    'INE',
+    'Formato de adeudos',
+    'Comunicación a GIMP'
+];
 
 const initialState: Baja = {
     ficha: '',
@@ -44,10 +75,44 @@ function BajaFormPage() {
     const [loading, setLoading] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
 
+    // State for employee metadata to fetch cost
+    const [empleadoMeta, setEmpleadoMeta] = useState({ jornada: '', grado: '' });
+
+    // Function to fetch cost from API
+    const fetchCostoPlaza = async (nivel: string, jornada: string, grado: string): Promise<string> => {
+        if (!nivel || !jornada) return '0.00';
+        try {
+            // Ensure jornada has 2 digits
+            const jornadaFmt = jornada.length === 1 ? `0${jornada}` : jornada;
+
+            // Fixed endpoint to match urls.py
+            const response = await apiClient.get(`/api/investigaciones/obtener-costo-plaza/`, {
+                params: {
+                    nivel,
+                    jornada: jornadaFmt,
+                    grado
+                }
+            });
+
+            if (response.data.costo_anual) {
+                // Assuming formatNumber is available or we use a simple formatter
+                return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(response.data.costo_anual);
+            }
+            return '0.00';
+        } catch (error) {
+            console.error("Error obteniendo costo plaza:", error);
+            return '0.00';
+        }
+    };
+    const [documentos, setDocumentos] = useState<DocumentoBaja[]>([]);
+    const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
+    const [previewFile, setPreviewFile] = useState<Documento | null>(null);
+
     useEffect(() => {
         if (id) {
             setIsEditMode(true);
             fetchBaja(id);
+            fetchDocumentos(id);
         }
     }, [id]);
 
@@ -62,6 +127,15 @@ function BajaFormPage() {
             navigate('/bajas');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchDocumentos = async (bajaId: string) => {
+        try {
+            const response = await apiClient.get(`/api/bajas/documentos-bajas/?baja_id=${bajaId}`);
+            setDocumentos(response.data);
+        } catch (error) {
+            console.error("Error fetching documents:", error);
         }
     };
 
@@ -178,6 +252,16 @@ function BajaFormPage() {
                 }
             }
 
+            const currentJornada = empleado.jornada || '00';
+            const currentGrado = empleado.grupo || '';
+
+            setEmpleadoMeta({
+                jornada: currentJornada,
+                grado: currentGrado
+            });
+
+            const costoActual = await fetchCostoPlaza(empleado.nivel, currentJornada, currentGrado);
+
             setFormState(prev => ({
                 ...prev,
                 nombre: empleado.nombre || '',
@@ -189,6 +273,7 @@ function BajaFormPage() {
                 fuente: empleado.fuente || '',
                 regional: empleado.regional || '',
                 region: regionAsignada,
+                costo_plaza: costoActual, // Update cost with fetched value
             }));
 
             const Toast = Swal.mixin({
@@ -240,6 +325,113 @@ function BajaFormPage() {
         }
     };
 
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, tipo: string) => {
+        if (!e.target.files || e.target.files.length === 0 || !id) return;
+
+        const file = e.target.files[0];
+        const formData = new FormData();
+        formData.append('baja', id);
+        formData.append('tipo', tipo);
+        formData.append('archivo', file);
+
+        setUploadingDoc(tipo);
+
+        try {
+            await apiClient.post('/api/bajas/documentos-bajas/', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+            });
+            Toast.fire({ icon: 'success', title: 'Documento subido correctamente' });
+
+            fetchDocumentos(id);
+        } catch (error) {
+            console.error("Error uploading document:", error);
+            Swal.fire('Error', 'Error al subir el documento', 'error');
+        } finally {
+            setUploadingDoc(null);
+            e.target.value = '';
+        }
+    };
+
+    const handleDeleteDocument = async (docId: number) => {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "No podrás revertir esto",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            try {
+                await apiClient.delete(`/api/bajas/documentos-bajas/${docId}/`);
+                Swal.fire('Eliminado', 'El documento ha sido eliminado.', 'success');
+                if (id) fetchDocumentos(id);
+            } catch (error) {
+                console.error("Error deleting document:", error);
+                Swal.fire('Error', 'No se pudo eliminar el documento', 'error');
+            }
+        }
+    };
+
+    const handleDownload = async (doc: DocumentoBaja) => {
+        try {
+            const filename = doc.archivo.split('/').pop() || doc.tipo;
+            auditoriaService.logAction('DOWNLOAD', `Descargó documento baja: ${doc.tipo} - ${filename}`, Number(id) || 0);
+
+            const response = await apiClient.get(`/api/bajas/documentos-bajas/${doc.id}/download/`, {
+                responseType: 'blob',
+            });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (error) {
+            console.error("Error al descargar:", error);
+            Swal.fire('Error', 'No se pudo descargar el archivo', 'error');
+        }
+    };
+
+    const handlePreview = (doc: DocumentoBaja) => {
+        const filename = doc.archivo.split('/').pop() || doc.tipo;
+        auditoriaService.logAction('VIEW', `Visualizó documento baja: ${doc.tipo} - ${filename}`, Number(id) || 0);
+
+        // Helper for DocumentPreviewModal interface
+        const previewDoc: Documento = {
+            id: doc.id,
+            tipo: doc.tipo,
+            nombre_archivo: filename,
+            archivo: doc.archivo,
+            uploaded_at: doc.uploaded_at,
+            descripcion: doc.descripcion || ''
+        };
+
+        const ext = filename.split('.').pop()?.toLowerCase();
+        if (ext === 'pdf' || ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) {
+            setPreviewFile(previewDoc);
+        } else {
+            Swal.fire({
+                icon: 'info',
+                title: 'Vista previa no disponible',
+                text: 'Este formato debe ser descargado para visualizarse.',
+                confirmButtonColor: '#840016'
+            });
+        }
+    };
+
     if (loading && isEditMode && !formState.id) return <div className="loading-message">Cargando...</div>;
 
     // Logic for phases
@@ -265,7 +457,7 @@ function BajaFormPage() {
                         onClick={() => navigate('/bajas')}
                         icon={<FiArrowLeft />}
                         text="Volver a la lista"
-                        style={{ marginBottom: '1rem', display: 'inline-flex' }}
+                        className="admin-mb-1"
                     />
                     <h1>{isEditMode ? 'Editar Registro de Baja' : 'Nuevo Registro de Baja'}</h1>
                     <p>Complete la información del formulario a continuación</p>
@@ -273,8 +465,7 @@ function BajaFormPage() {
 
                 <form onSubmit={handleSubmit}>
                     {/* Sección 1: Datos del Empleado */}
-                    <section className={`admin-form-section ${isSaaiLocked ? 'readOnly' : ''}`}
-                        style={{ gridColumn: '1 / -1' }}>
+                    <section className={`admin-form-section admin-full-width ${isSaaiLocked ? 'readOnly' : ''}`}>
                         <h2 className="admin-section-title">
                             <FiUser /> Datos de SAAI
                         </h2>
@@ -339,8 +530,8 @@ function BajaFormPage() {
                             </div>
                         </div>
 
-                        <h3 style={{ color: '#2c3e50', fontSize: '1.1rem', marginBottom: '15px' }}>
-                            <i className="fas fa-bullhorn" style={{ marginRight: '8px' }}></i>
+                        <h3 className="admin-section-subtitle">
+                            <i className="fas fa-bullhorn admin-icon-mr"></i>
                             Datos de personal
                         </h3>
 
@@ -361,14 +552,7 @@ function BajaFormPage() {
                                         readOnly={isSaaiLocked}
                                     />
                                     {!isSaaiLocked && (
-                                        <FiSearch style={{
-                                            position: 'absolute',
-                                            right: '10px',
-                                            top: '50%',
-                                            transform: 'translateY(-50%)',
-                                            color: '#666',
-                                            cursor: 'pointer'
-                                        }} onClick={() => buscarEmpleado(formState.ficha)} />
+                                        <FiSearch className="admin-search-icon" onClick={() => buscarEmpleado(formState.ficha)} />
                                     )}
                                 </div>
                             </div>
@@ -440,6 +624,29 @@ function BajaFormPage() {
                             </div>
                         </div>
 
+                        {/* Conditional Grado Input for levels 44, 45, 46 */}
+                        {['44', '45', '46'].includes(formState.nivel) && (
+                            <div className="admin-form-row">
+                                <div className="admin-form-group">
+                                    <label>Grado (Obligatorio para nivel {formState.nivel})</label>
+                                    <input
+                                        type="text"
+                                        value={empleadoMeta.grado}
+                                        onChange={async (e) => {
+                                            const newGrado = e.target.value;
+                                            setEmpleadoMeta(prev => ({ ...prev, grado: newGrado }));
+
+                                            // Re-fetch cost when grade changes
+                                            const newCosto = await fetchCostoPlaza(formState.nivel, empleadoMeta.jornada, newGrado);
+                                            setFormState(prev => ({ ...prev, costo_plaza: newCosto }));
+                                        }}
+                                        className="admin-input"
+                                        placeholder="Ingrese Grado"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                         <div className="admin-form-row">
                             <div className="admin-form-group readOnly ">
                                 <label>Antigüedad (Años)</label>
@@ -494,8 +701,8 @@ function BajaFormPage() {
                         </div>
 
 
-                        <h3 style={{ color: '#2c3e50', fontSize: '1.1rem', marginBottom: '15px' }}>
-                            <i className="fas fa-bullhorn" style={{ marginRight: '8px' }}></i>
+                        <h3 className="admin-section-subtitle">
+                            <i className="fas fa-bullhorn admin-icon-mr"></i>
                             Datos de Movimiento
                         </h3>
 
@@ -588,8 +795,7 @@ function BajaFormPage() {
 
                     {/* Sección 3: Trámite y Estatus */}
                     {showGimp && (
-                        <section className={`admin-form-section ${isGimpLocked ? 'readOnly' : ''}`}
-                            style={{ gridColumn: '1 / -1' }}>
+                        <section className={`admin-form-section admin-full-width ${isGimpLocked ? 'readOnly' : ''}`}>
                             <h2 className="admin-section-title">
                                 <FiFileText /> Datos de GIMP
                             </h2>
@@ -624,7 +830,7 @@ function BajaFormPage() {
 
                             </div>
 
-                            <div className="admin-checkbox-container" style={{ marginTop: '1rem', flexWrap: 'wrap', gap: '2rem' }}>
+                            <div className="admin-checkbox-container admin-checkbox-row">
                                 <label className="admin-checkbox-container">
                                     <input type="checkbox" name="libre" checked={formState.libre} onChange={handleChange} disabled={isGimpLocked} />
                                     <span>Libre</span>
@@ -639,8 +845,7 @@ function BajaFormPage() {
 
                     {/* Sección 4: Observaciones y Detalles */}
                     {showGoie && (
-                        <section className={`admin-form-section ${isGoieLocked ? 'readOnly' : ''}`}
-                            style={{ gridColumn: '1 / -1' }}>
+                        <section className={`admin-form-section admin-full-width ${isGoieLocked ? 'readOnly' : ''}`}>
                             <h2 className="admin-section-title">
                                 <FiInfo /> Datos de GOIE
                             </h2>
@@ -678,7 +883,7 @@ function BajaFormPage() {
                                 />
                             </div>
 
-                            <div className="admin-checkbox-container" style={{ marginTop: '1rem', flexWrap: 'wrap', gap: '2rem' }}>
+                            <div className="admin-checkbox-container admin-checkbox-row">
 
                                 <label className="admin-checkbox-container">
                                     <input type="checkbox" name="cancelada" checked={formState.cancelada} onChange={handleChange} disabled={isGoieLocked} />
@@ -688,10 +893,96 @@ function BajaFormPage() {
                         </section>
                     )}
 
+                    {isEditMode && (
+                        <section className="admin-form-section admin-full-width">
+                            <h2 className="admin-section-title">
+                                <FiFileText /> Documentos de Baja
+                            </h2>
+                            <div className="admin-docs-grid">
+                                {DOCUMENT_TYPES.map(tipo => {
+                                    const doc = documentos.find(d => d.tipo === tipo);
+                                    return (
+                                        <div key={tipo} className={`admin-doc-card ${doc ? 'uploaded' : ''}`}>
+                                            {/* Header Title inside the box if doc exists, or just part of layout */}
+                                            {doc ? (
+                                                <div className="admin-doc-content">
+                                                    <div className="admin-doc-icon-wrapper">
+                                                        <FiFileText className="admin-doc-icon-svg" />
+                                                    </div>
+
+                                                    <h4 className="admin-doc-title">{tipo}</h4>
+                                                    <p className="admin-doc-date">
+                                                        {new Date(doc.uploaded_at).toLocaleDateString()}
+                                                    </p>
+
+                                                    <div className="admin-doc-actions">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handlePreview(doc)}
+                                                            className="admin-doc-btn view"
+                                                            title="Ver"
+                                                        >
+                                                            <FiEye />
+                                                        </button>
+
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDownload(doc)}
+                                                            className="admin-doc-btn download"
+                                                            title="Descargar"
+                                                        >
+                                                            <FiDownload />
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDeleteDocument(doc.id)}
+                                                            className="admin-doc-btn delete"
+                                                            title="Eliminar"
+                                                        >
+                                                            <FiTrash2 />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="admin-upload-wrapper">
+                                                    <div className="admin-upload-type-label">
+                                                        {tipo}
+                                                    </div>
+                                                    {uploadingDoc === tipo ? (
+                                                        <div className="spinner-border text-secondary admin-spinner" role="status">
+                                                            <span className="sr-only">Cargando...</span>
+                                                        </div>
+                                                    ) : (
+                                                        <label htmlFor={`file-upload-${tipo}`} className="admin-upload-label">
+                                                            <FiUploadCloud className="admin-upload-icon" />
+                                                            <p className="admin-upload-text">
+                                                                Arrastra tu archivo aquí o <span className="admin-upload-highlight">haz clic para seleccionar</span>
+                                                            </p>
+                                                            <small className="admin-upload-subtext">Soporta: PDF, Word, Imágenes (Máx. 10MB)</small>
+                                                        </label>
+                                                    )}
+                                                    <input
+                                                        id={`file-upload-${tipo}`}
+                                                        type="file"
+                                                        accept=".pdf,.jpg,.jpeg,.png"
+                                                        onChange={(e) => handleFileUpload(e, tipo)}
+                                                        style={{ display: 'none' }}
+                                                        disabled={!!uploadingDoc}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    )}
+
                     <div className="admin-form-actions">
                         <ButtonIcon
-                            variant="custom"
+                            variant="view"
                             type="button"
+                            icon={<FiArrowLeft />}
                             onClick={() => navigate('/bajas')}
                             className="admin-back-button"
                             text="Cancelar"
@@ -700,14 +991,20 @@ function BajaFormPage() {
                             variant="custom"
                             type="submit"
                             icon={<FiSave />}
-                            text="Guardar Baja"
+                            text={isEditMode ? "Actualizar" : "Guardar Baja"}
                             disabled={loading}
                             className="admin-submit-button"
                         />
                     </div>
                 </form>
             </div>
-        </div>
+            {/* Modal de Vista Previa */}
+            <DocumentPreviewModal
+                documento={previewFile}
+                onClose={() => setPreviewFile(null)}
+                investigacionId={Number(id) || undefined} // Pasamos el ID aunque no sea una investigación para el log (o podemos manejar lo del id en el modal)
+            />
+        </div >
     );
 }
 

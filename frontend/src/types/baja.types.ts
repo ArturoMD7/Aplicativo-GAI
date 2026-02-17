@@ -17,6 +17,7 @@ export interface Baja {
     observaciones?: string;
     status: string;
     fecha_ejecucion?: string;
+    created_at?: string;
     origen?: string;
     sap?: 'PENDIENTE' | 'APLICADO';
     posicion?: string;

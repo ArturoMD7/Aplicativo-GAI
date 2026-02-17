@@ -96,3 +96,50 @@ class Baja(UppercaseMixin, models.Model):
 
     def __str__(self):
         return f"{self.ficha} - {self.nombre}"
+
+def generar_ruta_archivo(instance, filename):
+    ext = filename.split('.')[-1]
+
+    if instance.baja and instance.baja.ficha:
+        reporte_safe = instance.baja.ficha.replace('/', '-')
+    else:
+        reporte_safe = "SIN_REPORTE"
+
+    if instance.tipo == 'Solicitud':
+        nuevo_nombre = f"{reporte_safe}_Solicitud.{ext}"
+    else:
+        cantidad = DocumentoBaja.objects.filter(
+            baja=instance.baja,
+            tipo=instance.tipo
+        ).count() + 1
+        
+        tipo_safe = instance.tipo.replace(' ', '_')
+        nuevo_nombre = f"{reporte_safe}_{tipo_safe}_{cantidad}.{ext}"
+    
+    return f"bajas/documentos/{reporte_safe}/{nuevo_nombre}"
+
+class DocumentoBaja(models.Model):
+    baja = models.ForeignKey(Baja, on_delete=models.CASCADE, related_name='documentos')
+    
+    TIPO_DOC_CHOICES = [
+        ('Solicitud', 'Solicitud'),
+        ('Formato de conformidad', 'Formato de conformidad'),
+        ('INE', 'INE'),
+        ('Formato de adeudos', 'Formato de adeudos'),
+        ('Comunicación a GIMP', 'Comunicación a GIMP'),
+    ]
+    tipo = models.CharField(max_length=50, choices=TIPO_DOC_CHOICES)
+    
+    archivo = models.FileField(upload_to=generar_ruta_archivo, max_length=255)
+    
+    descripcion = models.CharField(max_length=255, blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.tipo} - {self.baja.ficha}"
+
+    def delete(self, *args, **kwargs):
+        if self.archivo:
+            if os.path.isfile(self.archivo.path):
+                os.remove(self.archivo.path)
+        super().delete(*args, **kwargs)

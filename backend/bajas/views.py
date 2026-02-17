@@ -26,3 +26,32 @@ class BajaViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+
+from .models import DocumentoBaja
+from .serializers import DocumentoBajaSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
+
+class DocumentoBajaViewSet(viewsets.ModelViewSet):
+    queryset = DocumentoBaja.objects.all().order_by('-uploaded_at') # Order by most recent
+    serializer_class = DocumentoBajaSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser] # Enable file uploads
+
+    def get_queryset(self):
+        """
+        Optionally restricts the returned documents to a given baja,
+        by filtering against a `baja_id` query parameter in the URL.
+        """
+        queryset = super().get_queryset()
+        baja_id = self.request.query_params.get('baja_id')
+        if baja_id:
+            queryset = queryset.filter(baja_id=baja_id)
+        return queryset
+
+    @action(detail=True, methods=['get'])
+    def download(self, request, pk=None):
+        from django.http import FileResponse
+        documento = self.get_object()
+        if documento.archivo:
+            return FileResponse(documento.archivo.open(), as_attachment=True, filename=documento.archivo.name.split('/')[-1])
+        return Response(status=404)

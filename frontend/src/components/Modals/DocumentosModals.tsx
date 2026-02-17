@@ -6,8 +6,7 @@ import {
   FiFileText,
   FiImage,
   FiFile,
-  FiFolder,
-  FiPaperclip
+  FiFolder
 } from 'react-icons/fi';
 import { saveAs } from 'file-saver';
 import apiClient from '../../api/apliClient';
@@ -30,9 +29,10 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   numeroReporte: string;
+  sourceType?: 'investigacion' | 'baja'; // New prop to determine source
 }
 
-const DocumentosModals: React.FC<Props> = ({ investigacionId, isOpen, onClose, numeroReporte }) => {
+const DocumentosModals: React.FC<Props> = ({ investigacionId, isOpen, onClose, numeroReporte, sourceType = 'investigacion' }) => {
   const [documentos, setDocumentos] = useState<Documento[]>([]);
   const [loading, setLoading] = useState(false);
   const [previewFile, setPreviewFile] = useState<Documento | null>(null);
@@ -49,8 +49,23 @@ const DocumentosModals: React.FC<Props> = ({ investigacionId, isOpen, onClose, n
   const fetchDocumentos = async () => {
     setLoading(true);
     try {
-      const res = await apiClient.get(`/api/investigaciones/documentos/?investigacion_id=${investigacionId}`);
-      setDocumentos(res.data);
+      let url = '';
+      if (sourceType === 'baja') {
+        url = `/api/bajas/documentos-bajas/?baja_id=${investigacionId}`;
+      } else {
+        url = `/api/investigaciones/documentos/?investigacion_id=${investigacionId}`;
+      }
+
+      const res = await apiClient.get(url);
+
+      // Map response to Documento interface if needed
+      // Bajas might return 'archivo' as full URL and not have 'nombre_archivo'
+      const mappedDocs = res.data.map((doc: any) => ({
+        ...doc,
+        nombre_archivo: doc.nombre_archivo || doc.archivo.split('/').pop() || 'documento'
+      }));
+
+      setDocumentos(mappedDocs);
     } catch (error) {
       console.error(error);
       Swal.fire('Error', 'No se pudieron cargar los archivos adjuntos', 'error');
@@ -59,9 +74,28 @@ const DocumentosModals: React.FC<Props> = ({ investigacionId, isOpen, onClose, n
     }
   };
 
-  const handleDownload = (doc: Documento) => {
-    auditoriaService.logAction('DOWNLOAD', `Descargó documento: ${doc.tipo} - ${doc.nombre_archivo}`, investigacionId || 0);
-    saveAs(doc.archivo, doc.nombre_archivo);
+  const handleDownload = async (doc: Documento) => {
+    if (sourceType === 'baja') {
+      try {
+        const response = await apiClient.get(`/api/bajas/documentos-bajas/${doc.id}/download/`, {
+          responseType: 'blob',
+        });
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', doc.nombre_archivo);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        auditoriaService.logAction('DOWNLOAD', `Descargó documento baja: ${doc.tipo}`, investigacionId || 0);
+      } catch (error) {
+        console.error("Error al descargar:", error);
+        Swal.fire('Error', 'No se pudo descargar el archivo', 'error');
+      }
+    } else {
+      auditoriaService.logAction('DOWNLOAD', `Descargó documento: ${doc.tipo} - ${doc.nombre_archivo}`, investigacionId || 0);
+      saveAs(doc.archivo, doc.nombre_archivo);
+    }
   };
 
   const handlePreview = (doc: Documento) => {
@@ -115,7 +149,7 @@ const DocumentosModals: React.FC<Props> = ({ investigacionId, isOpen, onClose, n
             ) : documentos.length === 0 ? (
               <div className="doc-empty">
                 <FiFolder className="doc-empty-icon" />
-                <p>No hay documentos adjuntos en esta investigación.</p>
+                <p>No hay documentos adjuntos en este registro.</p>
               </div>
             ) : (
               <ul className="doc-list">

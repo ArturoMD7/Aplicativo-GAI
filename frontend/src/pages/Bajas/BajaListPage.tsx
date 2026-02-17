@@ -1,26 +1,38 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../api/apliClient';
 import type { BajaListado } from '../../types/baja.types';
-import { FiPlus, FiEdit, FiTrash2, FiSearch, FiDownload, FiAlertCircle, FiFileText } from 'react-icons/fi';
+import { FiPlus, FiEdit, FiTrash2, FiSearch, FiDownload, FiAlertCircle, FiFileText, FiChevronUp, FiChevronDown, FiCheckCircle } from 'react-icons/fi';
 import ButtonIcon from '../../components/Buttons/ButtonIcon';
 import Pagination from '../../components/Pagination';
 import * as XLSX from 'xlsx';
 import Swal from 'sweetalert2';
 import { saveAs } from 'file-saver';
 import '../../styles/InvestigacionPage.css'; // Reusing styles
+import DocumentosModals from '../../components/Modals/DocumentosModals';
+import { auditoriaService } from '../../api/auditoriaService';
+
+type SortConfig = {
+    key: keyof BajaListado | null;
+    direction: 'ascending' | 'descending';
+};
 
 function BajaListPage() {
     const navigate = useNavigate();
     const [currentView, setCurrentView] = useState<'REGISTRO' | 'SEGUIMIENTO' | 'FINALIZACION' | 'CONCLUIDA'>('REGISTRO');
     const [allBajas, setAllBajas] = useState<BajaListado[]>([]);
-    const [bajas, setBajas] = useState<BajaListado[]>([]); // Displayed bajas
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [userRole, setUserRole] = useState<string>('');
+    const [sortConfig, setSortConfig] = useState<SortConfig>({ key: null, direction: 'ascending' });
+
+    // Document Modal State
+    const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+    const [selectedBajaId, setSelectedBajaId] = useState<number | null>(null);
+    const [selectedFicha, setSelectedFicha] = useState('');
 
     useEffect(() => {
         const role = localStorage.getItem('userRole') || '';
@@ -33,7 +45,6 @@ function BajaListPage() {
         try {
             const response = await apiClient.get('/api/bajas/bajas/');
             setAllBajas(response.data);
-            setBajas(response.data); // Initialize with all
         } catch (err: any) {
             console.error('Error fetching bajas:', err);
             setError('No se pudo cargar la lista de bajas.');
@@ -41,18 +52,6 @@ function BajaListPage() {
             setLoading(false);
         }
     };
-
-    useEffect(() => {
-        if (!allBajas) return;
-
-        let filtered = allBajas.filter(baja => {
-            const status = baja.estatus_baja || 'REGISTRO'; // Default to REGISTRO if undefined
-            return status === currentView;
-        });
-
-        setBajas(filtered);
-        setCurrentPage(1);
-    }, [allBajas, currentView]);
 
     const handleStatusChange = async (id: number, nuevoStatus: string, ficha: string) => {
         const result = await Swal.fire({
@@ -105,24 +104,96 @@ function BajaListPage() {
         }
     };
 
-    const filteredBajas = bajas.filter(baja =>
-        baja.ficha.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        baja.nombre.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const handleOpenDocs = (id: number, ficha: string) => {
+        auditoriaService.logAction('VIEW', 'Abrió documentos de baja', id);
+        setSelectedBajaId(id);
+        setSelectedFicha(ficha);
+        setIsDocModalOpen(true);
+    };
 
+    // Filter Logic
+    const filteredBajas = useMemo(() => {
+        return allBajas.filter(baja => {
+            const status = baja.estatus_baja || 'REGISTRO';
+            const matchesView = status === currentView;
+            const matchesSearch =
+                baja.ficha.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                baja.nombre.toLowerCase().includes(searchTerm.toLowerCase());
+
+            return matchesView && matchesSearch;
+        });
+    }, [allBajas, currentView, searchTerm]);
+
+    // Sorting Logic
+    const sortedBajas = useMemo(() => {
+        let sortableItems = [...filteredBajas];
+        if (sortConfig.key !== null) {
+            sortableItems.sort((a, b) => {
+                let valA: any = a[sortConfig.key as keyof BajaListado];
+                let valB: any = b[sortConfig.key as keyof BajaListado];
+
+                if (sortConfig.key === 'created_at' || sortConfig.key === 'fecha_ejecucion') {
+                    valA = new Date(valA).getTime();
+                    valB = new Date(valB).getTime();
+                }
+
+                if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
+                if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1;
+                return 0;
+            });
+        }
+        return sortableItems;
+    }, [filteredBajas, sortConfig]);
+
+    const requestSort = (key: keyof BajaListado) => {
+        let direction: 'ascending' | 'descending' = 'ascending';
+        if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+            direction = 'descending';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const getSortIcon = (columnKey: keyof BajaListado) => {
+        if (sortConfig.key !== columnKey) return <span style={{ opacity: 0.3, marginLeft: '5px' }}>↕</span>;
+        return sortConfig.direction === 'ascending' ? <FiChevronUp /> : <FiChevronDown />;
+    };
+
+    // Pagination Logic
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = filteredBajas.slice(indexOfFirstItem, indexOfLastItem);
-    const totalPages = Math.ceil(filteredBajas.length / itemsPerPage);
+    const currentItems = sortedBajas.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(sortedBajas.length / itemsPerPage);
 
     const exportToExcel = () => {
-        const worksheet = XLSX.utils.json_to_sheet(filteredBajas);
+        if (sortedBajas.length === 0) {
+            Swal.fire('Info', 'No hay datos para exportar', 'info');
+            return;
+        }
+
+        const data = sortedBajas.map(baja => ({
+            'Ficha': baja.ficha,
+            'Nombre': baja.nombre,
+            'Nivel': baja.nivel,
+            'Nuevo Nivel': baja.nuevo_nivel,
+            'Región': baja.region,
+            'Estatus': baja.status,
+            'SAP': baja.sap,
+            'Fecha Ejecución': baja.fecha_ejecucion,
+            'Creado Por': baja.created_by_name
+        }));
+
+        const worksheet = XLSX.utils.json_to_sheet(data);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Bajas');
         const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
         const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
         saveAs(blob, `Bajas_${currentView}_${new Date().toISOString().split('T')[0]}.xlsx`);
     };
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [currentView, searchTerm]);
+
 
     return (
         <div className="admin-page">
@@ -135,7 +206,7 @@ function BajaListPage() {
                             type="text"
                             placeholder="Buscar ficha, nombre..."
                             value={searchTerm}
-                            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                     <ButtonIcon variant="view" icon={<FiDownload />} text="Exportar" onClick={exportToExcel} size="medium" />
@@ -193,20 +264,41 @@ function BajaListPage() {
                     <table className="investigacion-table">
                         <thead>
                             <tr>
-                                <th>Ficha</th>
-                                <th>Nombre</th>
-                                <th>Nivel</th>
-                                <th>Nuevo Nivel</th>
-                                <th>Región</th>
-                                <th>Estatus</th>
-                                <th>SAP</th>
-                                <th>Fecha Ejecución</th>
+                                <th style={{ width: '60px', textAlign: 'center' }}>Docs</th>
+                                <th onClick={() => requestSort('ficha')} style={{ cursor: 'pointer' }}>Ficha {getSortIcon('ficha')}</th>
+                                <th onClick={() => requestSort('nombre')} style={{ cursor: 'pointer' }}>Nombre {getSortIcon('nombre')}</th>
+                                <th onClick={() => requestSort('nivel')} style={{ cursor: 'pointer' }}>Nivel {getSortIcon('nivel')}</th>
+                                <th onClick={() => requestSort('nuevo_nivel')} style={{ cursor: 'pointer' }}>Nuevo Nivel {getSortIcon('nuevo_nivel')}</th>
+                                <th onClick={() => requestSort('region')} style={{ cursor: 'pointer' }}>Región {getSortIcon('region')}</th>
+                                <th onClick={() => requestSort('status')} style={{ cursor: 'pointer' }}>Estatus {getSortIcon('status')}</th>
+                                <th onClick={() => requestSort('sap')} style={{ cursor: 'pointer' }}>SAP {getSortIcon('sap')}</th>
+                                <th onClick={() => requestSort('fecha_ejecucion')} style={{ cursor: 'pointer' }}>Fecha Ejecución {getSortIcon('fecha_ejecucion')}</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             {currentItems.map((baja) => (
                                 <tr key={baja.id}>
+                                    <td style={{ textAlign: 'center', borderLeft: '4px solid #17a2b8' }}>
+                                        <button
+                                            onClick={() => handleOpenDocs(baja.id!, baja.ficha)}
+                                            className="btn-icon-only"
+                                            title="Ver archivos adjuntos"
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                cursor: 'pointer',
+                                                color: '#840016',
+                                                fontSize: '1.2rem',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                padding: '5px'
+                                            }}
+                                        >
+                                            <FiFileText />
+                                        </button>
+                                    </td>
                                     <td>{baja.ficha}</td>
                                     <td>{baja.nombre}</td>
                                     <td>{baja.nivel}</td>
@@ -285,6 +377,13 @@ function BajaListPage() {
                         </tbody>
                     </table>
 
+                    {filteredBajas.length === 0 && (
+                        <div className="no-results">
+                            <FiCheckCircle style={{ fontSize: '2rem', marginBottom: '10px', display: 'block', margin: '0 auto', color: '#28a745' }} />
+                            No hay bajas en esta etapa.
+                        </div>
+                    )}
+
                     {filteredBajas.length > 0 && (
                         <Pagination
                             currentPage={currentPage}
@@ -297,6 +396,14 @@ function BajaListPage() {
                     )}
                 </div>
             )}
+
+            <DocumentosModals
+                isOpen={isDocModalOpen}
+                onClose={() => setIsDocModalOpen(false)}
+                investigacionId={selectedBajaId}
+                numeroReporte={`Ficha: ${selectedFicha}`}
+                sourceType="baja"
+            />
         </div>
     );
 }

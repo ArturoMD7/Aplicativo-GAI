@@ -21,4 +21,5 @@ urlpatterns = [
     path('user-dashboard/<int:user_id>/', views.user_dashboard_view, name='user-dashboard'),
     path('user-dashboard/<int:user_id>/list/', views.user_dashboard_list_view, name='user-dashboard-list'),
     path('buscar-personal/', views.buscar_personal_view, name='buscar-personal'),
+    path('obtener-costo-plaza/', views.obtener_costo_plaza_view, name='obtener-costo-plaza'),
 ]

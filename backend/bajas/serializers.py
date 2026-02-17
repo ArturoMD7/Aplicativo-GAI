@@ -12,3 +12,10 @@ class BajaSerializer(serializers.ModelSerializer):
         if obj.created_by:
             return f"{obj.created_by.first_name} {obj.created_by.last_name}".strip() or obj.created_by.username
         return "Desconocido"
+
+from .models import DocumentoBaja
+
+class DocumentoBajaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DocumentoBaja
+        fields = '__all__'

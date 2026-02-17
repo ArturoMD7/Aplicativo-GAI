@@ -97,7 +97,7 @@ class InvolucradoSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'ficha', 'nombre', 'nivel', 'categoria', 'puesto',
             'edad', 'antiguedad', 'rfc', 'curp', 'direccion', 'tiene_antecedentes', 'regimen', 'jornada', 'sindicato', 'seccion_sindical',
-            'antecedentes_detalles', 'es_externo'
+            'antecedentes_detalles', 'es_externo' 
         ]
         read_only_fields = ['id', 'antecedentes_detalles']
         

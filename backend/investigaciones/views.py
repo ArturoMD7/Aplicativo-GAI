@@ -780,3 +780,43 @@ def buscar_personal_view(request):
     except Exception as e:
         print(f"Error en buscar_personal_view: {e}")
         return Response({'error': str(e)}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def obtener_costo_plaza_view(request):
+    """
+    Obtiene el costo anual desde la BD 'gai'.
+    Params: nivel, jornada, grado (opcional)
+    """
+    nivel = request.query_params.get('nivel')
+    jornada = request.query_params.get('jornada')
+    grado = request.query_params.get('grado', '') # Opcional, por defecto vacío
+
+    if not nivel or not jornada:
+        return Response({'error': 'Nivel y Jornada son requeridos'}, status=400)
+
+    try:
+        query = "SELECT costo_anual FROM costo_plaza_anual WHERE Nivel = %s AND Jornada = %s"
+        params = [nivel, jornada]
+
+        # Lógica especial para niveles 44, 45, 46
+        if nivel in ['44', '45', '46']:
+            query += " AND grado = %s"
+            # Asumimos que si no envían grado, se busca como espacio en blanco o lo que requiera tu logica
+            params.append(grado if grado else '') 
+        
+        # Conexión explícita a la base de datos 'GAI'
+        with connections['default'].cursor() as cursor:
+            cursor.execute(query, params)
+            row = cursor.fetchone()
+            
+            if row:
+                return Response({'costo_anual': row[0]})
+            else:
+                # Si no encuentra exacto, podrías retornar 0 o un error
+                return Response({'costo_anual': 0, 'warning': 'No se encontró costo para esta combinación'})
+
+    except Exception as e:
+        print(f"Error en obtener_costo_plaza_view: {e}")
+        return Response({'error': str(e)}, status=500)
