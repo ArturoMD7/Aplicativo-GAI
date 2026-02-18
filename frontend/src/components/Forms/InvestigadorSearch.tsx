@@ -178,7 +178,7 @@ const InvestigadorSearch: React.FC<InvestigadorSearchProps> = ({
             </div>
 
             <div className="admin-form-group">
-                <label>Número de Constancia de Habilitación</label>
+                <label>Número de constancia de habilitación</label>
                 <input
                     type="text"
                     className="admin-input"

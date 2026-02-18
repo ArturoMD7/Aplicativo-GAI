@@ -1200,7 +1200,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
                       <input type="text" value={involucradoActual.fuente} readOnly className="admin-readonly-field" />
                     </div>
                     <div className="admin-form-group">
-                      <label>Fecha de Término</label>
+                      <label>Fecha de término</label>
                       {(() => {
                         let isExceeded = false;
                         if (formState.fecha_prescripcion && involucradoActual.termino) {
@@ -2018,7 +2018,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
                     </div>
 
                     <div className="admin-form-group">
-                      <label>Número de Constancia de Habilitación</label>
+                      <label>Número de constancia de habilitación</label>
                       <input
                         type="text"
                         className="admin-input"

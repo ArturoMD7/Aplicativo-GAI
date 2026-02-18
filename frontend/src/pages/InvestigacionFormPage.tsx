@@ -1186,7 +1186,7 @@ function InvestigacionFormPage() {
                     </div>
 
                     <div className="admin-form-group">
-                      <label>Fecha de Término</label>
+                      <label>Fecha de término</label>
                       {(() => {
                         let isExceeded = false;
                         if (formState.fecha_prescripcion && involucradoActual.termino) {
@@ -1676,7 +1676,7 @@ function InvestigacionFormPage() {
               )}
 
               <div className="admin-form-group">
-                <label>Fecha Conocimiento de Hechos por Parte del Representante Patronal *</label>
+                <label>Fecha conocimiento de hechos por parte del representante patronal *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-eye"></i>
                   <input
@@ -2011,7 +2011,7 @@ function InvestigacionFormPage() {
                     </div>
 
                     <div className="admin-form-group">
-                      <label>Número de Constancia de Habilitación</label>
+                      <label>Número de constancia de habilitación</label>
                       <input
                         type="text"
                         className="admin-input"

@@ -901,7 +901,70 @@ function BajaFormPage() {
 
 
                     </section>
-
+                    <section className={`admin-form-section admin-full-width ${isSaaiLocked ? 'readOnly' : ''}`}>
+                        <h2 className="admin-section-title">
+                            <FiUser /> Datos de Notificación
+                        </h2>
+                        <div className="admin-form-row">
+                            <div className="admin-form-group readOnly">
+                                <label>Ficha</label>
+                                <input
+                                    type="text"
+                                    name="ficha"
+                                    value={formState.ficha}
+                                    onChange={handleChange}
+                                    className="admin-input"
+                                    readOnly
+                                />
+                            </div>
+                            <div className="admin-form-group readOnly">
+                                <label>Nombre</label>
+                                <input
+                                    type="text"
+                                    name="nombre"
+                                    value={formState.nombre}
+                                    onChange={handleChange}
+                                    className="admin-input"
+                                    readOnly
+                                />
+                            </div>
+                        </div>
+                        <div className="admin-form-row">
+                            <div className="admin-form-group">
+                                <label>Fecha Oficio</label>
+                                <input
+                                    type="date"
+                                    name="fecha_oficio"
+                                    value={formState.fecha_oficio}
+                                    onChange={handleChange}
+                                    className="admin-input"
+                                />
+                            </div>
+                            <div className="admin-form-group">
+                                <label>Fecha Ultimo Día Laboral</label>
+                                <input
+                                    type="date"
+                                    name="fecha_ultimo_dia_laboral"
+                                    value={formState.fecha_ultimo_dia_laboral}
+                                    onChange={handleChange}
+                                    className="admin-input"
+                                />
+                            </div>
+                        </div>
+                        <div className="admin-form-row">
+                            <div className="admin-form-group">
+                                <label>Representante Patronal</label>
+                                <input
+                                    type="text"
+                                    name="representante_patronal"
+                                    value={formState.representante_patronal}
+                                    onChange={handleChange}
+                                    className="admin-input"
+                                
+                                />
+                            </div>
+                        </div>
+                    </section>
                     {/* Sección 3: Trámite y Estatus */}
                     {showGimp && (
                         <section className={`admin-form-section admin-full-width ${isGimpLocked ? 'readOnly' : ''}`}>

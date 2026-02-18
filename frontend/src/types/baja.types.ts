@@ -32,6 +32,9 @@ export interface Baja {
     estatus_baja?: 'REGISTRO' | 'SEGUIMIENTO' | 'FINALIZACION' | 'CONCLUIDA';
     fecha_registro?: string;
     created_by_name?: string;
+    fecha_oficio?: string;
+    fecha_ultimo_dia_laboral?: string;
+    representante_patronal?: string;
 }
 
 export interface BajaListado extends Baja {
