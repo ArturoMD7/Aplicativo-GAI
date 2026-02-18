@@ -8,6 +8,7 @@ import Swal from 'sweetalert2';
 import '../../styles/BajaDetails.css';
 import DocumentPreviewModal from '../../components/Modals/DocumentPreviewModal';
 import { auditoriaService } from '../../api/auditoriaService';
+import CompletionProgressBar from '../../components/DataDisplay/CompletionProgressBar';
 
 interface DocumentoBaja {
     id: number;
@@ -30,12 +31,16 @@ interface Documento {
 
 
 
-const DOCUMENT_TYPES = [
+const DOCUMENT_OBLIGATORY_TYPES = [
+    'Estimación de cálculo de terminación',
     'Solicitud',
-    'Formato de conformidad',
+    'Formato de conformidad y/o Acta Constancia',
+    'Comunicación a GIMP'
+];
+
+const DOCUMENT_OPTIONAL_TYPES = [
     'INE',
     'Formato de adeudos',
-    'Comunicación a GIMP'
 ];
 
 const initialState: Baja = {
@@ -107,6 +112,12 @@ function BajaFormPage() {
     const [documentos, setDocumentos] = useState<DocumentoBaja[]>([]);
     const [uploadingDoc, setUploadingDoc] = useState<string | null>(null);
     const [previewFile, setPreviewFile] = useState<Documento | null>(null);
+    const [activeTab, setActiveTab] = useState<'obligatorios' | 'opcionales'>('obligatorios');
+
+    // Progress Calculation
+    const uploadedObligatory = documentos.filter(d => DOCUMENT_OBLIGATORY_TYPES.includes(d.tipo));
+    const progress = Math.round((uploadedObligatory.length / DOCUMENT_OBLIGATORY_TYPES.length) * 100);
+    const missingDocs = DOCUMENT_OBLIGATORY_TYPES.filter(type => !documentos.some(d => d.tipo === type));
 
     useEffect(() => {
         if (id) {
@@ -538,6 +549,12 @@ function BajaFormPage() {
                     <h1>{isEditMode ? 'Editar Registro de Baja' : 'Nuevo Registro de Baja'}</h1>
                     <p>Complete la información del formulario a continuación</p>
                 </div>
+
+                <CompletionProgressBar
+                    percentage={progress}
+                    missingFields={missingDocs}
+                    showMissingDetails={true}
+                />
 
                 <form onSubmit={handleSubmit}>
                     {/* Sección 1: Datos del Empleado */}
@@ -990,8 +1007,35 @@ function BajaFormPage() {
                         <h2 className="admin-section-title">
                             <FiFileText /> Documentos de Baja
                         </h2>
+
+                        {/* Toggle Buttons */}
+                        <div className="admin-tabs-container" style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                            <ButtonIcon
+                                variant={activeTab === 'obligatorios' ? 'add' : 'custom'}
+                                onClick={() => setActiveTab('obligatorios')}
+                                text="Obligatorios"
+                                icon={<FiFileText />}
+                                style={{
+                                    backgroundColor: activeTab === 'obligatorios' ? '#1e5b4f' : '#f0f0f0',
+                                    color: activeTab === 'obligatorios' ? 'white' : '#333',
+                                    border: '1px solid #ccc'
+                                }}
+                            />
+                            <ButtonIcon
+                                variant={activeTab === 'opcionales' ? 'add' : 'custom'}
+                                onClick={() => setActiveTab('opcionales')}
+                                text="Opcionales"
+                                icon={<FiFileText />}
+                                style={{
+                                    backgroundColor: activeTab === 'opcionales' ? '#1e5b4f' : '#f0f0f0',
+                                    color: activeTab === 'opcionales' ? 'white' : '#333',
+                                    border: '1px solid #ccc'
+                                }}
+                            />
+                        </div>
+
                         <div className="admin-docs-grid">
-                            {DOCUMENT_TYPES.map(tipo => {
+                            {(activeTab === 'obligatorios' ? DOCUMENT_OBLIGATORY_TYPES : DOCUMENT_OPTIONAL_TYPES).map(tipo => {
                                 const doc = documentos.find(d => d.tipo === tipo);
                                 const pendingDoc = pendingUploads.find(p => p.tipo === tipo);
                                 const isUploaded = !!doc;

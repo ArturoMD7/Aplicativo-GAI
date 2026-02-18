@@ -84,6 +84,12 @@ class Baja(UppercaseMixin, models.Model):
     comentarios = models.CharField(max_length=100, null=True, blank=True)
     fecha_registro = models.DateField(auto_now_add=True,null=True, blank=True) 
     
+    #campos para el odicio de conformidad
+    fecha_oficio = models.DateField(null=True, blank=True)
+    representante_patronal = models.CharField(max_length=100, null=True, blank=True)
+    fecha_ultimo_dia_laboral = models.DateField(null=True, blank=True)
+    
+
     # Auditoría standards (reusing from other models)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='bajas_creadas')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -127,8 +133,9 @@ class DocumentoBaja(models.Model):
     
     TIPO_DOC_CHOICES = [
         ('Solicitud', 'Solicitud'),
-        ('Formato de conformidad', 'Formato de conformidad'),
+        ('Formato de conformidad y/o Acta Constancia', 'Formato de conformidad y/o Acta Constancia'),
         ('INE', 'INE'),
+        ('Estimación de cálculo de terminación', 'Estimación de cálculo de terminación'),
         ('Formato de adeudos', 'Formato de adeudos'),
         ('Comunicación a GIMP', 'Comunicación a GIMP'),
     ]

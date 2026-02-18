@@ -12,6 +12,13 @@ import '../../styles/InvestigacionPage.css'; // Reusing styles
 import DocumentosModals from '../../components/Modals/DocumentosModals';
 import { auditoriaService } from '../../api/auditoriaService';
 
+const DOCUMENT_OBLIGATORY_TYPES = [
+    'Estimación de cálculo de terminación',
+    'Solicitud',
+    'Formato de conformidad y/o Acta Constancia',
+    'Comunicación a GIMP'
+];
+
 type SortConfig = {
     key: keyof BajaListado | null;
     direction: 'ascending' | 'descending';
@@ -104,6 +111,34 @@ function BajaListPage() {
         }
     };
 
+    const handleConclude = async (id: number, ficha: string) => {
+        try {
+            // 1. Fetch documents
+            const response = await apiClient.get(`/api/bajas/documentos-bajas/?baja_id=${id}`);
+            const documentos: { tipo: string }[] = response.data;
+
+            // 2. Validate Obligatory Docs
+            const missingDocs = DOCUMENT_OBLIGATORY_TYPES.filter(type => !documentos.some(d => d.tipo === type));
+
+            if (missingDocs.length > 0) {
+                Swal.fire({
+                    title: 'No se puede concluir',
+                    html: `Faltan los siguientes documentos obligatorios:<br/><br/><b>${missingDocs.join('<br/>')}</b>`,
+                    icon: 'warning',
+                    confirmButtonText: 'Entendido'
+                });
+                return;
+            }
+
+            // 3. Confirm and Proceed
+            handleStatusChange(id, 'CONCLUIDA', ficha);
+
+        } catch (error) {
+            console.error("Error validando documentos:", error);
+            Swal.fire('Error', 'No se pudo validar la documentación.', 'error');
+        }
+    };
+
     const handleOpenDocs = (id: number, ficha: string) => {
         auditoriaService.logAction('VIEW', 'Abrió documentos de baja', id);
         setSelectedBajaId(id);
@@ -118,7 +153,12 @@ function BajaListPage() {
             const matchesView = status === currentView;
             const matchesSearch =
                 baja.ficha.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                baja.nombre.toLowerCase().includes(searchTerm.toLowerCase());
+                baja.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                baja.tramite.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                baja.nivel.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                baja.nuevo_nivel.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                baja.region.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                baja.status.toLowerCase().includes(searchTerm.toLowerCase());
 
             return matchesView && matchesSearch;
         });
@@ -172,6 +212,7 @@ function BajaListPage() {
 
         const data = sortedBajas.map(baja => ({
             'Ficha': baja.ficha,
+            'Tramite': baja.tramite,
             'Nombre': baja.nombre,
             'Nivel': baja.nivel,
             'Nuevo Nivel': baja.nuevo_nivel,
@@ -355,11 +396,12 @@ function BajaListPage() {
                                             )}
                                             {currentView === 'FINALIZACION' && (
                                                 <ButtonIcon
-                                                    variant="view" // Maybe different icon/variant for conclude
-                                                    onClick={() => handleStatusChange(baja.id!, 'CONCLUIDA', baja.ficha)}
-                                                    icon={<FiFileText />}
-                                                    title="Concluir"
+                                                    variant="view"
+                                                    onClick={() => handleConclude(baja.id!, baja.ficha)}
+                                                    icon={<FiCheckCircle />}
+                                                    title="Concluir Baja"
                                                     size="medium"
+                                                    style={{ backgroundColor: '#1e5b4f', color: 'white' }} // Make it distinct
                                                 />
                                             )}
 
