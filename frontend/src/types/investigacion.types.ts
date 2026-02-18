@@ -153,6 +153,7 @@ export interface InvestigacionListado {
   observaciones_reconsideracion?: string;
   reconsideracion?: boolean;
   sin_elementos?: boolean;
+  economica?: boolean;
 }
 
 export interface Antecedente {

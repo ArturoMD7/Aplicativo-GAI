@@ -54,8 +54,12 @@ function FinalizacionListPage() {
   const [modalMode, setModalMode] = useState<'CONCLUDE' | 'RECONSIDER'>('CONCLUDE');
 
   const [hasNotificacion, setHasNotificacion] = useState(false);
-  const [selectedFileConcluir, setSelectedFileConcluir] = useState<File | null>(null); // Renamed for clarity
-  const [selectedFileReconsiderar, setSelectedFileReconsiderar] = useState<File | null>(null); // New state for Reconsideracion file
+  const [selectedFileConcluir, setSelectedFileConcluir] = useState<File | null>(null);
+  const [selectedFileReconsiderar, setSelectedFileReconsiderar] = useState<File | null>(null);
+
+  // Nuevo estado para Convenio de Pago
+  const [hasConvenio, setHasConvenio] = useState(false);
+  const [selectedFileConvenio, setSelectedFileConvenio] = useState<File | null>(null);
 
   const conductaDescriptions: { [key: string]: string } = {
     'INCUMPLIMIENTO DE NORMAS Y PROCEDIMIENTOS': 'Incumplimiento de normas de trabajo,  Incumplimiento de procedimientos operativos, Conflicto de intereses, Actos de Corrupción',
@@ -158,6 +162,11 @@ function FinalizacionListPage() {
       setHasNotificacion(!!notificacion);
       setSelectedFileConcluir(null);
 
+      // Revisar si existe el Convenio
+      const convenio = docs.find((d: any) => d.tipo === 'Convenio de pago' || d.nombre_archivo.toLowerCase().includes('convenio'));
+      setHasConvenio(!!convenio);
+      setSelectedFileConvenio(null);
+
       // Abrir Modal de Conclusión DIRECTAMENTE
       setDataConcluir({
         id: id,
@@ -168,6 +177,8 @@ function FinalizacionListPage() {
         dias_suspension: '',
         sancion_actual: '',
         conducta_actual: investigacion?.conductas || 'No registrada'
+        // Nota: Asumimos que id es suficiente para buscar en la lista completa si necesitamos 'economica',
+        // o podemos agregarlo a dataConcluir si fuera necesario, pero lo buscaremos en handleConfirmConcluir usando 'id'.
       });
       setModalMode('CONCLUDE');
       setIsConcluirModalOpen(true);
@@ -196,6 +207,10 @@ function FinalizacionListPage() {
   };
 
   const handleConfirmConcluir = async () => {
+    // Buscar la investigación para saber si es economica
+    const inv = investigaciones.find(i => i.id === dataConcluir.id);
+    const esEconomica = inv?.economica;
+
     // 1. Validaciones
     // CONCLUDE: Sanción obligatoria y Archivo (si no existe)
     if (modalMode === 'CONCLUDE') {
@@ -206,6 +221,14 @@ function FinalizacionListPage() {
       if (!hasNotificacion && !selectedFileConcluir) {
         Swal.fire('Atención', 'Debes adjuntar la Notificación de Conclusión para continuar.', 'warning');
         return;
+      }
+
+      // Validacion de Convenio de Pago si es economica
+      if (esEconomica) {
+        if (!hasConvenio && !selectedFileConvenio) {
+          Swal.fire('Atención', 'Al ser una investigación con repercusión económica, debes adjuntar el Convenio de Pago.', 'warning');
+          return;
+        }
       }
     }
 
@@ -223,16 +246,31 @@ function FinalizacionListPage() {
 
     try {
       // 2. Subir archivo si fue seleccionado (CONCLUDE)
-      if (modalMode === 'CONCLUDE' && selectedFileConcluir && !hasNotificacion) {
-        const formData = new FormData();
-        formData.append('archivo', selectedFileConcluir);
-        formData.append('tipo', 'NotificacionConclusion');
-        formData.append('investigacion_id', dataConcluir.id.toString());
-        formData.append('descripcion', 'Notificación adjuntada al concluir');
+      if (modalMode === 'CONCLUDE') {
+        if (selectedFileConcluir && !hasNotificacion) {
+          const formData = new FormData();
+          formData.append('archivo', selectedFileConcluir);
+          formData.append('tipo', 'NotificacionConclusion');
+          formData.append('investigacion_id', dataConcluir.id.toString());
+          formData.append('descripcion', 'Notificación adjuntada al concluir');
 
-        await apiClient.post('/api/investigaciones/documentos/', formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
+          await apiClient.post('/api/investigaciones/documentos/', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+        }
+
+        // Subir Convenio si aplica
+        if (esEconomica && selectedFileConvenio && !hasConvenio) {
+          const formData = new FormData();
+          formData.append('archivo', selectedFileConvenio);
+          formData.append('tipo', 'Convenio de pago');
+          formData.append('investigacion_id', dataConcluir.id.toString());
+          formData.append('descripcion', 'Convenio de pago adjuntado al concluir');
+
+          await apiClient.post('/api/investigaciones/documentos/', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          });
+        }
       }
 
       // 3. Subir archivo de Reconsideración (RECONSIDER)
@@ -672,6 +710,76 @@ function FinalizacionListPage() {
                           <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem', color: '#666' }}>
                             {(selectedFileConcluir.size / 1024 / 1024).toFixed(2)} MB - Listo para subir
                           </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Lógica para Convenio de Pago (Junto a Notificación) */}
+              {modalMode === 'CONCLUDE' && investigaciones.find(i => i.id === dataConcluir.id)?.economica && !hasConvenio && (
+                <div style={{ marginBottom: '25px' }}>
+                  <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold', color: '#840016', fontSize: '0.95rem' }}>
+                    <FiAlertCircle style={{ marginBottom: '-2px', marginRight: '5px' }} />
+                    Convenio de Pago Requerido
+                  </label>
+                  <div style={{
+                    border: '2px dashed #ccc',
+                    borderRadius: '8px',
+                    padding: '20px',
+                    textAlign: 'center',
+                    backgroundColor: '#fafafa',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer',
+                    position: 'relative'
+                  }}>
+                    <input
+                      type="file"
+                      id="file-upload-convenio"
+                      accept="application/pdf"
+                      onChange={(e) => setSelectedFileConvenio(e.target.files ? e.target.files[0] : null)}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        opacity: 0,
+                        cursor: 'pointer'
+                      }}
+                    />
+
+                    {!selectedFileConvenio ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', color: '#666' }}>
+                        <FiUpload style={{ fontSize: '2rem', color: '#840016' }} />
+                        <div>
+                          <span style={{ fontWeight: '600', color: '#333' }}>Subir Convenio de Pago</span>
+                          <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem' }}>Solo formato PDF</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', color: '#28a745' }}>
+                        <FiFile style={{ fontSize: '2rem' }} />
+                        <div>
+                          <span style={{ fontWeight: '600' }}>{selectedFileConvenio.name}</span>
+                          <p style={{ margin: '5px 0 0 0', fontSize: '0.85rem', color: '#666' }}>
+                            {(selectedFileConvenio.size / 1024 / 1024).toFixed(2)} MB - Listo para subir
+                          </p>
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setSelectedFileConvenio(null);
+                            }}
+                            className="remove-file-btn"
+                            title="Quitar archivo"
+                            style={{
+                              background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', marginTop: '5px', textDecoration: 'underline'
+                            }}
+                          >
+                            Quitar
+                          </button>
                         </div>
                       </div>
                     )}

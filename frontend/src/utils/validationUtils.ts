@@ -47,14 +47,14 @@ export const getMissingDocuments = (investigacion: any, documentos: any[]): stri
         if (!exists) missing.push('Evidencia de medidas preventivas');
     }
 
-    // 3. Conditional: Convenio de pago
-    if (investigacion?.economica) {
-        const exists = documentos.some(d =>
-            d.tipo === 'Convenio de pago' ||
-            d.nombre_archivo.toLowerCase().includes('convenio')
-        );
-        if (!exists) missing.push('Convenio de pago');
-    }
+    // 3. Conditional: Convenio de pago -> Moved to Finalizacion Logic
+    // if (investigacion?.economica) {
+    //     const exists = documentos.some(d =>
+    //         d.tipo === 'Convenio de pago' ||
+    //         d.nombre_archivo.toLowerCase().includes('convenio')
+    //     );
+    //     if (!exists) missing.push('Convenio de pago');
+    // }
 
     return missing;
 };
