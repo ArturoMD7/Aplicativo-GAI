@@ -233,13 +233,19 @@ function SeguimientoListPage() {
       return;
     }
     const data = filteredInvestigaciones.map(inv => ({
+      'Tipo': inv.tipo_investigacion,
       'No. Reporte': inv.numero_reporte,
       'Documento de Origen': inv.nombre_corto,
+      'Investigadores': Array.isArray(inv.investigadores) ? inv.investigadores.join(', ') : inv.investigadores,
+      'Personal Reportado': Array.isArray(inv.involucrados) ? inv.involucrados.join(', ') : inv.involucrados,
+      'Procedencia': inv.procedencia,
+      'Conducta': inv.conductas,
       'Gravedad': inv.gravedad,
-      'Creado Por': inv.created_by_name,
-      'Fecha Creación': new Date(inv.created_at).toLocaleDateString(),
-      'Fecha Prescripción': new Date(inv.fecha_prescripcion).toLocaleDateString(),
-      'Días Restantes': inv.dias_restantes
+      'Región': inv.gerencia_responsable,
+      'Fecha de Registro': new Date(inv.fecha_reporte).toLocaleDateString(),
+      'Prescripción': new Date(inv.fecha_prescripcion).toLocaleDateString(),
+      'Días Restantes': inv.dias_restantes,
+      'Creado Por': inv.created_by_name
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(data);

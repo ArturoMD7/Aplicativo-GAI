@@ -341,19 +341,20 @@ function FinalizacionListPage() {
       return;
     }
     const data = filteredInvestigaciones.map(inv => ({
+      'Tipo': inv.tipo_investigacion,
       'No. Reporte': inv.numero_reporte,
       'Documento': inv.nombre_corto,
-      'Dirección': inv.direccion,
-      'Fecha Reporte': new Date(inv.fecha_reporte).toLocaleDateString(),
-      'Estatus': inv.estatus
+      'Conducta': inv.conductas,
+      'Relevancia': inv.gravedad,
+      'Fecha de Registro': new Date(inv.fecha_reporte).toLocaleDateString(),
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Seguimiento');
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Finalizacion');
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    saveAs(blob, `Seguimiento_${new Date().toISOString().split('T')[0]}.xlsx`);
+    saveAs(blob, `Finalizacion_${statusFilter}_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   // Función para abrir el modal de documentos

@@ -9,8 +9,7 @@ import Pagination from '../components/Pagination';
 import * as XLSX from 'xlsx';
 import Swal from 'sweetalert2';
 import { saveAs } from 'file-saver';
-import '../styles/InvestigacionPage.css';
-
+import DocumentosModals from '../components/Modals/DocumentosModals';
 import InvestigacionFilters from '../components/Filters/InvestigacionFilters';
 import { auditoriaService } from '../api/auditoriaService';
 
@@ -36,6 +35,11 @@ function InvestigacionListPage() {
   const [userRole, setUserRole] = useState<string>('');
   const [allData, setAllData] = useState<InvestigacionListado[]>([]);
   const [currentView, setCurrentView] = useState<'ABIERTA' | 'SEGUIMIENTO' | 'ENVIADA_A_CONCLUIR' | 'CONCLUIDA'>('ABIERTA');
+
+  // Document Modal State
+  const [isDocModalOpen, setIsDocModalOpen] = useState(false);
+  const [selectedInvestigacionId, setSelectedInvestigacionId] = useState<number | null>(null);
+  const [selectedReporteNum, setSelectedReporteNum] = useState('');
 
   useEffect(() => {
     const checkRole = async () => {
@@ -138,6 +142,13 @@ function InvestigacionListPage() {
     setShowMenu(false);
   };
 
+  const handleOpenDocs = (id: number, numeroReporte: string) => {
+    auditoriaService.logAction('VIEW', 'Abrió documentos desde lista', id);
+    setSelectedInvestigacionId(id);
+    setSelectedReporteNum(numeroReporte);
+    setIsDocModalOpen(true);
+  };
+
 
 
   const handleDelete = async (id: number, numeroReporte: string) => {
@@ -218,26 +229,62 @@ function InvestigacionListPage() {
 
   const exportToExcel = () => {
     if (filteredInvestigaciones.length === 0) {
-      alert('No hay datos para exportar.');
+      Swal.fire('Info', 'No hay datos para exportar', 'info');
       return;
     }
-    const data = filteredInvestigaciones.map(inv => ({
-      'No. Reporte': inv.numero_reporte,
-      'Documento de Origen': inv.nombre_corto,
-      'Gravedad': inv.gravedad,
-      'Semáforo': inv.semaforo,
-      'Creado Por': inv.created_by_name,
-      'Fecha Creación': new Date(inv.created_at).toLocaleDateString(),
-      'Fecha Prescripción': new Date(inv.fecha_prescripcion).toLocaleDateString(),
-      'Días Restantes': inv.dias_restantes
-    }));
+
+    const data = filteredInvestigaciones.map(inv => {
+      if (currentView === 'ABIERTA') {
+        return {
+          'Semáforo': inv.semaforo,
+          'No. Reporte': inv.numero_reporte,
+          'Documento de Origen': inv.nombre_corto,
+          'Investigadores': Array.isArray(inv.investigadores) ? inv.investigadores.join(', ') : inv.investigadores,
+          'Personal Reportado': Array.isArray(inv.involucrados) ? inv.involucrados.join(', ') : inv.involucrados,
+          'Procedencia': inv.procedencia,
+          'Conducta': inv.conductas,
+          'Gravedad': inv.gravedad,
+          'Región': inv.gerencia_responsable,
+          'Fecha de Registro': new Date(inv.fecha_reporte).toLocaleDateString(),
+          'Prescripción': new Date(inv.fecha_prescripcion).toLocaleDateString(),
+          'Días Restantes': inv.dias_restantes,
+          'Creado Por': inv.created_by_name
+        };
+      } else if (currentView === 'SEGUIMIENTO') {
+        return {
+          'Tipo': inv.tipo_investigacion,
+          'No. Reporte': inv.numero_reporte,
+          'Documento de Origen': inv.nombre_corto,
+          'Investigadores': Array.isArray(inv.investigadores) ? inv.investigadores.join(', ') : inv.investigadores,
+          'Personal Reportado': Array.isArray(inv.involucrados) ? inv.involucrados.join(', ') : inv.involucrados,
+          'Procedencia': inv.procedencia,
+          'Conducta': inv.conductas,
+          'Gravedad': inv.gravedad,
+          'Región': inv.gerencia_responsable,
+          'Fecha de Registro': new Date(inv.fecha_reporte).toLocaleDateString(),
+          'Prescripción': new Date(inv.fecha_prescripcion).toLocaleDateString(),
+          'Días Restantes': inv.dias_restantes,
+          'Creado Por': inv.created_by_name
+        };
+      } else {
+        // ENVIADA_A_CONCLUIR or CONCLUIDA
+        return {
+          'Tipo': inv.tipo_investigacion,
+          'No. Reporte': inv.numero_reporte,
+          'Documento': inv.nombre_corto,
+          'Conducta': inv.conductas,
+          'Relevancia': inv.gravedad,
+          'Fecha de Registro': new Date(inv.fecha_reporte).toLocaleDateString(),
+        };
+      }
+    });
 
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Investigaciones');
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
-    saveAs(blob, `Investigaciones_${new Date().toISOString().split('T')[0]}.xlsx`);
+    saveAs(blob, `Investigaciones_${currentView}_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   const renderInvestigadores = (investigadores: string[] | string) => {
@@ -428,32 +475,92 @@ function InvestigacionListPage() {
           <table className="investigacion-table">
             <thead>
               <tr>
-                <th style={{ textAlign: 'center' }}>Semáforo</th>
+                {/* Columns specific to views */}
+                {(currentView === 'SEGUIMIENTO' || currentView === 'ENVIADA_A_CONCLUIR' || currentView === 'CONCLUIDA') && (
+                  <th style={{ width: '60px', textAlign: 'center' }}>Docs</th>
+                )}
+
+                {(currentView === 'SEGUIMIENTO' || currentView === 'ENVIADA_A_CONCLUIR' || currentView === 'CONCLUIDA') && (
+                  <th onClick={() => requestSort('tipo_investigacion')} style={{ cursor: 'pointer' }}>Tipo {getSortIcon('tipo_investigacion')}</th>
+                )}
+
+                {currentView === 'ABIERTA' && (
+                  <th style={{ textAlign: 'center' }}>Semáforo</th>
+                )}
+
                 <th onClick={() => requestSort('numero_reporte')} style={{ cursor: 'pointer' }}>No. Reporte {getSortIcon('numero_reporte')}</th>
-                <th onClick={() => requestSort('nombre_corto')} style={{ cursor: 'pointer' }}>Documento de Origen {getSortIcon('nombre_corto')}</th>
-                <th>Investigadores</th>
-                <th>Personal Reportado</th>
-                <th onClick={() => requestSort('procedencia')} style={{ cursor: 'pointer' }}>Procedencia {getSortIcon('procedencia')}</th>
+                <th onClick={() => requestSort('nombre_corto')} style={{ cursor: 'pointer' }}>{['ENVIADA_A_CONCLUIR', 'CONCLUIDA'].includes(currentView) ? 'Documento' : 'Documento de Origen'} {getSortIcon('nombre_corto')}</th>
+
+                {(currentView === 'ABIERTA' || currentView === 'SEGUIMIENTO') && (
+                  <>
+                    <th>Investigadores</th>
+                    <th>Personal Reportado</th>
+                    <th onClick={() => requestSort('procedencia')} style={{ cursor: 'pointer' }}>Procedencia {getSortIcon('procedencia')}</th>
+                  </>
+                )}
+
                 <th onClick={() => requestSort('conductas')} style={{ cursor: 'pointer' }}>Conducta {getSortIcon('conductas')}</th>
-                <th onClick={() => requestSort('gravedad')} style={{ cursor: 'pointer' }}>Gravedad {getSortIcon('gravedad')}</th>
-                <th onClick={() => requestSort('gerencia_responsable')} style={{ cursor: 'pointer' }}>Región {getSortIcon('gerencia_responsable')}</th>
+                <th onClick={() => requestSort('gravedad')} style={{ cursor: 'pointer' }}>{['ENVIADA_A_CONCLUIR', 'CONCLUIDA'].includes(currentView) ? 'Relevancia' : 'Gravedad'} {getSortIcon('gravedad')}</th>
+
+                {(currentView === 'ABIERTA' || currentView === 'SEGUIMIENTO') && (
+                  <th onClick={() => requestSort('gerencia_responsable')} style={{ cursor: 'pointer' }}>Región {getSortIcon('gerencia_responsable')}</th>
+                )}
+
                 <th onClick={() => requestSort('fecha_reporte')} style={{ cursor: 'pointer' }}>Fecha de Registro {getSortIcon('fecha_reporte')}</th>
-                <th onClick={() => requestSort('fecha_prescripcion')} style={{ cursor: 'pointer' }}>Prescripción {getSortIcon('fecha_prescripcion')}</th>
-                <th style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => requestSort('dias_restantes')}>Días Rest. {getSortIcon('dias_restantes')}</th>
-                <th onClick={() => requestSort('created_by_name')} style={{ cursor: 'pointer' }}>Creado Por {getSortIcon('created_by_name')}</th>
+
+                {(currentView === 'ABIERTA' || currentView === 'SEGUIMIENTO') && (
+                  <>
+                    <th onClick={() => requestSort('fecha_prescripcion')} style={{ cursor: 'pointer' }}>Prescripción {getSortIcon('fecha_prescripcion')}</th>
+                    <th style={{ textAlign: 'center', cursor: 'pointer' }} onClick={() => requestSort('dias_restantes')}>Días Rest. {getSortIcon('dias_restantes')}</th>
+                    <th onClick={() => requestSort('created_by_name')} style={{ cursor: 'pointer' }}>Creado Por {getSortIcon('created_by_name')}</th>
+                  </>
+                )}
+
                 <th style={{ textAlign: 'center' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {currentItems.map((inv) => (
                 <tr key={inv.id}>
-                  <td>
-                    <span
-                      className="semaforo-dot"
-                      style={{ backgroundColor: getSemaforoColor(inv.semaforo) }}
-                      title={`Estado: ${inv.semaforo}`}
-                    ></span>
-                  </td>
+                  {/* DOCS COLUMN */}
+                  {(currentView === 'SEGUIMIENTO' || currentView === 'ENVIADA_A_CONCLUIR' || currentView === 'CONCLUIDA') && (
+                    <td style={{ textAlign: 'center', borderLeft: '4px solid #17a2b8' }}>
+                      <button
+                        onClick={() => handleOpenDocs(inv.id, inv.numero_reporte)}
+                        className="btn-icon-only"
+                        title="Ver archivos adjuntos"
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          cursor: 'pointer',
+                          color: '#840016',
+                          fontSize: '1.2rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '5px'
+                        }}
+                      >
+                        <FiFileText />
+                      </button>
+                    </td>
+                  )}
+
+                  {/* TIPO COLUMN */}
+                  {(currentView === 'SEGUIMIENTO' || currentView === 'ENVIADA_A_CONCLUIR' || currentView === 'CONCLUIDA') && (
+                    <td className="text-muted">{inv.tipo_investigacion}</td>
+                  )}
+
+                  {/* SEMAFORO COLUMN */}
+                  {currentView === 'ABIERTA' && (
+                    <td>
+                      <span
+                        className="semaforo-dot"
+                        style={{ backgroundColor: getSemaforoColor(inv.semaforo) }}
+                        title={`Estado: ${inv.semaforo}`}
+                      ></span>
+                    </td>
+                  )}
 
                   <td className="col-reporte">
                     {inv.numero_reporte || <span className="text-muted">Sin asignar</span>}
@@ -461,15 +568,19 @@ function InvestigacionListPage() {
 
                   <td style={{ fontWeight: 500 }}>{inv.nombre_corto}</td>
 
-                  <td>
-                    {renderInvestigadores(inv.investigadores)}
-                  </td>
+                  {(currentView === 'ABIERTA' || currentView === 'SEGUIMIENTO') && (
+                    <>
+                      <td>
+                        {renderInvestigadores(inv.investigadores)}
+                      </td>
 
-                  <td>
-                    {renderInvolucrados(inv.involucrados)}
-                  </td>
+                      <td>
+                        {renderInvolucrados(inv.involucrados)}
+                      </td>
 
-                  <td className="text-muted">{inv.procedencia}</td>
+                      <td className="text-muted">{inv.procedencia}</td>
+                    </>
+                  )}
 
                   <td className="text-muted">{inv.conductas}</td>
 
@@ -479,16 +590,24 @@ function InvestigacionListPage() {
                     </span>
                   </td>
 
-                  <td className="text-muted">{inv.gerencia_responsable}</td>
-                  <td>{formatDate(inv.fecha_reporte)}</td>
-                  <td>{formatDate(inv.fecha_prescripcion)}</td>
-                  <td className="col-dias" style={{ color: inv.dias_restantes < 10 ? '#e74c3c' : '#333' }}>
-                    {inv.dias_restantes}
-                  </td>
+                  {(currentView === 'ABIERTA' || currentView === 'SEGUIMIENTO') && (
+                    <td className="text-muted">{inv.gerencia_responsable}</td>
+                  )}
 
-                  <td className="text-muted" style={{ fontSize: '0.8rem' }}>
-                    {inv.created_by_name}
-                  </td>
+                  <td>{formatDate(inv.fecha_reporte)}</td>
+
+                  {(currentView === 'ABIERTA' || currentView === 'SEGUIMIENTO') && (
+                    <>
+                      <td>{formatDate(inv.fecha_prescripcion)}</td>
+                      <td className="col-dias" style={{ color: inv.dias_restantes < 10 ? '#e74c3c' : '#333' }}>
+                        {inv.dias_restantes}
+                      </td>
+
+                      <td className="text-muted" style={{ fontSize: '0.8rem' }}>
+                        {inv.created_by_name}
+                      </td>
+                    </>
+                  )}
 
                   <td>
                     <div className="action-buttons">
@@ -567,6 +686,12 @@ function InvestigacionListPage() {
           )}
         </div>
       )}
+      <DocumentosModals
+        isOpen={isDocModalOpen}
+        onClose={() => setIsDocModalOpen(false)}
+        investigacionId={selectedInvestigacionId}
+        numeroReporte={selectedReporteNum}
+      />
     </div >
   );
 }
