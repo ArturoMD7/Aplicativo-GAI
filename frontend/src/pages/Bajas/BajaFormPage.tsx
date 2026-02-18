@@ -127,6 +127,37 @@ function BajaFormPage() {
         }
     }, [id]);
 
+    const handleGenerarOficio = async () => {
+        if (!id) {
+            Swal.fire('Atención', 'Debe guardar el registro antes de generar el oficio', 'warning');
+            return;
+        }
+
+        try {
+            setLoading(true);
+            // Llamada al endpoint que creamos arriba
+            const response = await apiClient.get(`/api/bajas/bajas/${id}/generar-oficio/`, {
+                responseType: 'blob',
+            });
+
+            // Crear link de descarga
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Conformidad_${formState.ficha}.docx`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            Swal.fire('Éxito', 'Oficio generado correctamente', 'success');
+        } catch (error) {
+            console.error("Error al generar oficio:", error);
+            Swal.fire('Error', 'No se pudo generar el documento', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const fetchBaja = async (bajaId: string) => {
         setLoading(true);
         try {
@@ -960,7 +991,16 @@ function BajaFormPage() {
                                     value={formState.representante_patronal}
                                     onChange={handleChange}
                                     className="admin-input"
-                                
+
+                                />
+                            </div>
+                            <div className="admin-form-group">
+                                <ButtonIcon
+                                    variant="download"
+                                    text="Generar Oficio"
+                                    icon={<FiFileText />}
+                                    onClick={handleGenerarOficio}
+                                    disabled={loading}
                                 />
                             </div>
                         </div>

@@ -477,11 +477,11 @@ class InvestigacionListSerializer(serializers.ModelSerializer):
 
     def get_tipo_investigacion(self, obj):
         if obj.es_coadyuvancia:
-            return "COADYUVANCIA"
+            return "C"
         if obj.es_atracción:
-            return "ATRACCIÓN"
+            return "A"
         else:
-            return "NORMAL"
+            return "N"
         return None
 
 class AntecedenteSerializer(serializers.Serializer):
