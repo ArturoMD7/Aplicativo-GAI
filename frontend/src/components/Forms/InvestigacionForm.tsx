@@ -998,7 +998,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
 
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label>Documento de Origen *</label>
+                <label>Documento de origen *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-heading"></i>
                   <input
@@ -1015,7 +1015,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
 
 
               <div className="admin-form-group">
-                <label> Presunta Conducta *</label>
+                <label> Presunta conducta *</label>
                 <div className="admin-input-with-icon" style={{ padding: 0, border: 'none' }}>
                   <i className="fas" style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', zIndex: 10, color: '#666' }}></i>
                   <div style={{ marginLeft: '0' }}>
@@ -1683,7 +1683,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
               )}
 
               <div className="admin-form-group">
-                <label>Fecha Conocimiento de Hechos por Parte del Representante Patronal *</label>
+                <label>Fecha conocimiento de hechos por parte del representante patronal *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-eye"></i>
                   <input
@@ -1700,7 +1700,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
 
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label>Fecha de los Hechos *</label>
+                <label>Fecha de los hechos *</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-calendar-day"></i>
                   <input
@@ -1714,7 +1714,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
               </div>
 
               <div className="admin-form-group">
-                <label>Fecha de Prescripción</label>
+                <label>Fecha de prescripción</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-clock"></i>
                   <input
@@ -1782,7 +1782,7 @@ const InvestigacionForm: React.FC<InvestigacionFormProps> = ({
             </div>
 
             <div className="admin-form-group">
-              <label>Breve Relatoria de Hechos *</label>
+              <label>Breve relatoría de hechos *</label>
               <div className="admin-input-with-icon">
                 <i className="fas fa-sticky-note"></i>
                 <input

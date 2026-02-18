@@ -314,7 +314,7 @@ function InvestigacionDetailsPage() {
             <div className="admin-date-card">
               <i className="fas fa-eye"></i>
               <div>
-                <h4>Conocimiento de Hechos</h4>
+                <h4>Fecha conocimiento de hechos por parte del representante patronal</h4>
                 <p>{formatDate(investigacion.fecha_conocimiento_hechos)}</p>
               </div>
             </div>
@@ -330,7 +330,7 @@ function InvestigacionDetailsPage() {
             <div className="admin-date-card">
               <i className="fas fa-clock"></i>
               <div>
-                <h4>Fecha de Prescripción</h4>
+                <h4>Fecha de prescripción</h4>
                 <p>{formatDate(investigacion.fecha_prescripcion)}</p>
               </div>
             </div>
@@ -584,7 +584,7 @@ function InvestigacionDetailsPage() {
 
             <div className="admin-form-row">
               <div className="admin-form-group">
-                <label>Presunta Conducta</label>
+                <label>Presunta conducta</label>
                 <div className="admin-input-with-icon">
                   <i className="fas fa-balance-scale"></i>
                   <input

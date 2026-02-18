@@ -434,7 +434,6 @@ function FinalizacionListPage() {
                 <th>Conducta</th>
                 <th>Relevancia</th>
                 <th>Fecha de Registro</th>
-                <th style={{ textAlign: 'center' }}>Días en Proceso</th>
                 <th style={{ textAlign: 'center' }}>Acciones</th>
               </tr>
             </thead>
@@ -478,10 +477,6 @@ function FinalizacionListPage() {
                   </td>
 
                   <td>{formatDate(inv.fecha_reporte)}</td>
-
-                  <td style={{ textAlign: 'center', color: '#666' }}>
-                    {Math.floor((new Date().getTime() - new Date(inv.created_at).getTime()) / (1000 * 3600 * 24))} días
-                  </td>
 
                   <td>
                     <div className="action-buttons" style={{ justifyContent: 'center' }}>

@@ -32,9 +32,9 @@ const TIPOS_OBLIGATORIOS = [
 ];
 
 const TIPOS_COMPLEMENTARIOS = [
+  'Pruebas',
   'Citatorio',
   'Actas',
-  'Pruebas',
   'Notificación LN o reportante y aplicación sistema',
   'Documento Paraprocesal',
   'Documento del Jurídico al Tribunal'
