@@ -72,28 +72,67 @@ class DocumentoBajaViewSet(viewsets.ModelViewSet):
 def generar_oficio_conformidad(request, baja_id):
     baja = get_object_or_404(Baja, id=baja_id)
     
-    template_path = "./bajas/Plantilla/plantilla.docx"
-    doc = DocxTemplate(template_path)
-   
+    # Construir contexto desde el objeto
     context = {
         'FECHA_OFICIO': baja.fecha_oficio.strftime('%d de %B del %Y') if baja.fecha_oficio else "__________",
         'FICHA': baja.ficha,
         'NOMBRES': baja.nombre.upper(),
-        'FECHA_ULT_DIA': baja.fecha_ultimo_dia_laboral.strftime('%d de %B del %Y'),
+        'FECHA_ULT_DIA': baja.fecha_ultimo_dia_laboral.strftime('%d de %B del %Y') if baja.fecha_ultimo_dia_laboral else "__________",
         #agrear 1 dia a la fecha efecto
-        'FECHA_EFECTO': (baja.fecha_ultimo_dia_laboral + timedelta(days=1)).strftime('%d de %B del %Y'),
+        'FECHA_EFECTO': (baja.fecha_ultimo_dia_laboral + timedelta(days=1)).strftime('%d de %B del %Y') if baja.fecha_ultimo_dia_laboral else "__________",
         'REPRESENTANTE_PATRONAL': baja.representante_patronal.upper() if baja.representante_patronal else "__________",
     }
     
-    # 4. Renderizar el documento
+    return generar_doc_response(context, f"Conformidad_{baja.ficha}.docx")
+
+@api_view(['POST'])
+def previsualizar_oficio(request):
+    """
+    Genera el oficio usando datos recibidos por POST sin necesidad de guardar en BD.
+    Esperamos JSON con: ficha, nombre, fecha_oficio, fecha_ultimo_dia_laboral, representante_patronal
+    """
+    data = request.data
+    
+    # Parsear fechas (vienen como string YYYY-MM-DD desde el front)
+    def format_date_str(date_str):
+        if not date_str: return "__________"
+        try:
+            dt = datetime.datetime.strptime(date_str, '%Y-%m-%d')
+            return dt.strftime('%d de %B del %Y')
+        except:
+             return date_str # Fallback
+
+    def format_date_efecto(date_str):
+        if not date_str: return "__________"
+        try:
+            dt = datetime.datetime.strptime(date_str, '%Y-%m-%d')
+            dt = dt + timedelta(days=1)
+            return dt.strftime('%d de %B del %Y')
+        except:
+             return "__________"
+
+    context = {
+        'FECHA_OFICIO': format_date_str(data.get('fecha_oficio')),
+        'FICHA': data.get('ficha', '__________'),
+        'NOMBRES': data.get('nombre', '').upper(),
+        'FECHA_ULT_DIA': format_date_str(data.get('fecha_ultimo_dia_laboral')),
+        'FECHA_EFECTO': format_date_efecto(data.get('fecha_ultimo_dia_laboral')),
+        'REPRESENTANTE_PATRONAL': data.get('representante_patronal', '').upper() or "__________",
+    }
+    
+    filename = f"Previsualizacion_Conformidad_{data.get('ficha','sin_ficha')}.docx"
+    return generar_doc_response(context, filename)
+
+def generar_doc_response(context, filename):
+    template_path = "./bajas/Plantilla/plantilla.docx"
+    doc = DocxTemplate(template_path)
+    
     doc.render(context)
     
-    # 5. Guardar en un buffer de memoria para enviarlo por HTTP
     buffer = io.BytesIO()
     doc.save(buffer)
     buffer.seek(0)
     
-    filename = f"Conformidad_{baja.ficha}.docx"
     response = HttpResponse(
         buffer.getvalue(),
         content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'

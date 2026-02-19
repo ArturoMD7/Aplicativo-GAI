@@ -48,6 +48,7 @@ const initialState: Baja = {
     nombre: '',
     nivel: '',
     nuevo_nivel: '',
+    nuevo_grado: '',
     costo_plaza: '',
     costo_nueva_plaza: '',
     ahorro: 0,
@@ -128,15 +129,18 @@ function BajaFormPage() {
     }, [id]);
 
     const handleGenerarOficio = async () => {
-        if (!id) {
-            Swal.fire('Atención', 'Debe guardar el registro antes de generar el oficio', 'warning');
+        // Validation now justchecks if we have enough data to generate something useful
+        if (!formState.ficha || !formState.nombre) {
+            Swal.fire('Atención', 'Debe ingresar al menos Ficha y Nombre para generar el oficio', 'warning');
             return;
         }
 
         try {
             setLoading(true);
-            // Llamada al endpoint que creamos arriba
-            const response = await apiClient.get(`/api/bajas/bajas/${id}/generar-oficio/`, {
+
+            // Use PREVIEW endpoint logic
+            // Send current form state as POST data
+            const response = await apiClient.post(`/api/bajas/previsualizar-oficio/`, formState, {
                 responseType: 'blob',
             });
 
@@ -144,12 +148,20 @@ function BajaFormPage() {
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `Conformidad_${formState.ficha}.docx`);
+            link.setAttribute('download', `Conformidad_${formState.ficha || 'Previsualizacion'}.docx`);
             document.body.appendChild(link);
             link.click();
             link.remove();
 
-            Swal.fire('Éxito', 'Oficio generado correctamente', 'success');
+            // Only show success toast, not a big alert to not interrupt flow
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+            Toast.fire({ icon: 'success', title: 'Oficio generado' });
+
         } catch (error) {
             console.error("Error al generar oficio:", error);
             Swal.fire('Error', 'No se pudo generar el documento', 'error');
@@ -248,7 +260,7 @@ function BajaFormPage() {
         });
     }, [formState.costo_plaza, formState.costo_nueva_plaza, formState.tramite]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleChange = async (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value, type } = e.target;
         let processedValue: any = value;
 
@@ -259,6 +271,19 @@ function BajaFormPage() {
         }
 
         setFormState(prev => ({ ...prev, [name]: processedValue }));
+
+        // Trigger fetch for new level cost
+        if (name === 'nuevo_nivel') {
+            // For levels that require grade, we wait for grade selection. 
+            // For others, we fetch immediately using default/empty grade.
+            if (!['44', '45', '46'].includes(value)) {
+                const newCosto = await fetchCostoPlaza(value, empleadoMeta.jornada, '');
+                setFormState(prev => ({ ...prev, costo_nueva_plaza: newCosto }));
+            } else {
+                // Reset cost if level requires grade but no grade selected yet (implied by changing level)
+                setFormState(prev => ({ ...prev, costo_nueva_plaza: '0.00', nuevo_grado: '' }));
+            }
+        }
     };
 
     const handleEnterBusqueda = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -748,42 +773,78 @@ function BajaFormPage() {
                             </div>
                         </div>
 
-                        {/* Conditional Grado Input for levels 44, 45, 46 */}
-                        {['44', '45', '46'].includes(formState.nivel) && (
+                        {/* Conditional Nuevo Grado Input for levels 44, 45, 46 */}
+                        {['44', '45', '46'].includes(formState.nuevo_nivel) && (
                             <div className="admin-form-row">
                                 <div className="admin-form-group">
-                                    <label>Grado (Obligatorio para nivel {formState.nivel})</label>
+                                    <label>Nuevo Grado (Obligatorio para nivel {formState.nuevo_nivel})</label>
                                     <select
-                                        value={formState.grado || ''}
+                                        value={formState.nuevo_grado || ''}
                                         onChange={async (e) => {
                                             const newGrado = e.target.value;
 
                                             // Update form state with new grade
-                                            setFormState(prev => ({ ...prev, grado: newGrado }));
-
-                                            // Update local meta state for consistency if needed, though formState is source of truth now for saving
-                                            setEmpleadoMeta(prev => ({ ...prev, grado: newGrado }));
+                                            setFormState(prev => ({ ...prev, nuevo_grado: newGrado }));
 
                                             // Re-fetch cost when grade changes
-                                            const newCosto = await fetchCostoPlaza(formState.nivel, empleadoMeta.jornada, newGrado);
-                                            setFormState(prev => ({ ...prev, costo_plaza: newCosto, grado: newGrado }));
+                                            // Use current employment jornada as default for new position too? Usually yes.
+                                            const newCosto = await fetchCostoPlaza(formState.nuevo_nivel, empleadoMeta.jornada, newGrado);
+                                            setFormState(prev => ({ ...prev, costo_nueva_plaza: newCosto }));
                                         }}
                                         className="admin-select"
                                     >
                                         <option value="">Seleccione Grado</option>
-                                        {formState.nivel === '44' && ['G1', 'G2', 'G3', 'G4', 'G5'].map(g => (
+                                        {formState.nuevo_nivel === '44' && ['G1', 'G2', 'G3', 'G4', 'G5'].map(g => (
                                             <option key={g} value={g}>{g}</option>
                                         ))}
-                                        {formState.nivel === '45' && ['S1', 'S2', 'S3', 'S4', 'S5'].map(g => (
+                                        {formState.nuevo_nivel === '45' && ['S1', 'S2', 'S3', 'S4', 'S5'].map(g => (
                                             <option key={g} value={g}>{g}</option>
                                         ))}
-                                        {formState.nivel === '46' && ['D1', 'D2'].map(g => (
+                                        {formState.nuevo_nivel === '46' && ['D1', 'D2'].map(g => (
                                             <option key={g} value={g}>{g}</option>
                                         ))}
                                     </select>
                                 </div>
+                                {/* Conditional Grado Input for levels 44, 45, 46 */}
+                                {['44', '45', '46'].includes(formState.nivel) && (
+                                    <div className="admin-form-group">
+                                        <div className="admin-form-group">
+                                            <label>Grado (Obligatorio para nivel {formState.nivel})</label>
+                                            <select
+                                                value={formState.grado || ''}
+                                                onChange={async (e) => {
+                                                    const newGrado = e.target.value;
+
+                                                    // Update form state with new grade
+                                                    setFormState(prev => ({ ...prev, grado: newGrado }));
+
+                                                    // Update local meta state for consistency if needed, though formState is source of truth now for saving
+                                                    setEmpleadoMeta(prev => ({ ...prev, grado: newGrado }));
+
+                                                    // Re-fetch cost when grade changes
+                                                    const newCosto = await fetchCostoPlaza(formState.nivel, empleadoMeta.jornada, newGrado);
+                                                    setFormState(prev => ({ ...prev, costo_plaza: newCosto, grado: newGrado }));
+                                                }}
+                                                className="admin-select"
+                                            >
+                                                <option value="">Seleccione Grado</option>
+                                                {formState.nivel === '44' && ['G1', 'G2', 'G3', 'G4', 'G5'].map(g => (
+                                                    <option key={g} value={g}>{g}</option>
+                                                ))}
+                                                {formState.nivel === '45' && ['S1', 'S2', 'S3', 'S4', 'S5'].map(g => (
+                                                    <option key={g} value={g}>{g}</option>
+                                                ))}
+                                                {formState.nivel === '46' && ['D1', 'D2'].map(g => (
+                                                    <option key={g} value={g}>{g}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
+
+
 
                         <div className="admin-form-row">
                             <div className="admin-form-group readOnly ">
@@ -877,7 +938,7 @@ function BajaFormPage() {
                                 />
                             </div>
                             {formState.tramite === 'DESCENSO' && (
-                                <div className="admin-form-group">
+                                <div className="admin-form-group readOnly">
                                     <label>Costo Nueva Plaza</label>
                                     <input
                                         type="text"
@@ -886,7 +947,7 @@ function BajaFormPage() {
                                         onChange={handleCurrencyChange}
                                         className="admin-input"
                                         placeholder="0.00"
-                                        readOnly={isSaaiLocked}
+                                        readOnly
                                     />
                                 </div>
                             )}
@@ -906,18 +967,20 @@ function BajaFormPage() {
                                     />
                                 </div>
                             )}
-                            <div className="admin-form-group">
-                                <label>Liquidación Neta</label>
-                                <input
-                                    type="text"
-                                    name="liquidacion_neta"
-                                    value={formatNumber(formState.liquidacion_neta || 0)}
-                                    onChange={handleCurrencyChangeNumber}
-                                    className="admin-input"
-                                    placeholder="0.00"
-                                    readOnly={isSaaiLocked}
-                                />
-                            </div>
+                            {formState.tramite === 'LIQUIDACIÓN' && (
+                                <div className="admin-form-group">
+                                    <label>Liquidación Neta</label>
+                                    <input
+                                        type="text"
+                                        name="liquidacion_neta"
+                                        value={formatNumber(formState.liquidacion_neta || 0)}
+                                        onChange={handleCurrencyChangeNumber}
+                                        className="admin-input"
+                                        placeholder="0.00"
+                                        readOnly={isSaaiLocked}
+                                    />
+                                </div>
+                            )}
                         </div>
                         <div className="admin-form-group">
                             <label>Observaciones</label>

@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import BajaViewSet, DocumentoBajaViewSet, generar_oficio_conformidad
+from .views import BajaViewSet, DocumentoBajaViewSet, generar_oficio_conformidad, previsualizar_oficio
 
 router = DefaultRouter()
 router.register(r'bajas', BajaViewSet)
@@ -9,4 +9,5 @@ router.register(r'documentos-bajas', DocumentoBajaViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('bajas/<int:baja_id>/generar-oficio/', generar_oficio_conformidad, name='generar-oficio'),
+    path('previsualizar-oficio/', previsualizar_oficio, name='previsualizar-oficio'),
 ]
