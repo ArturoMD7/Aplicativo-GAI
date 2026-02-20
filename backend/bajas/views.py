@@ -21,7 +21,7 @@ class BajaViewSet(viewsets.ModelViewSet):
     serializer_class = BajaSerializer
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    search_fields = ['ficha', 'nombre', 'nivel', 'region'] 
+    search_fields = ['ficha', 'nombre', 'nivel', 'region', 'nombres', 'apellido_paterno', 'apellido_materno'] 
     filterset_fields = ['status', 'region', 'tramite']
 
     def create(self, request, *args, **kwargs):
@@ -76,7 +76,7 @@ def generar_oficio_conformidad(request, baja_id):
     context = {
         'FECHA_OFICIO': baja.fecha_oficio.strftime('%d de %B del %Y') if baja.fecha_oficio else "__________",
         'FICHA': baja.ficha,
-        'NOMBRES': baja.nombre.upper(),
+        'NOMBRES': reorder_nombre(baja.nombre),
         'FECHA_ULT_DIA': baja.fecha_ultimo_dia_laboral.strftime('%d de %B del %Y') if baja.fecha_ultimo_dia_laboral else "__________",
         #agrear 1 dia a la fecha efecto
         'FECHA_EFECTO': (baja.fecha_ultimo_dia_laboral + timedelta(days=1)).strftime('%d de %B del %Y') if baja.fecha_ultimo_dia_laboral else "__________",
@@ -84,6 +84,23 @@ def generar_oficio_conformidad(request, baja_id):
     }
     
     return generar_doc_response(context, f"Conformidad_{baja.ficha}.docx")
+
+
+def reorder_nombre(nombre_str: str) -> str:
+    """
+    La BD PEMEX almacena el nombre como 'PATERNO MATERNO NOMBRE(S)'.
+    Esta función lo reordena a 'NOMBRE(S) PATERNO MATERNO'.
+    Se asume que los primeros 2 tokens son apellidos y el resto es el nombre.
+    """
+    if not nombre_str:
+        return "__________"
+    partes = nombre_str.strip().split()
+    if len(partes) <= 2:
+        return nombre_str.upper()  # No se puede reordenar con seguridad
+    apellido_paterno = partes[0]
+    apellido_materno = partes[1]
+    nombres_propios  = ' '.join(partes[2:])
+    return f"{nombres_propios} {apellido_paterno} {apellido_materno}".upper()
 
 @api_view(['POST'])
 def previsualizar_oficio(request):
@@ -111,10 +128,12 @@ def previsualizar_oficio(request):
         except:
              return "__________"
 
+    nombre_raw = (data.get('nombre') or '').strip()
+
     context = {
         'FECHA_OFICIO': format_date_str(data.get('fecha_oficio')),
         'FICHA': data.get('ficha', '__________'),
-        'NOMBRES': data.get('nombre', '').upper(),
+        'NOMBRES': reorder_nombre(nombre_raw),
         'FECHA_ULT_DIA': format_date_str(data.get('fecha_ultimo_dia_laboral')),
         'FECHA_EFECTO': format_date_efecto(data.get('fecha_ultimo_dia_laboral')),
         'REPRESENTANTE_PATRONAL': data.get('representante_patronal', '').upper() or "__________",

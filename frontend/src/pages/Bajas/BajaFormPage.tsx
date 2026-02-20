@@ -195,7 +195,10 @@ function BajaFormPage() {
 
     const formatNumber = (num: number | string): string => {
         if (!num) return '';
-        const parts = num.toString().split('.');
+        const parsed = parseFloat(num.toString().replace(/,/g, ''));
+        if (isNaN(parsed)) return '';
+        const fixed = parsed.toFixed(2);
+        const parts = fixed.split('.');
         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         return parts.join('.');
     };
@@ -773,7 +776,38 @@ function BajaFormPage() {
                             </div>
                         </div>
 
-                        {/* Conditional Nuevo Grado Input for levels 44, 45, 46 */}
+                        {/* Conditional Grado Input for current level 44, 45, 46 */}
+                        {['44', '45', '46'].includes(formState.nivel) && (
+                            <div className="admin-form-row">
+                                <div className="admin-form-group">
+                                    <label>Grado (Obligatorio para nivel {formState.nivel})</label>
+                                    <select
+                                        value={formState.grado || ''}
+                                        onChange={async (e) => {
+                                            const newGrado = e.target.value;
+                                            setFormState(prev => ({ ...prev, grado: newGrado }));
+                                            setEmpleadoMeta(prev => ({ ...prev, grado: newGrado }));
+                                            const newCosto = await fetchCostoPlaza(formState.nivel, empleadoMeta.jornada, newGrado);
+                                            setFormState(prev => ({ ...prev, costo_plaza: newCosto, grado: newGrado }));
+                                        }}
+                                        className="admin-select"
+                                    >
+                                        <option value="">Seleccione Grado</option>
+                                        {formState.nivel === '44' && ['G1', 'G2', 'G3', 'G4', 'G5'].map(g => (
+                                            <option key={g} value={g}>{g}</option>
+                                        ))}
+                                        {formState.nivel === '45' && ['S1', 'S2', 'S3', 'S4', 'S5'].map(g => (
+                                            <option key={g} value={g}>{g}</option>
+                                        ))}
+                                        {formState.nivel === '46' && ['D1', 'D2'].map(g => (
+                                            <option key={g} value={g}>{g}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Conditional Nuevo Grado Input for nuevo_nivel 44, 45, 46 */}
                         {['44', '45', '46'].includes(formState.nuevo_nivel) && (
                             <div className="admin-form-row">
                                 <div className="admin-form-group">
@@ -782,12 +816,7 @@ function BajaFormPage() {
                                         value={formState.nuevo_grado || ''}
                                         onChange={async (e) => {
                                             const newGrado = e.target.value;
-
-                                            // Update form state with new grade
                                             setFormState(prev => ({ ...prev, nuevo_grado: newGrado }));
-
-                                            // Re-fetch cost when grade changes
-                                            // Use current employment jornada as default for new position too? Usually yes.
                                             const newCosto = await fetchCostoPlaza(formState.nuevo_nivel, empleadoMeta.jornada, newGrado);
                                             setFormState(prev => ({ ...prev, costo_nueva_plaza: newCosto }));
                                         }}
@@ -805,42 +834,6 @@ function BajaFormPage() {
                                         ))}
                                     </select>
                                 </div>
-                                {/* Conditional Grado Input for levels 44, 45, 46 */}
-                                {['44', '45', '46'].includes(formState.nivel) && (
-                                    <div className="admin-form-group">
-                                        <div className="admin-form-group">
-                                            <label>Grado (Obligatorio para nivel {formState.nivel})</label>
-                                            <select
-                                                value={formState.grado || ''}
-                                                onChange={async (e) => {
-                                                    const newGrado = e.target.value;
-
-                                                    // Update form state with new grade
-                                                    setFormState(prev => ({ ...prev, grado: newGrado }));
-
-                                                    // Update local meta state for consistency if needed, though formState is source of truth now for saving
-                                                    setEmpleadoMeta(prev => ({ ...prev, grado: newGrado }));
-
-                                                    // Re-fetch cost when grade changes
-                                                    const newCosto = await fetchCostoPlaza(formState.nivel, empleadoMeta.jornada, newGrado);
-                                                    setFormState(prev => ({ ...prev, costo_plaza: newCosto, grado: newGrado }));
-                                                }}
-                                                className="admin-select"
-                                            >
-                                                <option value="">Seleccione Grado</option>
-                                                {formState.nivel === '44' && ['G1', 'G2', 'G3', 'G4', 'G5'].map(g => (
-                                                    <option key={g} value={g}>{g}</option>
-                                                ))}
-                                                {formState.nivel === '45' && ['S1', 'S2', 'S3', 'S4', 'S5'].map(g => (
-                                                    <option key={g} value={g}>{g}</option>
-                                                ))}
-                                                {formState.nivel === '46' && ['D1', 'D2'].map(g => (
-                                                    <option key={g} value={g}>{g}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         )}
 
