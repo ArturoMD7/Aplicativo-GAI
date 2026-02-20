@@ -250,9 +250,9 @@ function BajaFormPage() {
         if (cnp == 0) {
             ahorro = 0;
         } else if (formState.tramite === 'DESCENSO') {
-            ahorro = cp - cnp;
+            ahorro = parseFloat((cp - cnp).toFixed(2));
         } else {
-            ahorro = cp - cnp;
+            ahorro = parseFloat((cp - cnp).toFixed(2));
         }
 
         setFormState(prev => {
@@ -402,16 +402,20 @@ function BajaFormPage() {
         try {
             let newId = id;
 
+            // Round ahorro to exactly 2 decimals before sending to avoid floating-point issues
+            const payload = {
+                ...formState,
+                ahorro: parseFloat((Number(formState.ahorro) || 0).toFixed(2)),
+            };
+
             if (isEditMode && id) {
-                await apiClient.put(`/api/bajas/bajas/${id}/`, formState);
+                await apiClient.put(`/api/bajas/bajas/${id}/`, payload);
                 Swal.fire('Actualizado', 'Registro actualizado correctamente', 'success');
             } else {
-                const response = await apiClient.post('/api/bajas/bajas/', formState);
+                const response = await apiClient.post('/api/bajas/bajas/', payload);
                 newId = response.data.id;
-                // Swal.fire('Guardado', 'Registro creado correctamente', 'success'); // Don't show success yet if uploads pending
             }
 
-            // Process Pending Uploads if creating or editing
             if (pendingUploads.length > 0 && newId) {
                 const uploadPromises = pendingUploads.map(async (upload) => {
                     const formData = new FormData();
